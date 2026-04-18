@@ -1,0 +1,68 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+
+	"Header": {
+		"login": "Login"
+	},
+
+	"LogoutButton": {
+		"logout": "Logout"
+	},
+
+	"LoginPage": {
+		"welcomeBack": "Welcome back",
+		"signInToYourAccountToContinue": "Sign in to your account to continue",
+		"continueWithGoogle": "Continue with Google",
+		"byContinuingYouAgreeToOur": "By continuing, you agree to our",
+		"termsOfService": "Terms of Service",
+		"privacyPolicy": "Privacy Policy",
+		"and": "and"
+	},
+
+	"DatePicker": {
+		"dateOfBirth": "Date of birth",
+		"selectDate": "Select date",
+		"date": "Date",
+		"time": "Time",
+		"scheduleDate": "Schedule date",
+		"scheduleDatePlaceholder": "Tomorrow or next week"
+	},
+
+	"LocalizedCalendar": {
+		"title": "Book an appointment",
+		"description": "Select the dates for your appointment"
+	},
+
+	"UploadFile": {
+		"UploadFileMultiple": {
+			"dropzoneDescription": "Use the drop zone to add files — it stays put while previews show in a grid below. Remove any file with the",
+			"instruction": "control on the top-right of each preview card",
+			"placeholder": "Uploaded files. Drop more files here to add.",
+			"unknown": "Unknown",
+			"remove": "Remove {name}"
+		},
+		"UploadFileSingle": {
+			"dropzoneDescription": "Choose or drop a file, preview it, then save. Use",
+			"remove": "Remove",
+			"or": "or",
+			"replace": "Replace",
+			"ifYouChangeYourMind": "on the file card if you change your mind.",
+			"placeholder": "File preview. Drop a file here to replace.",
+			"unknownType": "Unknown type"
+		},
+		"UploadFileEmpty": {
+			"choose": "Choose",
+			"orDrag": "or drag",
+			"here": "here",
+			"files": "files",
+			"file": "file",
+			"them": "them",
+			"it": "it",
+			"accepted": "Accepted"
+		}
+	},
+
+	"GenericMessages": {
+		"TOO_MANY_REQUESTS": "Too many requests. Please try again later."
+	}
+}

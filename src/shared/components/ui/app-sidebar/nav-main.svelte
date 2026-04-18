@@ -1,0 +1,37 @@
+<script lang="ts">
+	// COMPONENTS
+	import * as Sidebar from '@/shared/components/ui/sidebar/index.js';
+	
+	// TYPES
+	import type { Component } from 'svelte';
+
+	let {
+		items
+	}: {
+		items: {
+			name: string;
+			url: string;
+			icon: Component;
+			isActive?: boolean;
+		}[];
+	} = $props();
+</script>
+
+<Sidebar.Group class="group-data-[collapsible=icon]:hidden">
+	<Sidebar.GroupLabel>Projects</Sidebar.GroupLabel>
+
+	<Sidebar.Menu class="gap-2">
+		{#each items as item (item.name)}
+			<Sidebar.MenuItem>
+				<Sidebar.MenuButton isActive={item.isActive}>
+					{#snippet child({ props })}
+						<a href={item.url} {...props}>
+							<item.icon />
+							<span>{item.name}</span>
+						</a>
+					{/snippet}
+				</Sidebar.MenuButton>
+			</Sidebar.MenuItem>
+		{/each}
+	</Sidebar.Menu>
+</Sidebar.Group>
