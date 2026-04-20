@@ -2,6 +2,8 @@
 import { mutation } from '../_generated/server';
 import { v } from 'convex/values';
 
+import { uploadedFilesTableAggregate } from '../tables/uploadedFiles/uploadedFilesAggregate.js';
+
 /** Short-lived POST URL; response JSON includes `storageId`. */
 export const generateUploadUrl = mutation({
 	args: {},
@@ -24,9 +26,15 @@ export const saveUploadedFile = mutation({
 			throw new Error('Could not resolve URL for storage id');
 		}
 
-		return await ctx.db.insert('uploadedFiles', {
+		const id = await ctx.db.insert('uploadedFiles', {
 			storageId: args.storageId,
 			url
 		});
+		const doc = await ctx.db.get(id);
+		if (!doc) {
+			throw new Error('Inserted uploadedFiles row missing');
+		}
+		await uploadedFilesTableAggregate.insert(ctx, doc);
+		return id;
 	}
 });

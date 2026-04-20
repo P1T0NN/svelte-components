@@ -15,7 +15,21 @@ export const UNPROTECTED_PAGE_ENDPOINTS = {
     SIDEBAR: "/sidebar",
     CALENDAR: "/calendar",
     UPLOAD_FILE: "/file-upload",
+    TABLE: "/table",
+    UPLOADED_FILES: "/uploaded-files/:id",
 } as const;
 
-/** Path prefixes under `/sidebar` where the rail is hidden (full-width inset only). */
-export const SIDEBAR_FULL_WIDTH_PREFIXES: readonly string[] = [];
+/**
+ * Replace `:param` segments in a route pattern (e.g. `/uploaded-files/:id`).
+ * Values are passed through `encodeURIComponent`.
+ */
+export function fillRoutePattern(
+	pattern: string,
+	params: Record<string, string>
+): string {
+	let path = pattern;
+	for (const [key, value] of Object.entries(params)) {
+		path = path.replace(`:${key}`, encodeURIComponent(value));
+	}
+	return path;
+}

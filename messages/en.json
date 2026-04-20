@@ -62,6 +62,10 @@
 		}
 	},
 
+	"PaginatedData": {
+		"paginationText": "Page {page} of {totalPages}"
+	},
+
 	"GenericMessages": {
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later."
 	}

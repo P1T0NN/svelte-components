@@ -48,6 +48,7 @@
 	},
 	"dependencies": {
 		"@auth/core": "0.37.0",
+		"@convex-dev/aggregate": "^0.2.1",
 		"@convex-dev/auth": "^0.0.90",
 		"@convex-dev/rate-limiter": "^0.3.2",
 		"@mmailaender/convex-auth-svelte": "^0.1.3",
