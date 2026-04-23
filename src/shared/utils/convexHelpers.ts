@@ -20,8 +20,13 @@
 
 // LIBRARIES
 import { toast } from 'svelte-sonner';
+import { ConvexError } from 'convex/values';
 import { isRateLimitError } from '@convex-dev/rate-limiter';
 import { m } from '@/shared/lib/paraglide/messages';
+import {
+	hasTranslatableMessage,
+	translateFromBackend
+} from '@/shared/utils/translateFromBackend';
 
 // TYPES
 import type { FunctionReference, FunctionArgs, FunctionReturnType } from 'convex/server';
@@ -65,27 +70,79 @@ async function postFileToConvexUploadUrl(url: string, file: File): Promise<Stora
 
 /**
  * Upload a browser `File` to Convex file storage and insert an `uploadedFiles` row.
+ *
+ * Both Convex calls are routed through {@link safeMutation} so any typed backend error
+ * (NOT_AUTHENTICATED, STORAGE_URL_UNAVAILABLE, rate limit, etc.) becomes a translated
+ * toast and a `null` return — the caller just checks for `null` and bails.
+ *
+ * The in-between storage POST is a raw `fetch` (not a Convex call): if it throws, we show
+ * a generic upload-failed toast and return `null` so the flow matches the Convex paths.
+ *
+ * @returns the new `uploadedFiles` row id on success, `null` when an error was already toasted.
  */
 export async function uploadFileToConvexStorage(
 	client: ConvexClient,
 	file: File
-): Promise<Id<'uploadedFiles'>> {
-	const postUrl = await client.mutation(api.storage.storageMutations.generateUploadUrl, {});
+): Promise<Id<'uploadedFiles'> | null> {
+	const postUrl = await safeMutation(client, api.storage.storageMutations.generateUploadUrl, {});
+	if (!postUrl) return null;
 
-	const { storageId } = await postFileToConvexUploadUrl(postUrl, file);
+	let uploaded: StorageUploadJson;
+	try {
+		uploaded = await postFileToConvexUploadUrl(postUrl, file);
+	} catch (error) {
+		console.error('[uploadFileToConvexStorage] storage POST failed', error);
+		toast.error(m['GenericMessages.UPLOAD_SAVE_FAILED']());
+		return null;
+	}
 
-	return await client.mutation(api.storage.storageMutations.saveUploadedFile, { storageId });
+	return await safeMutation(client, api.storage.storageMutations.saveUploadedFile, {
+		storageId: uploaded.storageId
+	});
 }
 
 /**
- * Execute a Convex mutation with automatic rate limit error handling
+ * Centralised error-to-toast handling shared by `safeMutation` and `safeAction`.
  *
- * Shows a toast notification when rate limited instead of throwing.
+ * Returns `true` if the error was handled (caller should resolve with `null`), `false`
+ * if the caller should rethrow. Three branches, in order of specificity:
  *
- * Usage:
+ *   1. Rate-limit errors → `TOO_MANY_REQUESTS` toast. These are emitted by the
+ *      `@convex-dev/rate-limiter` library and have their own detection helper.
+ *   2. Typed backend errors (`ConvexError` whose `data` carries a `TranslatableMessage`)
+ *      → translate + toast. This covers every throw from `createDeleteMutation`,
+ *      `requireAdmin`, `storageMutations`, etc. — they all share `ConvexErrorPayload`.
+ *   3. Anything else → NOT handled. Rethrown to the caller so untyped throws and
+ *      genuine programming errors surface loudly in dev and hit error boundaries in
+ *      prod. Converting them to silent toasts would hide bugs.
+ */
+function handleConvexError(error: unknown): boolean {
+	if (isRateLimitError(error)) {
+		toast.error(m['GenericMessages.TOO_MANY_REQUESTS']());
+		return true;
+	}
+	if (error instanceof ConvexError && hasTranslatableMessage(error.data)) {
+		toast.error(translateFromBackend(error.data.message));
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Execute a Convex mutation with automatic error-to-toast handling.
+ *
+ * Returns the mutation result on success, or `null` when an error was caught AND already
+ * surfaced as a toast (rate limit or typed `ConvexError` with a translatable payload).
+ * Untyped throws propagate so real bugs stay visible.
+ *
+ * ## Usage
  * ```ts
  * const client = useConvexClient();
  * const result = await safeMutation(client, api.myMutation, { arg: 'value' });
+ * if (!result) return; // error already toasted
+ *
+ * // For mutations that follow the ConvexMutationResult envelope, toast success too:
+ * toast[result.success ? 'success' : 'info'](translateFromBackend(result.message));
  * ```
  */
 export async function safeMutation<Mutation extends FunctionReference<'mutation'>>(
@@ -96,24 +153,14 @@ export async function safeMutation<Mutation extends FunctionReference<'mutation'
 	try {
 		return await client.mutation(mutation, args);
 	} catch (error) {
-		if (isRateLimitError(error)) {
-			toast.error(m['GenericMessages.TOO_MANY_REQUESTS']());
-			return null;
-		}
+		if (handleConvexError(error)) return null;
 		throw error;
 	}
 }
 
 /**
- * Execute a Convex action with automatic rate limit error handling
- *
- * Shows a toast notification when rate limited instead of throwing.
- *
- * Usage:
- * ```ts
- * const client = useConvexClient();
- * const result = await safeAction(client, api.myAction, { arg: 'value' });
- * ```
+ * Execute a Convex action with automatic error-to-toast handling. See {@link safeMutation}
+ * for the full error-branch rules — identical behaviour, just for actions.
  */
 export async function safeAction<Action extends FunctionReference<'action'>>(
 	client: ConvexClient,
@@ -123,10 +170,7 @@ export async function safeAction<Action extends FunctionReference<'action'>>(
 	try {
 		return await client.action(action, args);
 	} catch (error) {
-		if (isRateLimitError(error)) {
-			toast.error(m['GenericMessages.TOO_MANY_REQUESTS']());
-			return null;
-		}
+		if (handleConvexError(error)) return null;
 		throw error;
 	}
 }

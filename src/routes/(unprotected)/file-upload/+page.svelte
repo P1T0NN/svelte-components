@@ -41,14 +41,17 @@
 
 			const optimizedImages = await optimizeImages(selected, undefined, progress.setOptimizeProgress);
 
-			const uploadedFileIds = [];
+			const uploadedFileIds: Array<NonNullable<Awaited<ReturnType<typeof uploadFileToConvexStorage>>>> = [];
 			for (let j = 0; j < optimizedImages.length; j++) {
 				const f = optimizedImages[j];
 				const fileNum = j + 1;
 
 				progress.beforeUploadFile(fileNum, n);
-				uploadedFileIds.push(await uploadFileToConvexStorage(convex, f));
+				const id = await uploadFileToConvexStorage(convex, f);
 				progress.afterUploadFile(fileNum, n);
+
+				if (!id) return; // error already toasted by safeMutation
+				uploadedFileIds.push(id);
 			}
 
 			progress.markDone();

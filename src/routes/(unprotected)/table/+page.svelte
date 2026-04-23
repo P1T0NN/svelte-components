@@ -1,21 +1,39 @@
 <script lang="ts">
 	// LIBRARIES
+	import { useConvexClient } from 'convex-svelte';
 	import { api } from '@/convex/_generated/api';
 
 	// COMPONENTS
+	import { toast } from 'svelte-sonner';
 	import Section from '@/shared/components/ui/section/section.svelte';
 	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
 
 	// CONFIG
 	import { fillRoutePattern, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
 
+	// UTILS
+	import { safeMutation } from '@/shared/utils/convexHelpers';
+	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
+
 	// TYPES
 	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';
-	import type { Doc } from '@/convex/_generated/dataModel';
+	import type { Doc, Id } from '@/convex/_generated/dataModel';
 
 	type FileRow = Doc<'uploadedFiles'>;
 
+	const convex = useConvexClient();
+
 	const filesQuery = api.tables.uploadedFiles.uploadedFilesQueries.fetchUploadedFiles;
+
+	async function deleteSelectedFiles(ids: string[]) {
+		const result = await safeMutation(
+			convex,
+			api.tables.uploadedFiles.uploadedFilesMutations.deleteUploadedFile,
+			{ ids: ids as Id<'uploadedFiles'>[] }
+		);
+		if (!result) return; // rate-limit or typed backend error — already toasted
+		toast[result.success ? 'success' : 'info'](translateFromBackend(result.message));
+	}
 
 	const columns: ColumnDef<FileRow>[] = [
 		{
@@ -66,5 +84,8 @@
 		{columns}
 		getRowId={(r) => r._id}
 		customCells={{ url: urlCell }}
+		controlsPlace="top"
+		selectable={true}
+		deleteFunction={deleteSelectedFiles}
 	/>
 </Section>

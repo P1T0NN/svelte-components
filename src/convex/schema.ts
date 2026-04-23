@@ -33,11 +33,21 @@ const schema = defineSchema({
 		.index('by_action', ['action'])
 		.index('by_timestamp', ['timestamp']),
 
-	/** Convex file storage reference + resolved download URL. */
+	/**
+	 * Convex file storage reference + resolved download URL.
+	 *
+	 * `ownerId` is **optional**: the upload endpoints in `storageMutations.ts` support an
+	 * `'insecure'` auth mode that lets anonymous visitors upload (demo/public-form use
+	 * cases). Files with no owner can only be deleted via an admin-only path — the
+	 * owner-based check in `createDeleteMutation` rejects rows whose owner column is null.
+	 */
 	uploadedFiles: defineTable({
+		ownerId: v.optional(v.id('users')),
 		storageId: v.id('_storage'),
 		url: v.string()
-	}).index('by_storage_id', ['storageId'])
+	})
+		.index('by_storage_id', ['storageId'])
+		.index('by_owner', ['ownerId'])
 });
 
 export default schema;

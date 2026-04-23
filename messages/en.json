@@ -66,7 +66,39 @@
 		"paginationText": "Page {page} of {totalPages}"
 	},
 
+	"DataTable": {
+		"itemsSelected": "{count} selected",
+		"clearSelection": "Clear",
+		"selectAllOnPage": "Select all on page",
+		"selectAllRowsOnThisPage": "Select all rows on this page",
+		"selectRow": "Select row",
+		"deselectRow": "Deselect row",
+		"ariaDataTable": "Data table",
+		"ariaDataRows": "Data rows",
+		"emptyTitle": "No results",
+		"emptyDescription": "Nothing to show yet. Try adjusting filters or add new data.",
+		"delete": "Delete"
+	},
+
+	"AlertDialogButton": {
+        "title": "Action cannot be reversed",
+        "description": "Are you sure you want to do this? This action cannot be undone.",
+        "cancel": "Cancel",
+        "proceed": "Proceed"
+    },
+
 	"GenericMessages": {
-		"TOO_MANY_REQUESTS": "Too many requests. Please try again later."
+		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
+		"NO_ITEMS_PROVIDED": "No items provided.",
+		"NO_MATCHING_ITEMS": "No matching items found.",
+		"DATA_TABLE_DELETED_ALL": "Deleted {count} item(s).",
+		"DATA_TABLE_DELETED_WITH_MISSING": "Deleted {count} item(s); {missing} were already gone.",
+		"STORAGE_DELETE_FAILED": "Couldn't delete the file from storage. Nothing was removed.",
+		"BATCH_TOO_LARGE": "Too many items in a single request (max {limit}).",
+		"FORBIDDEN": "You're not allowed to perform this action.",
+		"NOT_AUTHENTICATED": "Please sign in to continue.",
+		"ADMIN_ACCESS_REQUIRED": "This action requires admin privileges.",
+		"STORAGE_URL_UNAVAILABLE": "Couldn't resolve the file URL.",
+		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again."
 	}
 }

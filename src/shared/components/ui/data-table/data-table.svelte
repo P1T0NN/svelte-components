@@ -7,13 +7,18 @@
 
 	// COMPONENTS
 	import DataTableContent from './data-table-content.svelte';
+	import DataTableSelectedItemsStatus from './data-table-selected-items-status.svelte';
 	import { PaginatedData } from '@/shared/components/ui/paginated-data/index.js';
+
+	// UTILS
+	import { defaultRowKey } from './dataTableUtils.js';
 
 	// TYPES
 	import type {
 		ColumnDef,
 		DataTableCustomCells,
 		DataTableOptimizationStrategy,
+		DataTableSelectionHeaderState,
 		PaginatedListPayload,
 		PaginatedListQuery
 	} from './types.js';
@@ -25,16 +30,33 @@
 		columns,
 		getRowId,
 		customCells,
-		optimizationStrategy = PAGINATION_DATA.DEFAULT_OPTIMIZATION_STRATEGY
+		optimizationStrategy = PAGINATION_DATA.DEFAULT_OPTIMIZATION_STRATEGY,
+		controlsPlace = 'bottom',
+		selectable = false,
+		selectedIds = $bindable<string[]>([]),
+		deleteFunction
 	}: {
 		class?: string;
 		caption?: string;
 		query: PaginatedListQuery<T>;
 		columns: ColumnDef<T>[];
+		/** Stable row id; required for selection to persist across pages. */
 		getRowId?: (row: T) => string;
 		customCells?: DataTableCustomCells<T>;
 		/** Client pagination orchestration; `unoptimized` matches current Convex list + `page` args. */
 		optimizationStrategy?: DataTableOptimizationStrategy;
+		/** Where the pagination controls sit relative to the table. */
+		controlsPlace?: 'top' | 'bottom';
+		/** Turn the leftmost checkbox column on; multi-select, persists across pages. */
+		selectable?: boolean;
+		/** Two-way bound set of selected row ids (`bind:selectedIds`). */
+		selectedIds?: string[];
+		/**
+		 * Bulk-delete handler invoked with the currently selected ids. When provided, the
+		 * selection toolbar renders a Delete button wired to a confirmation dialog.
+		 * Called after the user confirms; selection is cleared automatically on success.
+		 */
+		deleteFunction?: (ids: string[]) => Promise<void> | void;
 	} = $props();
 
 	/** Matches server `resolvePaginationOpts(undefined).numItems` — not sent on the wire. */
@@ -92,9 +114,99 @@
 	const tablePending = $derived(listPayload === undefined && listQuery.error === undefined);
 
 	const queryLoadingForPagination = $derived(listQuery.isLoading && listPayload === undefined);
+
+	/** O(1) membership checks for the per-row checkbox. */
+	const selectedSet = $derived(new Set(selectedIds));
+
+	/** Stable ids for the rows currently rendered; used for the "select-all-on-page" header checkbox. */
+	const currentPageIds = $derived(
+		rows.map((row, index) => getRowId?.(row) ?? defaultRowKey(row, index))
+	);
+
+	const selectedOnPageCount = $derived(
+		currentPageIds.reduce((n, id) => n + (selectedSet.has(id) ? 1 : 0), 0)
+	);
+
+	const headerSelectionState: DataTableSelectionHeaderState = $derived(
+		currentPageIds.length === 0 || selectedOnPageCount === 0
+			? 'none'
+			: selectedOnPageCount === currentPageIds.length
+				? 'all'
+				: 'some'
+	);
+
+	function toggleRow(id: string) {
+		if (selectedSet.has(id)) {
+			selectedIds = selectedIds.filter((x) => x !== id);
+		} else {
+			selectedIds = [...selectedIds, id];
+		}
+	}
+
+	function toggleAllOnPage() {
+		if (currentPageIds.length === 0) return;
+		
+		if (headerSelectionState === 'all') {
+			const pageIds = new Set(currentPageIds);
+			selectedIds = selectedIds.filter((id) => !pageIds.has(id));
+		} else {
+			const existing = new Set(selectedIds);
+			const next = selectedIds.slice();
+			for (const id of currentPageIds) {
+				if (!existing.has(id)) next.push(id);
+			}
+			selectedIds = next;
+		}
+	}
+
+	let isDeleting = $state(false);
+
+	/**
+	 * Closure handed to the status toolbar so it doesn't need to know about selection state.
+	 * Snapshots ids at click time (prevents losing targets if selection mutates mid-flight),
+	 * clears selection on success, and toggles the pending flag for the spinner/disabled UI.
+	 */
+	async function runDelete() {
+		if (!deleteFunction) return;
+
+		const ids = selectedIds.slice();
+
+		if (ids.length === 0) return;
+
+		isDeleting = true;
+
+		try {
+			await deleteFunction(ids);
+			selectedIds = [];
+		} finally {
+			isDeleting = false;
+		}
+	}
 </script>
 
 <div class="flex w-full flex-col gap-4">
+	{#if controlsPlace === 'top'}
+		<PaginatedData
+			bind:page
+			{totalPages}
+			isLoading={tablePending}
+			queryLoading={queryLoadingForPagination}
+			hasResult={listPayload !== undefined}
+		/>
+	{/if}
+
+	{#if selectable && selectedIds.length > 0}
+		<DataTableSelectedItemsStatus
+			count={selectedIds.length}
+			onClear={() => {
+				selectedIds = [];
+			}}
+			withActionButtons={deleteFunction !== undefined}
+			deleteFunction={deleteFunction ? runDelete : undefined}
+			{isDeleting}
+		/>
+	{/if}
+
 	<DataTableContent
 		class={className}
 		{caption}
@@ -103,13 +215,20 @@
 		{getRowId}
 		isLoading={tablePending}
 		customCells={customCells ?? {}}
+		{selectable}
+		{selectedSet}
+		{headerSelectionState}
+		onToggleRow={toggleRow}
+		onToggleAllOnPage={toggleAllOnPage}
 	/>
 
-	<PaginatedData
-		bind:page
-		{totalPages}
-		isLoading={tablePending}
-		queryLoading={queryLoadingForPagination}
-		hasResult={listPayload !== undefined}
-	/>
+	{#if controlsPlace === 'bottom'}
+		<PaginatedData
+			bind:page
+			{totalPages}
+			isLoading={tablePending}
+			queryLoading={queryLoadingForPagination}
+			hasResult={listPayload !== undefined}
+		/>
+	{/if}
 </div>

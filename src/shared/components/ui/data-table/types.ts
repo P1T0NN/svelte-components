@@ -68,3 +68,6 @@ export type DataTableCellSnippetProps<T> = {
 export type DataTableCustomCells<T> = Partial<
 	Record<string, Snippet<[DataTableCellSnippetProps<T>]>>
 >;
+
+/** Tri-state header checkbox based on how many rows on the current page are selected. */
+export type DataTableSelectionHeaderState = 'none' | 'some' | 'all';

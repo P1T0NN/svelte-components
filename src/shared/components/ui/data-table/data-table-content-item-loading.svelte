@@ -6,7 +6,7 @@
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
-	import { breakpointTableClass } from './data-table-helpers.js';
+	import { breakpointTableClass } from './dataTableUtils.js';
 
 	// TYPES
 	import type { DataTableSkeletonColumn } from './types.js';
@@ -16,11 +16,13 @@
 	let {
 		variant,
 		columns,
-		rowCount = 6
+		rowCount = 6,
+		selectable = false
 	}: {
 		variant: Variant;
 		columns: DataTableSkeletonColumn[];
 		rowCount?: number;
+		selectable?: boolean;
 	} = $props();
 
 	const count = $derived(Math.max(1, Math.min(rowCount, 20)));
@@ -30,6 +32,11 @@
 {#if variant === 'table'}
 	{#each rowIndices as r (r)}
 		<TableRow class="hover:bg-muted/30 border-b">
+			{#if selectable}
+				<TableCell class="w-10 px-4 py-3 align-middle">
+					<Skeleton class="h-4 w-4 rounded-[4px]" />
+				</TableCell>
+			{/if}
 			{#each columns as col (col.id)}
 				<TableCell
 					class={cn(
@@ -46,6 +53,11 @@
 {:else}
 	{#each rowIndices as r (r)}
 		<Card class="gap-0 px-4 py-4" role="listitem" aria-busy="true">
+			{#if selectable}
+				<div class="mb-3 flex items-center">
+					<Skeleton class="h-4 w-4 rounded-[4px]" />
+				</div>
+			{/if}
 			<dl class="flex flex-col gap-3">
 				{#each columns as col (col.id)}
 					<div

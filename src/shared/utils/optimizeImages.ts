@@ -9,12 +9,19 @@ import imageCompression from 'browser-image-compression';
 // TYPES
 import type { Options as ImageCompressionOptions } from 'browser-image-compression';
 
-/** Defaults aligned with product image uploads (max ~1 MB, long edge 1920, WebP). */
+/**
+ * Defaults aligned with product image uploads (max ~1 MB, long edge 1920, WebP).
+ *
+ * `useWebWorker: false` is deliberate: when enabled, `browser-image-compression` spawns a
+ * Blob-URL worker that `importScripts`-loads its own compiled bundle from `cdn.jsdelivr.net`,
+ * which every reasonable CSP blocks. With the worker off, compression happens on the main
+ * thread — a few hundred ms per image — no CDN, no CSP exception required.
+ */
 export const DEFAULT_IMAGE_COMPRESSION_OPTIONS: ImageCompressionOptions = {
 	maxSizeMB: 1,
 	maxWidthOrHeight: 1920,
 	fileType: 'image/webp',
-	useWebWorker: true
+	useWebWorker: false
 };
 
 export type OptimizeImagesOptions = ImageCompressionOptions;

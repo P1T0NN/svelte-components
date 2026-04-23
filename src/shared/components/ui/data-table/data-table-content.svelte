@@ -1,4 +1,7 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
+	// LIBRARIES
+	import { m } from '@/shared/lib/paraglide/messages';
+
 	// COMPONENTS
 	import DataTableEmpty from './data-table-empty.svelte';
 	import DataTableContentItem from './data-table-content-item.svelte';
@@ -13,6 +16,7 @@
 		TableRow
 	} from '@/shared/components/ui/table/index.js';
 	import { Card } from '@/shared/components/ui/card/index.js';
+	import { Checkbox } from '@/shared/components/ui/checkbox/index.js';
 
 	// UTILS
 	import { cn, type WithElementRef } from '@/shared/utils/utils.js';
@@ -20,11 +24,29 @@
 		breakpointTableClass,
 		defaultRowKey,
 		showColumnInMobileCard
-	} from './data-table-helpers.js';
+	} from './dataTableUtils.js';
 
 	// TYPES
 	import type { HTMLAttributes } from 'svelte/elements';
-	import type { ColumnDef as ColumnDefT, DataTableCustomCells } from './types.js';
+	import type {
+		ColumnDef as ColumnDefT,
+		DataTableCustomCells,
+		DataTableSelectionHeaderState
+	} from './types.js';
+
+	type Props = WithElementRef<HTMLAttributes<HTMLDivElement>> & {
+		data: T[];
+		columns: ColumnDefT<T>[];
+		caption?: string;
+		getRowId?: (row: T) => string;
+		isLoading?: boolean;
+		customCells?: DataTableCustomCells<T>;
+		selectable?: boolean;
+		selectedSet?: Set<string>;
+		headerSelectionState?: DataTableSelectionHeaderState;
+		onToggleRow?: (id: string) => void;
+		onToggleAllOnPage?: () => void;
+	};
 
 	let {
 		data,
@@ -34,15 +56,13 @@
 		isLoading = false,
 		customCells,
 		class: className,
+		selectable = false,
+		selectedSet,
+		headerSelectionState = 'none',
+		onToggleRow,
+		onToggleAllOnPage,
 		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-		data: T[];
-		columns: ColumnDefT<T>[];
-		caption?: string;
-		getRowId?: (row: T) => string;
-		isLoading?: boolean;
-		customCells?: DataTableCustomCells<T>;
-	} = $props();
+	}: Props = $props();
 
 	const mobileColumns = $derived(columns.filter(showColumnInMobileCard));
 
@@ -63,7 +83,7 @@
 			class="hidden gap-0 py-0 md:flex md:flex-col"
 			role="region"
 			aria-busy={isLoading}
-			aria-label={caption ?? 'Data table'}
+			aria-label={caption ?? m['DataTable.ariaDataTable']()}
 		>
 			<Table class="min-w-lg">
 				{#if caption}
@@ -75,6 +95,20 @@
 				{/if}
 				<TableHeader>
 					<TableRow class="hover:bg-muted/40 border-b bg-muted/40">
+						{#if selectable}
+							<TableHead
+								scope="col"
+								class="text-muted-foreground h-auto w-10 px-4 py-3 text-left"
+							>
+								<Checkbox
+									checked={headerSelectionState === 'all'}
+									indeterminate={headerSelectionState === 'some'}
+									disabled={isLoading || data.length === 0}
+									onCheckedChange={() => onToggleAllOnPage?.()}
+									aria-label={m['DataTable.selectAllRowsOnThisPage']()}
+								/>
+							</TableHead>
+						{/if}
 						{#each columns as col (col.id)}
 							<TableHead
 								scope="col"
@@ -92,10 +126,18 @@
 
 				<TableBody>
 					{#if isLoading}
-						<DataTableContentItemLoading variant="table" {columns} />
+						<DataTableContentItemLoading variant="table" {columns} {selectable} />
 					{:else}
 						{#each data as row, rowIndex (rowKey(row, rowIndex))}
-							<DataTableContentItem {row} {columns} {customCells} />
+							{@const id = rowKey(row, rowIndex)}
+							<DataTableContentItem
+								{row}
+								{columns}
+								{customCells}
+								{selectable}
+								isSelected={selectedSet?.has(id) ?? false}
+								onToggle={() => onToggleRow?.(id)}
+							/>
 						{/each}
 					{/if}
 				</TableBody>
@@ -103,12 +145,33 @@
 		</Card>
 
 		<!-- Mobile: stacked row cards -->
-		<div class="flex flex-col gap-3 md:hidden" role="list" aria-label={caption ?? 'Data rows'}>
+		<div class="flex flex-col gap-3 md:hidden" role="list" aria-label={caption ?? m['DataTable.ariaDataRows']()}>
+			{#if selectable && !isLoading && data.length > 0}
+				<div class="flex items-center gap-2 px-1 py-1">
+					<Checkbox
+						checked={headerSelectionState === 'all'}
+						indeterminate={headerSelectionState === 'some'}
+						onCheckedChange={() => onToggleAllOnPage?.()}
+						aria-label={m['DataTable.selectAllRowsOnThisPage']()}
+					/>
+					<span class="text-muted-foreground text-xs font-medium">
+						{m['DataTable.selectAllOnPage']()}
+					</span>
+				</div>
+			{/if}
 			{#if isLoading}
-				<DataTableContentItemLoading variant="mobile" columns={mobileColumns} />
+				<DataTableContentItemLoading variant="mobile" columns={mobileColumns} {selectable} />
 			{:else}
 				{#each data as row, rowIndex (rowKey(row, rowIndex))}
-					<DataTableContentItemMobile row={row} columns={mobileColumns} {customCells} />
+					{@const id = rowKey(row, rowIndex)}
+					<DataTableContentItemMobile
+						{row}
+						columns={mobileColumns}
+						{customCells}
+						{selectable}
+						isSelected={selectedSet?.has(id) ?? false}
+						onToggle={() => onToggleRow?.(id)}
+					/>
 				{/each}
 			{/if}
 		</div>

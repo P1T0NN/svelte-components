@@ -1,4 +1,7 @@
 <script lang="ts">
+	// LIBRARIES
+	import { m } from '@/shared/lib/paraglide/messages';
+
 	// COMPONENTS
 	import { Card } from '@/shared/components/ui/card/index.js';
 
@@ -20,8 +23,8 @@
 
 	let {
 		class: className,
-		title = 'No results',
-		description = 'Nothing to show yet. Try adjusting filters or add new data.',
+		title = m['DataTable.emptyTitle'](),
+		description = m['DataTable.emptyDescription'](),
 		children
 	}: Props = $props();
 </script>

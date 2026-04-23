@@ -1,4 +1,32 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "example_message": "Guten Tag {username}"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"example_message": "Guten Tag {username}",
+	"DataTable": {
+		"itemsSelected": "{count} ausgewählt",
+		"clearSelection": "Zurücksetzen",
+		"selectAllOnPage": "Alle auf dieser Seite wählen",
+		"selectAllRowsOnThisPage": "Alle Zeilen auf dieser Seite wählen",
+		"selectRow": "Zeile auswählen",
+		"deselectRow": "Auswahl aufheben",
+		"ariaDataTable": "Datentabelle",
+		"ariaDataRows": "Datenzeilen",
+		"emptyTitle": "Keine Ergebnisse",
+		"emptyDescription": "Noch nichts anzuzeigen. Filter anpassen oder neue Daten hinzufügen.",
+		"delete": "Löschen"
+	},
+
+	"GenericMessages": {
+		"TOO_MANY_REQUESTS": "Zu viele Anfragen. Bitte später erneut versuchen.",
+		"NO_ITEMS_PROVIDED": "Keine Elemente angegeben.",
+		"NO_MATCHING_ITEMS": "Keine passenden Elemente gefunden.",
+		"DATA_TABLE_DELETED_ALL": "{count} Element(e) gelöscht.",
+		"DATA_TABLE_DELETED_WITH_MISSING": "{count} Element(e) gelöscht; {missing} waren bereits entfernt.",
+		"STORAGE_DELETE_FAILED": "Datei konnte nicht aus dem Speicher gelöscht werden. Nichts wurde entfernt.",
+		"BATCH_TOO_LARGE": "Zu viele Einträge in einer Anfrage (max. {limit}).",
+		"FORBIDDEN": "Diese Aktion ist nicht erlaubt.",
+		"NOT_AUTHENTICATED": "Bitte melde dich an, um fortzufahren.",
+		"ADMIN_ACCESS_REQUIRED": "Für diese Aktion sind Administratorrechte erforderlich.",
+		"STORAGE_URL_UNAVAILABLE": "Datei-URL konnte nicht aufgelöst werden.",
+		"UPLOAD_SAVE_FAILED": "Die hochgeladene Datei konnte nicht gespeichert werden. Bitte erneut versuchen."
+	}
 }

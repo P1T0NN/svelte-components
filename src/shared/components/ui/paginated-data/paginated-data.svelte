@@ -3,7 +3,6 @@
 	import { m } from '@/shared/lib/paraglide/messages';
 
 	// COMPONENTS
-	import { PaginationContent, PaginationItem } from '@/shared/components/ui/pagination/index.js';
 	import { buttonVariants } from '@/shared/components/ui/button/index.js';
 	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
@@ -43,50 +42,39 @@
 <nav
 	aria-label="pagination"
 	data-slot="paginated-data"
-	class={cn(
-		'cn-pagination mx-auto flex w-full justify-end sm:justify-center',
-		className
-	)}
+	class={cn('flex w-full items-center justify-between gap-2', className)}
 >
-	<PaginationContent class="flex-wrap">
-		<PaginationItem>
-			<button
-				type="button"
-				aria-label="Go to previous page"
-				class={cn(buttonVariants({ variant: 'ghost' }), 'pl-1.5!')}
-				disabled={page <= 1 || isLoading}
-				onclick={() => {
-					page = Math.max(1, page - 1);
-				}}
-			>
-				<ChevronLeftIcon class="size-4" />
-				<span>Previous</span>
-			</button>
-		</PaginationItem>
+	<span class="text-muted-foreground text-sm tabular-nums">
+		{#if isLoading}
+			<span class="inline-block min-w-[8ch]" aria-busy="true">…</span>
+		{:else}
+			{m['PaginatedData.paginationText']({ page, totalPages })}
+		{/if}
+	</span>
 
-		<PaginationItem>
-			<span class="text-muted-foreground px-2 text-sm tabular-nums">
-				{#if isLoading}
-					<span class="inline-block min-w-[8ch]" aria-busy="true">…</span>
-				{:else}
-					{m['PaginatedData.paginationText']({ page, totalPages })}
-				{/if}
-			</span>
-		</PaginationItem>
+	<div class="flex items-center gap-1.5">
+		<button
+			type="button"
+			aria-label="Go to previous page"
+			class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'rounded-full')}
+			disabled={page <= 1 || isLoading}
+			onclick={() => {
+				page = Math.max(1, page - 1);
+			}}
+		>
+			<ChevronLeftIcon class="size-4" />
+		</button>
 
-		<PaginationItem>
-			<button
-				type="button"
-				aria-label="Go to next page"
-				class={cn(buttonVariants({ variant: 'ghost' }), 'pr-1.5!')}
-				disabled={!canGoNext || isLoading}
-				onclick={() => {
-					page = Math.min(totalPages, page + 1);
-				}}
-			>
-				<span>Next</span>
-				<ChevronRightIcon class="size-4" />
-			</button>
-		</PaginationItem>
-	</PaginationContent>
+		<button
+			type="button"
+			aria-label="Go to next page"
+			class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'rounded-full')}
+			disabled={!canGoNext || isLoading}
+			onclick={() => {
+				page = Math.min(totalPages, page + 1);
+			}}
+		>
+			<ChevronRightIcon class="size-4" />
+		</button>
+	</div>
 </nav>

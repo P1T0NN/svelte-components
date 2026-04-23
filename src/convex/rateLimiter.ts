@@ -19,11 +19,14 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
 	// General queries (per user) - higher limit since queries are read-only
 	query: { kind: 'token bucket', rate: 60, period: MINUTE, capacity: 10 },
 	// General actions (per user) - lower limit since actions can be expensive
-	action: { kind: 'token bucket', rate: 20, period: MINUTE, capacity: 3 }
+	action: { kind: 'token bucket', rate: 20, period: MINUTE, capacity: 3 },
+	// Destructive ops (delete mutations). Intentionally tight — batch deletes consume
+	// `count` tokens, so a 50-row delete costs 50 of these.
+	delete: { kind: 'token bucket', rate: 60, period: MINUTE, capacity: 20 }
 });
 
 // Type for rate limit names
-type RateLimitName = 'mutation' | 'query' | 'action';
+export type RateLimitName = 'mutation' | 'query' | 'action' | 'delete';
 
 /**
  * Simple rate limit check - throws error if limit exceeded
@@ -42,10 +45,16 @@ export async function rateLimit(
 	// @eslint-disable-next-line @typescript-eslint/no-explicit-any
 	ctx: RunMutationCtx,
 	name: RateLimitName,
-	key?: string
+	key?: string,
+	/**
+	 * Tokens to consume. Default 1. Use for weighted endpoints like bulk delete, where one
+	 * request does N units of work and should pay N tokens.
+	 */
+	count?: number
 ) {
 	const result = await rateLimiter.limit(ctx, name, {
 		key,
+		count,
 		throws: true
 	});
 	return result;

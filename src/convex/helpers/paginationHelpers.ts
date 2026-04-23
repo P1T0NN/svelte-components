@@ -2,7 +2,7 @@
 import { paginationOptsValidator, type PaginationOptions } from 'convex/server';
 import { v } from 'convex/values';
 
-export const DEFAULT_PAGE_SIZE = 1;
+export const DEFAULT_PAGE_SIZE = 2;
 
 export const defaultPaginationOpts: PaginationOptions = {
 	numItems: DEFAULT_PAGE_SIZE,

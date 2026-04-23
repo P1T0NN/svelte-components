@@ -11,13 +11,20 @@
 import type * as auditLog from "../auditLog.js";
 import type * as auth from "../auth.js";
 import type * as features from "../features.js";
+import type * as helpers_createDeleteMutation from "../helpers/createDeleteMutation.js";
+import type * as helpers_getRateLimitedUser from "../helpers/getRateLimitedUser.js";
+import type * as helpers_getRateLimitedUserId from "../helpers/getRateLimitedUserId.js";
 import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js";
+import type * as helpers_requireAdmin from "../helpers/requireAdmin.js";
+import type * as helpers_resolveUploadAuth from "../helpers/resolveUploadAuth.js";
 import type * as http from "../http.js";
 import type * as rateLimiter from "../rateLimiter.js";
 import type * as storage_storageMutations from "../storage/storageMutations.js";
 import type * as tables_uploadedFiles_uploadedFilesAggregate from "../tables/uploadedFiles/uploadedFilesAggregate.js";
+import type * as tables_uploadedFiles_uploadedFilesMutations from "../tables/uploadedFiles/uploadedFilesMutations.js";
 import type * as tables_uploadedFiles_uploadedFilesQueries from "../tables/uploadedFiles/uploadedFilesQueries.js";
 import type * as tables_users_usersQueries from "../tables/users/usersQueries.js";
+import type * as types_convexTypes from "../types/convexTypes.js";
 
 import type {
   ApiFromModules,
@@ -29,13 +36,20 @@ declare const fullApi: ApiFromModules<{
   auditLog: typeof auditLog;
   auth: typeof auth;
   features: typeof features;
+  "helpers/createDeleteMutation": typeof helpers_createDeleteMutation;
+  "helpers/getRateLimitedUser": typeof helpers_getRateLimitedUser;
+  "helpers/getRateLimitedUserId": typeof helpers_getRateLimitedUserId;
   "helpers/paginationHelpers": typeof helpers_paginationHelpers;
+  "helpers/requireAdmin": typeof helpers_requireAdmin;
+  "helpers/resolveUploadAuth": typeof helpers_resolveUploadAuth;
   http: typeof http;
   rateLimiter: typeof rateLimiter;
   "storage/storageMutations": typeof storage_storageMutations;
   "tables/uploadedFiles/uploadedFilesAggregate": typeof tables_uploadedFiles_uploadedFilesAggregate;
+  "tables/uploadedFiles/uploadedFilesMutations": typeof tables_uploadedFiles_uploadedFilesMutations;
   "tables/uploadedFiles/uploadedFilesQueries": typeof tables_uploadedFiles_uploadedFilesQueries;
   "tables/users/usersQueries": typeof tables_users_usersQueries;
+  "types/convexTypes": typeof types_convexTypes;
 }>;
 
 /**
