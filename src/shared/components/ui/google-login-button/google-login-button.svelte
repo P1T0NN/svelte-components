@@ -1,10 +1,12 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { cn } from '@/shared/utils/utils.js';
 	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
-	let { class: className = '' } = $props();
+	// COMPONENTS
+	import { Button } from '@/shared/components/ui/button/index.js';
+
+	let { class: className = '' }: { class?: string } = $props();
 
 	const { signIn } = useAuth();
 	let disabled = $state(false);
@@ -23,144 +25,18 @@
 	}
 </script>
 
-<button
-	class={cn('gsi-material-button', className)}
+<Button
 	type="button"
-	disabled={disabled}
+	variant="outline"
+	class={className}
+	{disabled}
 	onclick={handleGoogleLogin}
 >
-	<div class="gsi-material-button-state"></div>
-	<div class="gsi-material-button-content-wrapper">
-		<div class="gsi-material-button-icon">
-			<svg
-				version="1.1"
-				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 48 48"
-				xmlns:xlink="http://www.w3.org/1999/xlink"
-				style="display: block;"
-			>
-				<path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-				<path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-				<path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-				<path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-				<path fill="none" d="M0 0h48v48H0z"></path>
-			</svg>
-		</div>
-		<span class="gsi-material-button-contents">{m['LoginPage.continueWithGoogle']()}</span>
-		<span style="display: none;">{m['LoginPage.continueWithGoogle']()}</span>
-	</div>
-</button>
-
-<style>
-	.gsi-material-button {
-		-moz-user-select: none;
-		-webkit-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-		-webkit-appearance: none;
-		appearance: none;
-		background-color: #131314;
-		background-image: none;
-		border: 1px solid #747775;
-		-webkit-border-radius: 20px;
-		border-radius: 20px;
-		-webkit-box-sizing: border-box;
-		box-sizing: border-box;
-		color: #e3e3e3;
-		cursor: pointer;
-		font-family: 'Roboto', arial, sans-serif;
-		font-size: 14px;
-		height: 40px;
-		letter-spacing: 0.25px;
-		outline: none;
-		overflow: hidden;
-		padding: 0 12px;
-		position: relative;
-		text-align: center;
-		-webkit-transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
-		transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
-		vertical-align: middle;
-		white-space: nowrap;
-		width: auto;
-		max-width: 400px;
-		min-width: min-content;
-		border-color: #8e918f;
-	}
-
-	.gsi-material-button .gsi-material-button-icon {
-		height: 20px;
-		margin-right: 10px;
-		min-width: 20px;
-		width: 20px;
-	}
-
-	.gsi-material-button .gsi-material-button-content-wrapper {
-		-webkit-align-items: center;
-		align-items: center;
-		display: flex;
-		-webkit-flex-direction: row;
-		flex-direction: row;
-		-webkit-flex-wrap: nowrap;
-		flex-wrap: nowrap;
-		height: 100%;
-		justify-content: space-between;
-		position: relative;
-		width: 100%;
-	}
-
-	.gsi-material-button .gsi-material-button-contents {
-		-webkit-flex-grow: 1;
-		flex-grow: 1;
-		font-family: 'Roboto', arial, sans-serif;
-		font-weight: 500;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		vertical-align: top;
-	}
-
-	.gsi-material-button .gsi-material-button-state {
-		-webkit-transition: opacity 0.218s;
-		transition: opacity 0.218s;
-		bottom: 0;
-		left: 0;
-		opacity: 0;
-		position: absolute;
-		right: 0;
-		top: 0;
-	}
-
-	.gsi-material-button:disabled {
-		cursor: default;
-		background-color: #13131461;
-		border-color: #8e918f1f;
-	}
-
-	.gsi-material-button:disabled .gsi-material-button-state {
-		background-color: #e3e3e31f;
-	}
-
-	.gsi-material-button:disabled .gsi-material-button-contents {
-		opacity: 38%;
-	}
-
-	.gsi-material-button:disabled .gsi-material-button-icon {
-		opacity: 38%;
-	}
-
-	.gsi-material-button:not(:disabled):active .gsi-material-button-state,
-	.gsi-material-button:not(:disabled):focus .gsi-material-button-state {
-		background-color: white;
-		opacity: 12%;
-	}
-
-	.gsi-material-button:not(:disabled):hover {
-		-webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-		box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-	}
-
-	.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
-		background-color: white;
-		opacity: 8%;
-	}
-</style>
-
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+		<path
+			d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+			fill="currentColor"
+		/>
+	</svg>
+	{m['LoginPage.continueWithGoogle']()}
+</Button>

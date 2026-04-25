@@ -10,13 +10,94 @@
 	},
 
 	"LoginPage": {
-		"welcomeBack": "Welcome back",
-		"signInToYourAccountToContinue": "Sign in to your account to continue",
-		"continueWithGoogle": "Continue with Google",
-		"byContinuingYouAgreeToOur": "By continuing, you agree to our",
-		"termsOfService": "Terms of Service",
-		"privacyPolicy": "Privacy Policy",
-		"and": "and"
+		"continueWithGoogle": "Continue with Google"
+	},
+
+	"LoginForm": {
+		"LoginFormNoImage": {
+			"title": "Login",
+			"description": "Enter your email below to login to your account",
+			"email": "Email",
+			"password": "Password",
+			"forgotPassword": "Forgot your password?",
+			"submit": "Login",
+			"dontHaveAccount": "Don't have an account?",
+			"signUp": "Sign up",
+			"signInFailed": "Sign in failed. Please check your credentials and try again.",
+			"signedInToast": "Signed in successfully."
+		},
+		"LoginFormWithImage": {
+			"title": "Login to your account",
+			"description": "Enter your email below to login to your account",
+			"email": "Email",
+			"password": "Password",
+			"forgotPassword": "Forgot your password?",
+			"submit": "Login",
+			"orContinueWith": "Or continue with",
+			"dontHaveAccount": "Don't have an account?",
+			"signUp": "Sign up",
+			"signInFailed": "Sign in failed. Please check your credentials and try again.",
+			"signedInToast": "Signed in successfully."
+		}
+	},
+
+	"EmailVerificationForm": {
+		"title": "Check your email",
+		"description": "We sent a verification code to {email}. Enter it below to continue.",
+		"code": "Code",
+		"continue": "Continue",
+		"cancel": "Cancel",
+		"verificationFailed": "Invalid or expired code. Please try again."
+	},
+
+	"PasswordResetForm": {
+		"titleRequest": "Reset your password",
+		"descriptionRequest": "Enter the email for your account. We will send you a one-time code you can use to choose a new password.",
+		"titleVerify": "Choose a new password",
+		"descriptionVerify": "We sent a code to {email}. Enter it below along with your new password.",
+		"email": "Email",
+		"sendCode": "Send code",
+		"code": "Code",
+		"newPassword": "New password",
+		"continue": "Continue",
+		"cancel": "Cancel",
+		"passwordResetToast": "Password reset successfully."
+	},
+
+	"SignUpForm": {
+		"SignUpFormNoImage": {
+			"title": "Create an account",
+			"description": "Enter your information below to create your account",
+			"fullName": "Full Name",
+			"email": "Email",
+			"emailHelp": "We'll use this to contact you. We will not share your email with anyone else.",
+			"password": "Password",
+			"passwordHelp": "Must be at least 8 characters long.",
+			"confirmPassword": "Confirm Password",
+			"confirmPasswordHelp": "Please confirm your password.",
+			"submit": "Create Account",
+			"alreadyHaveAccount": "Already have an account?",
+			"signIn": "Sign in",
+			"signUpFailed": "Sign up failed. Please review the form and try again, or this account has already been created.",
+			"accountCreatedToast": "Account created successfully."
+		},
+		"SignUpFormWithImage": {
+			"title": "Create your account",
+			"description": "Fill in the form below to create your account",
+			"fullName": "Full Name",
+			"email": "Email",
+			"emailHelp": "We'll use this to contact you. We will not share your email with anyone else.",
+			"password": "Password",
+			"passwordHelp": "Must be at least 8 characters long.",
+			"confirmPassword": "Confirm Password",
+			"confirmPasswordHelp": "Please confirm your password.",
+			"submit": "Create Account",
+			"orContinueWith": "Or continue with",
+			"alreadyHaveAccount": "Already have an account?",
+			"signIn": "Sign in",
+			"signUpFailed": "Sign up failed. Please review the form and try again, or this account has already been created.",
+			"accountCreatedToast": "Account created successfully."
+		}
 	},
 
 	"DatePicker": {
@@ -86,6 +167,40 @@
         "cancel": "Cancel",
         "proceed": "Proceed"
     },
+
+	"ValidationMessages": {
+		"LoginForm": {
+			"emailRequired": "Enter your email.",
+			"invalidEmail": "Invalid email.",
+			"passwordRequired": "Enter your password.",
+			"passwordMinLength": "At least 8 characters."
+		},
+		"PasswordResetRequestForm": {
+			"emailRequired": "Enter your email.",
+			"invalidEmail": "Invalid email."
+		},
+		"PasswordResetVerifyForm": {
+			"codeRequired": "Enter the code.",
+			"codeFormat": "Use the 8-digit code from your email.",
+			"newPasswordRequired": "Enter a new password.",
+			"newPasswordMinLength": "At least 8 characters.",
+			"invalidEmail": "Invalid email."
+		},
+		"SignUpForm": {
+			"nameRequired": "Enter your full name.",
+			"emailRequired": "Enter your email.",
+			"invalidEmail": "Invalid email.",
+			"passwordRequired": "Enter your password.",
+			"passwordMinLength": "At least 8 characters.",
+			"confirmPasswordRequired": "Confirm your password.",
+			"passwordsMustMatch": "Passwords must match."
+		},
+		"EmailVerificationForm": {
+			"codeRequired": "Enter the code.",
+			"codeFormat": "Use the 8-digit code from your email.",
+			"invalidEmail": "Invalid email."
+		}
+	},
 
 	"GenericMessages": {
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",

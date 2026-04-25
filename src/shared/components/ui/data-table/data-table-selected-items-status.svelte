@@ -3,14 +3,15 @@
 	import { m } from '@/shared/lib/paraglide/messages';
 
 	// COMPONENTS
+	import ActionButton from '@/shared/components/ui/action-button/action-button.svelte';
 	import { Button } from '@/shared/components/ui/button/index.js';
-	import DataTableDeleteButton from './data-table-delete-button.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
 
 	// LUCIDE ICONS
 	import CheckIcon from '@lucide/svelte/icons/check';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 
 	type Props = {
 		count: number;
@@ -59,7 +60,13 @@
 
 	<div class="flex shrink-0 items-center gap-2">
 		{#if canRenderDelete && deleteFunction}
-			<DataTableDeleteButton {count} {deleteFunction} isPending={isDeleting} />
+			<ActionButton function={deleteFunction} variant="destructive" isPending={isDeleting}>
+				<Trash2Icon />
+				<span>{m['DataTable.delete']()}</span>
+				{#if count > 0}
+					<span class="tabular-nums opacity-80">({count})</span>
+				{/if}
+			</ActionButton>
 		{/if}
 		<Button
 			type="button"

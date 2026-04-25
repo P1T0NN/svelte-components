@@ -6,7 +6,7 @@ export const COMPANY_DATA = {
 
 export const PROTECTED_PAGE_ENDPOINTS = {
     HOME: "/home",
-}
+} as const;
 
 export const UNPROTECTED_PAGE_ENDPOINTS = {
     ROOT: "/",
@@ -17,6 +17,8 @@ export const UNPROTECTED_PAGE_ENDPOINTS = {
     UPLOAD_FILE: "/file-upload",
     TABLE: "/table",
     UPLOADED_FILES: "/uploaded-files/:id",
+    SIGNUP: "/signup",
+    FORGOT_PASSWORD: "/forgot-password"
 } as const;
 
 /**

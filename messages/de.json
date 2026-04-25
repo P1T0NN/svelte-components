@@ -1,6 +1,15 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"example_message": "Guten Tag {username}",
+	"PasswordResetForm": {
+		"email": "E-Mail",
+		"sendCode": "Code senden",
+		"code": "Code",
+		"newPassword": "Neues Passwort",
+		"continue": "Weiter",
+		"cancel": "Abbrechen"
+	},
+
 	"DataTable": {
 		"itemsSelected": "{count} ausgewählt",
 		"clearSelection": "Zurücksetzen",
