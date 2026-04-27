@@ -1,16 +1,9 @@
 <script lang="ts">
-	// SVELTEKIT IMPORTS
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
-	import { safeParse } from 'valibot';
-	import { toast } from 'svelte-sonner';
 
 	// CONFIG
-	import { PROTECTED_PAGE_ENDPOINTS, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
@@ -25,19 +18,16 @@
 	} from '@/shared/components/ui/field/index.js';
 	import GoogleLoginButton from '@/shared/components/ui/google-login-button/google-login-button.svelte';
 	import { Input } from '@/shared/components/ui/input/index.js';
+	import PasswordInput from '@/shared/components/ui/password-input/password-input.svelte';
 	import Link from '../link/link.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
-	import { signUpFormSchema } from './sign-up-form-schema.js';
-	import { valibotFieldErrors, type FieldErrors } from '@/shared/utils/valibotFieldErrors.js';
 
 	// TYPES
-	import type {
-		SignUpFormStep,
-		SignUpFormWithImageProps,
-		SignUpField
-	} from './signUpFormTypes.js';
+	import type { SignUpFormWithImageProps } from './signUpFormTypes.js';
+
+	import { createSignUpForm } from './sign-up-form-model.svelte.js';
 
 	let {
 		ref = $bindable(null),
@@ -46,81 +36,18 @@
 	}: SignUpFormWithImageProps = $props();
 
 	const id = $props.id();
-	const { signIn } = useAuth();
 
-	let step = $state<SignUpFormStep>('signUp');
-	let busy = $state(false);
-	let errorMessage = $state<string | null>(null);
-	let fieldErrors = $state<FieldErrors<SignUpField>>({});
-
-	async function onSignUpSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		if (busy) return;
-
-		const form = event.currentTarget as HTMLFormElement;
-		const formData = new FormData(form);
-
-		const p = safeParse(signUpFormSchema, {
-			name: String(formData.get('name') ?? ''),
-			email: String(formData.get('email') ?? ''),
-			password: String(formData.get('password') ?? ''),
-			confirmPassword: String(formData.get('confirmPassword') ?? ''),
-			flow: String(formData.get('flow') ?? '')
-		});
-
-		if (!p.success) {
-			fieldErrors = valibotFieldErrors<SignUpField>(p.issues);
-			errorMessage = null;
-			return;
-		}
-
-		if (p.output.password !== p.output.confirmPassword) {
-			fieldErrors = { confirmPassword: m['ValidationMessages.SignUpForm.passwordsMustMatch']() };
-			errorMessage = null;
-			return;
-		}
-
-		// Convex Auth's Password provider only reads `name`, `email`, `password`, `flow`.
-		formData.delete('confirmPassword');
-
-		fieldErrors = {};
-		busy = true;
-		errorMessage = null;
-
-		try {
-			const result = await signIn('password', formData);
-			// If the lib signed the user in directly (no OTP step required), skip the
-			// verification screen and go straight to success.
-			if (result.signingIn) {
-				await onVerifySuccess();
-				return;
-			}
-			step = { email: p.output.email };
-		} catch (error) {
-			console.error('Sign up failed:', error);
-			errorMessage = m['SignUpForm.SignUpFormWithImage.signUpFailed']();
-		} finally {
-			busy = false;
-		}
-	}
-
-	function onCancel() {
-		step = 'signUp';
-		errorMessage = null;
-		fieldErrors = {};
-	}
-
-	async function onVerifySuccess() {
-		toast.success(m['SignUpForm.SignUpFormWithImage.accountCreatedToast']());
-		await goto(resolve(PROTECTED_PAGE_ENDPOINTS.HOME));
-	}
+	const form = createSignUpForm({
+		signUpFailed: () => m['SignUpForm.SignUpFormWithImage.signUpFailed'](),
+		accountCreatedToast: () => m['SignUpForm.SignUpFormWithImage.accountCreatedToast']()
+	});
 </script>
 
-{#if step === 'signUp'}
+{#if form.step === 'signUp'}
 	<form
 		class={cn('flex flex-col gap-6', className)}
 		bind:this={ref}
-		onsubmit={onSignUpSubmit}
+		onsubmit={form.onSignUpSubmit}
 		{...restProps}
 	>
 		<FieldGroup>
@@ -141,10 +68,12 @@
 					type="text"
 					autocomplete="name"
 					placeholder="John Doe"
-					aria-invalid={fieldErrors.name ? 'true' : undefined}
+					autofocus
+					bind:value={form.nameDraft}
+					aria-invalid={form.fieldErrors.name ? 'true' : undefined}
 				/>
-				{#if fieldErrors.name}
-					<FieldError>{fieldErrors.name}</FieldError>
+				{#if form.fieldErrors.name}
+					<FieldError>{form.fieldErrors.name}</FieldError>
 				{/if}
 			</Field>
 
@@ -158,10 +87,11 @@
 					type="email"
 					autocomplete="email"
 					placeholder="m@example.com"
-					aria-invalid={fieldErrors.email ? 'true' : undefined}
+					bind:value={form.emailDraft}
+					aria-invalid={form.fieldErrors.email ? 'true' : undefined}
 				/>
-				{#if fieldErrors.email}
-					<FieldError>{fieldErrors.email}</FieldError>
+				{#if form.fieldErrors.email}
+					<FieldError>{form.fieldErrors.email}</FieldError>
 				{:else}
 					<FieldDescription>
 						{m['SignUpForm.SignUpFormWithImage.emailHelp']()}
@@ -173,15 +103,14 @@
 				<FieldLabel for="password-{id}">
 					{m['SignUpForm.SignUpFormWithImage.password']()}
 				</FieldLabel>
-				<Input
+				<PasswordInput
 					id="password-{id}"
 					name="password"
-					type="password"
 					autocomplete="new-password"
-					aria-invalid={fieldErrors.password ? 'true' : undefined}
+					aria-invalid={form.fieldErrors.password ? 'true' : undefined}
 				/>
-				{#if fieldErrors.password}
-					<FieldError>{fieldErrors.password}</FieldError>
+				{#if form.fieldErrors.password}
+					<FieldError>{form.fieldErrors.password}</FieldError>
 				{:else}
 					<FieldDescription>
 						{m['SignUpForm.SignUpFormWithImage.passwordHelp']()}
@@ -193,15 +122,14 @@
 				<FieldLabel for="confirm-password-{id}">
 					{m['SignUpForm.SignUpFormWithImage.confirmPassword']()}
 				</FieldLabel>
-				<Input
+				<PasswordInput
 					id="confirm-password-{id}"
 					name="confirmPassword"
-					type="password"
 					autocomplete="new-password"
-					aria-invalid={fieldErrors.confirmPassword ? 'true' : undefined}
+					aria-invalid={form.fieldErrors.confirmPassword ? 'true' : undefined}
 				/>
-				{#if fieldErrors.confirmPassword}
-					<FieldError>{fieldErrors.confirmPassword}</FieldError>
+				{#if form.fieldErrors.confirmPassword}
+					<FieldError>{form.fieldErrors.confirmPassword}</FieldError>
 				{:else}
 					<FieldDescription>
 						{m['SignUpForm.SignUpFormWithImage.confirmPasswordHelp']()}
@@ -211,12 +139,12 @@
 
 			<input type="hidden" name="flow" value="signUp" />
 
-			{#if errorMessage}
-				<FieldError>{errorMessage}</FieldError>
+			{#if form.errorMessage}
+				<FieldError>{form.errorMessage}</FieldError>
 			{/if}
 
 			<Field>
-				<Button type="submit" disabled={busy}>
+				<Button type="submit" disabled={form.busy}>
 					{m['SignUpForm.SignUpFormWithImage.submit']()}
 				</Button>
 			</Field>
@@ -239,9 +167,18 @@
 	</form>
 {:else}
 	<EmailVerificationForm
-		email={step.email}
-		onCancel={onCancel}
-		onSuccess={onVerifySuccess}
+		email={form.step.email}
+		onCancel={form.onCancel}
+		onSuccess={form.onVerifySuccess}
+		resend={form.verifyContext
+			? {
+					flow: 'signUp',
+					name: form.verifyContext.name,
+					email: form.verifyContext.email,
+					password: form.verifyContext.password,
+					onSignedIn: form.onVerifySuccess
+				}
+			: undefined}
 		class={cn('flex flex-col gap-6', className)}
 		bind:ref
 		{...restProps}

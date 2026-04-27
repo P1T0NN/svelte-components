@@ -102,13 +102,35 @@ export async function uploadFileToConvexStorage(
 }
 
 /**
+ * Format `retryAfter` (ms) as a localized "Too many requests" toast.
+ *
+ * - `< 60s` → seconds-grained toast (round up so users wait at least the advertised time).
+ * - `>= 60s` → minutes-grained toast (also rounded up).
+ * - Missing or non-positive → fall back to the generic "try again later" copy.
+ */
+function rateLimitToastMessage(retryAfterMs: number | undefined): string {
+	if (typeof retryAfterMs !== 'number' || retryAfterMs <= 0) {
+		return m['GenericMessages.TOO_MANY_REQUESTS']();
+	}
+	if (retryAfterMs < 60_000) {
+		return m['GenericMessages.TOO_MANY_REQUESTS_SECONDS']({
+			seconds: Math.ceil(retryAfterMs / 1000)
+		});
+	}
+	return m['GenericMessages.TOO_MANY_REQUESTS_MINUTES']({
+		minutes: Math.ceil(retryAfterMs / 60_000)
+	});
+}
+
+/**
  * Centralised error-to-toast handling shared by `safeMutation` and `safeAction`.
  *
  * Returns `true` if the error was handled (caller should resolve with `null`), `false`
  * if the caller should rethrow. Three branches, in order of specificity:
  *
- *   1. Rate-limit errors → `TOO_MANY_REQUESTS` toast. These are emitted by the
- *      `@convex-dev/rate-limiter` library and have their own detection helper.
+ *   1. Rate-limit errors → `TOO_MANY_REQUESTS_*` toast with the actual `retryAfter`
+ *      surfaced (seconds for short waits, minutes for long ones). These are emitted by
+ *      the `@convex-dev/rate-limiter` library and have their own detection helper.
  *   2. Typed backend errors (`ConvexError` whose `data` carries a `TranslatableMessage`)
  *      → translate + toast. This covers every throw from `createDeleteMutation`,
  *      `requireAdmin`, `storageMutations`, etc. — they all share `ConvexErrorPayload`.
@@ -118,7 +140,7 @@ export async function uploadFileToConvexStorage(
  */
 function handleConvexError(error: unknown): boolean {
 	if (isRateLimitError(error)) {
-		toast.error(m['GenericMessages.TOO_MANY_REQUESTS']());
+		toast.error(rateLimitToastMessage(error.data.retryAfter));
 		return true;
 	}
 	if (error instanceof ConvexError && hasTranslatableMessage(error.data)) {

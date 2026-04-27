@@ -20,6 +20,7 @@ import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js
 import type * as helpers_requireAdmin from "../helpers/requireAdmin.js";
 import type * as helpers_resolveUploadAuth from "../helpers/resolveUploadAuth.js";
 import type * as http from "../http.js";
+import type * as middleware_authMiddleware from "../middleware/authMiddleware.js";
 import type * as projectSettings from "../projectSettings.js";
 import type * as rateLimiter from "../rateLimiter.js";
 import type * as storage_storageMutations from "../storage/storageMutations.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/requireAdmin": typeof helpers_requireAdmin;
   "helpers/resolveUploadAuth": typeof helpers_resolveUploadAuth;
   http: typeof http;
+  "middleware/authMiddleware": typeof middleware_authMiddleware;
   projectSettings: typeof projectSettings;
   rateLimiter: typeof rateLimiter;
   "storage/storageMutations": typeof storage_storageMutations;

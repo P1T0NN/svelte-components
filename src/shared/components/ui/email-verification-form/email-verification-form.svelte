@@ -14,6 +14,7 @@
 	} from '@/shared/components/ui/field/index.js';
 	import { Input } from '@/shared/components/ui/input/index.js';
 	import { Button } from '@/shared/components/ui/button/index.js';
+	import EmailVerificationResend from './email-verification-resend.svelte';
 
 	// UTILS
 	import { emailVerificationFormSchema } from './email-verification-form-schema.js';
@@ -22,7 +23,7 @@
 
 	// TYPES
 	import type { HTMLFormAttributes } from 'svelte/elements';
-	import type { EmailVerificationField } from './emailVerificationFormTypes.js';
+	import type { EmailVerificationField, EmailVerificationResendConfig } from './emailVerificationFormTypes.js';
 
 	const id = $props.id();
 	const { signIn } = useAuth();
@@ -39,6 +40,7 @@
 		class: className,
 		onCancel,
 		onSuccess,
+		resend,
 		...restProps
 	}: {
 		email: string;
@@ -49,6 +51,8 @@
 		onCancel: () => void;
 		/** Called after `signIn` succeeds — parent decides toast + navigation. */
 		onSuccess?: () => void | Promise<void>;
+		/** Re-send OTP — built in `EmailVerificationResend` via `signIn`. */
+		resend?: EmailVerificationResendConfig;
 	} & Omit<WithElementRef<HTMLFormAttributes>, 'onsubmit' | 'children' | 'onCancel'> = $props();
 
 	async function onVerifySubmit(event: SubmitEvent) {
@@ -83,8 +87,7 @@
 			return;
 		}
 
-		// signIn succeeded — let the parent decide what to do (toast + redirect).
-		// `busy` stays true so the button cannot be re-clicked while we navigate away.
+		// Parent handles toast + redirect; clear busy if we stay mounted (e.g. no redirect).
 		await onSuccess?.();
 		busy = false;
 	}
@@ -101,7 +104,7 @@
 		<Card.Title class="text-2xl">
 			{m['EmailVerificationForm.title']()}
 		</Card.Title>
-		
+
 		<Card.Description>
 			{m['EmailVerificationForm.description']({ email })}
 		</Card.Description>
@@ -118,6 +121,7 @@
 						type="text"
 						inputmode="numeric"
 						autocomplete="one-time-code"
+						autofocus
 						aria-invalid={fieldErrors.code ? 'true' : undefined}
 					/>
 					{#if fieldErrors.code}
@@ -146,6 +150,9 @@
 						{m['EmailVerificationForm.cancel']()}
 					</Button>
 				</Field>
+				{#if resend}
+					<EmailVerificationResend disabled={busy} config={resend} />
+				{/if}
 			</FieldGroup>
 		</form>
 	</Card.Content>
@@ -174,6 +181,7 @@
 					type="text"
 					inputmode="numeric"
 					autocomplete="one-time-code"
+					autofocus
 					aria-invalid={fieldErrors.code ? 'true' : undefined}
 				/>
 				{#if fieldErrors.code}
@@ -202,6 +210,9 @@
 					{m['EmailVerificationForm.cancel']()}
 				</Button>
 			</Field>
+			{#if resend}
+				<EmailVerificationResend disabled={busy} config={resend} />
+			{/if}
 		</FieldGroup>
 	</form>
 {/if}

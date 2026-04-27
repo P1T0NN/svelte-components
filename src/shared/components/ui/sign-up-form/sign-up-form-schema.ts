@@ -1,6 +1,7 @@
 // LIBRARIES
-import { email, literal, minLength, object, pipe, string, trim } from 'valibot';
+import { check, email, literal, minLength, object, pipe, string, trim } from 'valibot';
 import { m } from '@/shared/lib/paraglide/messages';
+import { isDeniedPassword } from '@/shared/utils/denyPasswordList.js';
 
 export const signUpFormSchema = object({
 	name: pipe(string(), trim(), minLength(1, m['ValidationMessages.SignUpForm.nameRequired']())),
@@ -13,7 +14,11 @@ export const signUpFormSchema = object({
 	password: pipe(
 		string(),
 		minLength(1, m['ValidationMessages.SignUpForm.passwordRequired']()),
-		minLength(8, m['ValidationMessages.SignUpForm.passwordMinLength']())
+		minLength(8, m['ValidationMessages.SignUpForm.passwordMinLength']()),
+		check(
+			(input) => !isDeniedPassword(input),
+			m['ValidationMessages.SignUpForm.passwordTooCommon']()
+		)
 	),
 	confirmPassword: pipe(
 		string(),

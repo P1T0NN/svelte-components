@@ -44,7 +44,11 @@
 	"EmailVerificationForm": {
 		"title": "Check your email",
 		"description": "We sent a verification code to {email}. Enter it below to continue.",
-		"code": "Code",
+		"code": "Verification code",
+		"codeHint": "Enter the 8-digit code from your email.",
+		"resendPrompt": "Didn't receive the code?",
+		"resend": "Resend",
+		"resendIn": "Resend in {seconds}s",
 		"continue": "Continue",
 		"cancel": "Cancel",
 		"verificationFailed": "Invalid or expired code. Please try again."
@@ -53,15 +57,21 @@
 	"PasswordResetForm": {
 		"titleRequest": "Reset your password",
 		"descriptionRequest": "Enter the email for your account. We will send you a one-time code you can use to choose a new password.",
-		"titleVerify": "Choose a new password",
-		"descriptionVerify": "We sent a code to {email}. Enter it below along with your new password.",
+		"titleReset": "Choose a new password",
+		"descriptionReset": "We sent a code to {email}. Enter it below along with your new password. The code is valid for 5 minutes.",
 		"email": "Email",
 		"sendCode": "Send code",
 		"code": "Code",
 		"newPassword": "New password",
+		"confirmNewPassword": "Confirm new password",
 		"continue": "Continue",
 		"cancel": "Cancel",
 		"passwordResetToast": "Password reset successfully."
+	},
+
+	"PasswordInput": {
+		"showPassword": "Show password",
+		"hidePassword": "Hide password"
 	},
 
 	"SignUpForm": {
@@ -78,7 +88,7 @@
 			"submit": "Create Account",
 			"alreadyHaveAccount": "Already have an account?",
 			"signIn": "Sign in",
-			"signUpFailed": "Sign up failed. Please review the form and try again, or this account has already been created.",
+			"signUpFailed": "We couldn't create your account. Check your details and try again, or sign in if you already have one.",
 			"accountCreatedToast": "Account created successfully."
 		},
 		"SignUpFormWithImage": {
@@ -95,7 +105,7 @@
 			"orContinueWith": "Or continue with",
 			"alreadyHaveAccount": "Already have an account?",
 			"signIn": "Sign in",
-			"signUpFailed": "Sign up failed. Please review the form and try again, or this account has already been created.",
+			"signUpFailed": "We couldn't create your account. Check your details and try again, or sign in if you already have one.",
 			"accountCreatedToast": "Account created successfully."
 		}
 	},
@@ -184,6 +194,9 @@
 			"codeFormat": "Use the 8-digit code from your email.",
 			"newPasswordRequired": "Enter a new password.",
 			"newPasswordMinLength": "At least 8 characters.",
+			"passwordTooCommon": "That password is too common. Please choose a stronger one.",
+			"confirmPasswordRequired": "Confirm your new password.",
+			"passwordsMustMatch": "Passwords must match.",
 			"invalidEmail": "Invalid email."
 		},
 		"SignUpForm": {
@@ -192,6 +205,7 @@
 			"invalidEmail": "Invalid email.",
 			"passwordRequired": "Enter your password.",
 			"passwordMinLength": "At least 8 characters.",
+			"passwordTooCommon": "That password is too common. Please choose a stronger one.",
 			"confirmPasswordRequired": "Confirm your password.",
 			"passwordsMustMatch": "Passwords must match."
 		},
@@ -204,6 +218,8 @@
 
 	"GenericMessages": {
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
+		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
+		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min.",
 		"NO_ITEMS_PROVIDED": "No items provided.",
 		"NO_MATCHING_ITEMS": "No matching items found.",
 		"DATA_TABLE_DELETED_ALL": "Deleted {count} item(s).",
@@ -214,6 +230,9 @@
 		"NOT_AUTHENTICATED": "Please sign in to continue.",
 		"ADMIN_ACCESS_REQUIRED": "This action requires admin privileges.",
 		"STORAGE_URL_UNAVAILABLE": "Couldn't resolve the file URL.",
-		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again."
+		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again.",
+		"PASSWORD_TOO_SHORT": "Password must be at least {min} characters.",
+		"PASSWORD_TOO_LONG": "Password is too long.",
+		"PASSWORD_TOO_COMMON": "That password is too common. Please choose a stronger one."
 	}
 }

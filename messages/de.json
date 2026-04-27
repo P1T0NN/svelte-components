@@ -2,12 +2,36 @@
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"example_message": "Guten Tag {username}",
 	"PasswordResetForm": {
+		"titleRequest": "Passwort zurücksetzen",
+		"descriptionRequest": "Gib die E-Mail-Adresse deines Kontos ein. Wir senden dir einen Einmal-Code, mit dem du ein neues Passwort wählen kannst.",
+		"titleReset": "Neues Passwort wählen",
+		"descriptionReset": "Wir haben einen Code an {email} gesendet. Gib ihn unten zusammen mit deinem neuen Passwort ein. Der Code ist 5 Minuten gültig.",
 		"email": "E-Mail",
 		"sendCode": "Code senden",
 		"code": "Code",
 		"newPassword": "Neues Passwort",
+		"confirmNewPassword": "Neues Passwort bestätigen",
 		"continue": "Weiter",
-		"cancel": "Abbrechen"
+		"cancel": "Abbrechen",
+		"passwordResetToast": "Passwort erfolgreich zurückgesetzt."
+	},
+
+	"PasswordInput": {
+		"showPassword": "Passwort anzeigen",
+		"hidePassword": "Passwort verbergen"
+	},
+
+	"EmailVerificationForm": {
+		"title": "E-Mail prüfen",
+		"description": "Wir haben einen Bestätigungscode an {email} gesendet. Gib ihn unten ein, um fortzufahren.",
+		"code": "Bestätigungscode",
+		"codeHint": "Gib den 8-stelligen Code aus deiner E-Mail ein.",
+		"resendPrompt": "Keinen Code erhalten?",
+		"resend": "Erneut senden",
+		"resendIn": "Erneut senden in {seconds}s",
+		"continue": "Weiter",
+		"cancel": "Abbrechen",
+		"verificationFailed": "Ungültiger oder abgelaufener Code. Bitte erneut versuchen."
 	},
 
 	"DataTable": {
@@ -24,8 +48,19 @@
 		"delete": "Löschen"
 	},
 
+	"ValidationMessages": {
+		"PasswordResetVerifyForm": {
+			"passwordTooCommon": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."
+		},
+		"SignUpForm": {
+			"passwordTooCommon": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."
+		}
+	},
+
 	"GenericMessages": {
 		"TOO_MANY_REQUESTS": "Zu viele Anfragen. Bitte später erneut versuchen.",
+		"TOO_MANY_REQUESTS_SECONDS": "Zu viele Anfragen. In {seconds}s erneut versuchen.",
+		"TOO_MANY_REQUESTS_MINUTES": "Zu viele Anfragen. In {minutes} Min. erneut versuchen.",
 		"NO_ITEMS_PROVIDED": "Keine Elemente angegeben.",
 		"NO_MATCHING_ITEMS": "Keine passenden Elemente gefunden.",
 		"DATA_TABLE_DELETED_ALL": "{count} Element(e) gelöscht.",
@@ -36,6 +71,9 @@
 		"NOT_AUTHENTICATED": "Bitte melde dich an, um fortzufahren.",
 		"ADMIN_ACCESS_REQUIRED": "Für diese Aktion sind Administratorrechte erforderlich.",
 		"STORAGE_URL_UNAVAILABLE": "Datei-URL konnte nicht aufgelöst werden.",
-		"UPLOAD_SAVE_FAILED": "Die hochgeladene Datei konnte nicht gespeichert werden. Bitte erneut versuchen."
+		"UPLOAD_SAVE_FAILED": "Die hochgeladene Datei konnte nicht gespeichert werden. Bitte erneut versuchen.",
+		"PASSWORD_TOO_SHORT": "Passwort muss mindestens {min} Zeichen lang sein.",
+		"PASSWORD_TOO_LONG": "Passwort ist zu lang.",
+		"PASSWORD_TOO_COMMON": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."
 	}
 }

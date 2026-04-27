@@ -28,9 +28,9 @@ type AggregateLike<T extends TableNames> = {
 
 /**
  * Rate-limit config. Defaults to the dedicated `'delete'` bucket, keyed by the authenticated
- * user id (via {@link getRateLimitedUserId}). Anonymous callers share one global bucket
- * (key=undefined), which is intentionally stricter. Pass `false` to opt out entirely (e.g.
- * for internal jobs).
+ * user id (via {@link getRateLimitedUserId}). Anonymous callers are rejected with
+ * `NOT_AUTHENTICATED` before the bucket is even touched. Pass `false` to opt out entirely
+ * (e.g. for trusted internal jobs invoking via `runMutation`).
  *
  * The bucket is charged `ids.length` tokens per request so a 100-row delete is 100× more
  * expensive than a 1-row delete — prevents one caller from draining a tight bucket via a
@@ -351,10 +351,11 @@ export function createDeleteMutation<T extends TableNames>(
 			if (requireAdminEnforced) await requireAdmin(ctx);
 
 			// 3. Rate limit + caller id resolution in one pass via the shared helper.
-			//    - Rate-limit enabled  → `getRateLimitedUserId` charges tokens AND returns
-			//      the authed user id (or null for anon, which keys the global bucket).
-			//    - Rate-limit disabled → fall back to bare `getAuthUserId` so the ownerId
-			//      default still has something to compare against.
+			//    - Rate-limit enabled  → `getRateLimitedUserId` charges tokens, throws
+			//      `NOT_AUTHENTICATED` for anon, and returns the authed user id.
+			//    - Rate-limit disabled → fall back to bare `getAuthUserId` (may be null for
+			//      trusted internal jobs); the ownerId default still has something to
+			//      compare against, anon mismatches will fall out at step 6.
 			//    Weighted by `ids.length` so bulk deletes pay proportional cost. A thrown
 			//    limit error propagates and the client's `safeMutation` wrapper catches it
 			//    via `isRateLimitError`.

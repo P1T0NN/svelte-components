@@ -11,11 +11,11 @@
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 </script>
 
-<div class="flex h-screen w-full items-center justify-center px-4">
+<div class="flex h-screen w-full items-center justify-center px-4 lg:hidden">
 	<LoginFormNoImage />
 </div>
 
-<div class="grid min-h-svh lg:grid-cols-2">
+<div class="hidden min-h-svh lg:grid lg:grid-cols-2">
 	<div class="flex flex-col gap-4 p-6 md:p-10">
 		<div class="flex justify-center gap-2 md:justify-start">
 			<Link href={UNPROTECTED_PAGE_ENDPOINTS.ROOT} class="flex items-center gap-2 font-medium">

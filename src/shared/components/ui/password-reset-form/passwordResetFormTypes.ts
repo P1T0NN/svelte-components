@@ -1,7 +1,7 @@
-/** Shown after a successful “send code” — OTP + new password for this address. */
-export type PasswordResetFormVerify = { email: string };
+/** OTP + new-password step (after the user requests a reset link/code). */
+export type PasswordResetVerifyStep = { email: string };
 
-export type PasswordResetFormStep = 'forgot' | PasswordResetFormVerify;
+export type PasswordResetFormStep = 'forgot' | PasswordResetVerifyStep;
 
 /** Names of validatable inputs in the password-reset form. */
-export type PasswordResetField = 'email' | 'code' | 'newPassword';
+export type PasswordResetField = 'email' | 'code' | 'newPassword' | 'confirmPassword';
