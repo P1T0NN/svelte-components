@@ -13,6 +13,31 @@
 		"continueWithGoogle": "Continue with Google"
 	},
 
+	"CreatedByOmnilabs": {
+		"label": "Created by"
+	},
+
+	"ContactSection": {
+		"ContactRightContent": {
+			"sendMessage": "Send a message",
+			"shareEnquiry": "Share your enquiry and Teresa will reply as soon as she can — usually within 24 hours.",
+			"yourName": "Your name",
+			"yourFullName": "Your full name",
+			"email": "Email",
+			"yourEmail": "you@example.com",
+			"message": "Message",
+			"messagePlaceholder": "Dates, venue, vibe, allergies — whatever helps Teresa prepare.",
+			"noSpam": "No spam — just a thoughtful reply when she is back at her desk."
+		},
+		"ContactSubmitButton": {
+			"sendMessage": "Send message"
+		},
+		"ContactLeftContent": {
+			"contact": "Contact",
+			"preferEmail": "Prefer email?"
+		}
+	},
+
 	"LoginForm": {
 		"LoginFormNoImage": {
 			"title": "Login",

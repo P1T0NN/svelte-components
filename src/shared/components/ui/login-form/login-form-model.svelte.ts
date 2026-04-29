@@ -12,10 +12,11 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 // UTILS
 import { loginFormSchema } from './login-form-schema.js';
-import { valibotFieldErrors, type FieldErrors } from '@/shared/utils/valibotFieldErrors.js';
+import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 
 // TYPES
 import type { LoginFormStep, LoginField } from './loginFormTypes.js';
+import type { FieldErrors } from '@/shared/types/types';
 
 export type LoginFormCopy = {
 	signInFailed: () => string;
@@ -46,7 +47,7 @@ export function createLoginForm(copy: LoginFormCopy) {
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotFieldErrors<LoginField>(p.issues);
+			fieldErrors = valibotIssuesToFieldErrors<LoginField>(p.issues);
 			errorMessage = null;
 			return;
 		}

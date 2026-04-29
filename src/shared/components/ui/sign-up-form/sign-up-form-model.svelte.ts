@@ -15,14 +15,12 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 // UTILS
 import { signUpFormSchema } from './sign-up-form-schema.js';
-import { valibotFieldErrors, type FieldErrors } from '@/shared/utils/valibotFieldErrors.js';
-import {
-	hasTranslatableMessage,
-	translateFromBackend
-} from '@/shared/utils/translateFromBackend.js';
+import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+import { hasTranslatableMessage, translateFromBackend } from '@/shared/utils/translateFromBackend.js';
 
 // TYPES
 import type { SignUpFormStep, SignUpField } from './signUpFormTypes.js';
+import type { FieldErrors } from '@/shared/types/types';
 
 export type SignUpFormCopy = {
 	signUpFailed: () => string;
@@ -56,7 +54,7 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotFieldErrors<SignUpField>(p.issues);
+			fieldErrors = valibotIssuesToFieldErrors<SignUpField>(p.issues);
 			errorMessage = null;
 			return;
 		}

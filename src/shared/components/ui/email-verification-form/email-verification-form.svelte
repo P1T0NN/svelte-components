@@ -19,11 +19,14 @@
 	// UTILS
 	import { emailVerificationFormSchema } from './email-verification-form-schema.js';
 	import { cn, type WithElementRef } from '@/shared/utils/utils.js';
-	import { valibotFieldErrors, type FieldErrors } from '@/shared/utils/valibotFieldErrors.js';
+	import {
+		valibotIssuesToFieldErrors,
+	} from '@/shared/utils/validationUtils.js';
 
 	// TYPES
 	import type { HTMLFormAttributes } from 'svelte/elements';
 	import type { EmailVerificationField, EmailVerificationResendConfig } from './emailVerificationFormTypes.js';
+	import type { FieldErrors } from '@/shared/types/types';
 
 	const id = $props.id();
 	const { signIn } = useAuth();
@@ -69,7 +72,7 @@
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotFieldErrors<EmailVerificationField>(p.issues);
+			fieldErrors = valibotIssuesToFieldErrors<EmailVerificationField>(p.issues);
 			errorMessage = null;
 			return;
 		}

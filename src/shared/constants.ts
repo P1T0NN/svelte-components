@@ -1,5 +1,7 @@
 export const COMPANY_DATA = {
 	NAME: 'Company Name',
+	EMAIL: 'company@gmail.com',
+    DOMAIN: 'company.com',
 	LOGO: '/logo/logo.webp',
 	DESCRIPTION: 'We build dependable software and services so your team can focus on what matters most.'
 } as const;

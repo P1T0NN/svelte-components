@@ -34,7 +34,9 @@
 		passwordResetRequestFormSchema,
 		passwordResetVerifyFormSchema
 	} from './password-reset-form-schema.js';
-	import { valibotFieldErrors, type FieldErrors } from '@/shared/utils/valibotFieldErrors.js';
+	import {
+		valibotIssuesToFieldErrors,
+	} from '@/shared/utils/validationUtils.js';
 	import {
 		hasTranslatableMessage,
 		translateFromBackend
@@ -42,6 +44,7 @@
 
 	// TYPES
 	import type { PasswordResetFormStep, PasswordResetField } from './passwordResetFormTypes.js';
+	import type { FieldErrors } from '@/shared/types/types';
 
 	/** Matches `convexGenerateVerificationToken` and `passwordResetVerifyFormSchema`. */
 	const OTP_MAX_LENGTH = 8;
@@ -71,7 +74,7 @@
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotFieldErrors<PasswordResetField>(p.issues);
+			fieldErrors = valibotIssuesToFieldErrors<PasswordResetField>(p.issues);
 			errorMessage = null;
 			return;
 		}
@@ -111,7 +114,7 @@
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotFieldErrors<PasswordResetField>(p.issues);
+			fieldErrors = valibotIssuesToFieldErrors<PasswordResetField>(p.issues);
 			errorMessage = null;
 			return;
 		}
