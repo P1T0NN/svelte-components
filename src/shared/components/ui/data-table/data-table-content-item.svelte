@@ -59,19 +59,22 @@
 			)}
 		>
 			<div class={cn('min-w-0', col.hasCopy && 'flex items-center gap-1.5')}>
-				<div class="min-w-0 flex-1">
+				<div class={cn('min-w-0 flex-1', !col.wrap && 'truncate')}>
 					{#if customCells?.[col.id]}
 						{@render customCells[col.id]!({ row, column: col, value })}
 					{:else if col.linkHref}
 						<Link
 							href={col.linkHref(row)}
-							class="text-primary block truncate font-medium underline-offset-2 hover:underline"
+							class={cn(
+								'text-primary block font-medium underline-offset-2 hover:underline',
+								!col.wrap && 'truncate'
+							)}
 							title={formatCellValue(value)}
 						>
 							{formatCellValue(value)}
 						</Link>
 					{:else}
-						<span class="block truncate" title={formatCellValue(value)}>
+						<span class={cn('block', !col.wrap && 'truncate')} title={formatCellValue(value)}>
 							{formatCellValue(value)}
 						</span>
 					{/if}

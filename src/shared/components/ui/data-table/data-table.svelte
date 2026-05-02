@@ -1,6 +1,7 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
 	// LIBRARIES
-	import { useQuery } from 'convex-svelte';
+	import { useQuery, useConvexClient } from 'convex-svelte';
+	import { toast } from 'svelte-sonner';
 
 	// CONFIG
 	import { PAGINATION_DATA } from '@/shared/config.js';
@@ -12,8 +13,11 @@
 
 	// UTILS
 	import { defaultRowKey } from './dataTableUtils.js';
+	import { safeMutation } from '@/shared/utils/convexHelpers';
+	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
 
 	// TYPES
+	import type { FunctionReference } from 'convex/server';
 	import type {
 		ColumnDef,
 		DataTableCustomCells,
@@ -34,7 +38,7 @@
 		controlsPlace = 'bottom',
 		selectable = false,
 		selectedIds = $bindable<string[]>([]),
-		deleteFunction
+		deleteMutation
 	}: {
 		class?: string;
 		caption?: string;
@@ -52,12 +56,15 @@
 		/** Two-way bound set of selected row ids (`bind:selectedIds`). */
 		selectedIds?: string[];
 		/**
-		 * Bulk-delete handler invoked with the currently selected ids. When provided, the
-		 * selection toolbar renders a Delete button wired to a confirmation dialog.
-		 * Called after the user confirms; selection is cleared automatically on success.
+		 * Convex mutation reference for bulk delete (e.g. `api.storage.uploadedFiles.deleteUploadedFile`).
+		 * When provided, the selection toolbar renders a Delete button wired to a confirmation dialog.
+		 * The table calls it via `safeMutation` with `{ ids }` (cast at the boundary), toasts the
+		 * standard envelope (`{ success, message }`), and clears selection on success.
 		 */
-		deleteFunction?: (ids: string[]) => Promise<void> | void;
+		deleteMutation?: FunctionReference<'mutation'>;
 	} = $props();
+
+	const convex = useConvexClient();
 
 	/** Matches server `resolvePaginationOpts(undefined).numItems` — not sent on the wire. */
 	const pageSize = PAGINATION_DATA.DEFAULT_PAGE_SIZE;
@@ -162,22 +169,26 @@
 	let isDeleting = $state(false);
 
 	/**
-	 * Closure handed to the status toolbar so it doesn't need to know about selection state.
-	 * Snapshots ids at click time (prevents losing targets if selection mutates mid-flight),
-	 * clears selection on success, and toggles the pending flag for the spinner/disabled UI.
+	 * Closure handed to the status toolbar so it doesn't need to know about selection state
+	 * or how the mutation is invoked. Snapshots ids at click time (prevents losing targets if
+	 * selection mutates mid-flight), runs the configured mutation through `safeMutation`
+	 * (which already toasts typed/rate-limit errors), then toasts the success/info envelope
+	 * and clears selection only when the backend confirmed success.
 	 */
 	async function runDelete() {
-		if (!deleteFunction) return;
+		if (!deleteMutation) return;
 
 		const ids = selectedIds.slice();
-
 		if (ids.length === 0) return;
 
 		isDeleting = true;
-
 		try {
-			await deleteFunction(ids);
-			selectedIds = [];
+			// Args type is generic; the concrete mutation accepts `{ ids: Id<TableName>[] }`.
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const result = await safeMutation(convex, deleteMutation, { ids } as any);
+			if (!result) return; // typed error / rate limit — already toasted by safeMutation
+			toast[result.success ? 'success' : 'info'](translateFromBackend(result.message));
+			if (result.success) selectedIds = [];
 		} finally {
 			isDeleting = false;
 		}
@@ -201,8 +212,8 @@
 			onClear={() => {
 				selectedIds = [];
 			}}
-			withActionButtons={deleteFunction !== undefined}
-			deleteFunction={deleteFunction ? runDelete : undefined}
+			withActionButtons={deleteMutation !== undefined}
+			deleteFunction={deleteMutation ? runDelete : undefined}
 			{isDeleting}
 		/>
 	{/if}

@@ -1,39 +1,21 @@
 <script lang="ts">
 	// LIBRARIES
-	import { useConvexClient } from 'convex-svelte';
 	import { api } from '@/convex/_generated/api';
 
 	// COMPONENTS
-	import { toast } from 'svelte-sonner';
 	import Section from '@/shared/components/ui/section/section.svelte';
 	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
 
 	// CONFIG
 	import { fillRoutePattern, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
 
-	// UTILS
-	import { safeMutation } from '@/shared/utils/convexHelpers';
-	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
-
 	// TYPES
 	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';
-	import type { Doc, Id } from '@/convex/_generated/dataModel';
+	import type { Doc } from '@/convex/_generated/dataModel';
 
 	type FileRow = Doc<'uploadedFiles'>;
 
-	const convex = useConvexClient();
-
 	const filesQuery = api.storage.uploadedFiles.fetchUploadedFiles;
-
-	async function deleteSelectedFiles(ids: string[]) {
-		const result = await safeMutation(
-			convex,
-			api.storage.uploadedFiles.deleteUploadedFile,
-			{ ids: ids as Id<'uploadedFiles'>[] }
-		);
-		if (!result) return; // rate-limit or typed backend error — already toasted
-		toast[result.success ? 'success' : 'info'](translateFromBackend(result.message));
-	}
 
 	const columns: ColumnDef<FileRow>[] = [
 		{
@@ -48,7 +30,8 @@
 			id: 'url',
 			header: 'URL',
 			accessor: (r) => r.url,
-			cellClass: 'max-w-[12rem] md:max-w-md lg:max-w-xl'
+			cellClass: 'max-w-[12rem] md:max-w-md lg:max-w-xl',
+			hasCopy: true
 		},
 		{
 			id: 'created',
@@ -62,6 +45,7 @@
 {#snippet urlCell({ value }: DataTableCellSnippetProps<FileRow>)}
 	<a
 		href={String(value)}
+		title={String(value)}
 		class="text-primary font-medium underline-offset-2 hover:underline"
 		target="_blank"
 		rel="noreferrer"
@@ -86,6 +70,6 @@
 		customCells={{ url: urlCell }}
 		controlsPlace="top"
 		selectable={true}
-		deleteFunction={deleteSelectedFiles}
+		deleteMutation={api.storage.uploadedFiles.deleteUploadedFile}
 	/>
 </Section>

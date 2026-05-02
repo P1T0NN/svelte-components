@@ -63,6 +63,12 @@ export type ColumnDef<T> = {
 	 * Copies `String(accessor(row))`.
 	 */
 	hasCopy?: boolean;
+	/**
+	 * Opt out of single-line ellipsis truncation. When true, the cell wrapper drops
+	 * `truncate` so multi-line content (badges, stacked metadata, long-form text) can
+	 * wrap normally. Default is `false` — tabular data should stay one line per row.
+	 */
+	wrap?: boolean;
 };
 
 export type DataTableCellSnippetProps<T> = {
