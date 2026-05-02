@@ -23,12 +23,12 @@
 
 	const convex = useConvexClient();
 
-	const filesQuery = api.tables.uploadedFiles.uploadedFilesQueries.fetchUploadedFiles;
+	const filesQuery = api.storage.uploadedFiles.fetchUploadedFiles;
 
 	async function deleteSelectedFiles(ids: string[]) {
 		const result = await safeMutation(
 			convex,
-			api.tables.uploadedFiles.uploadedFilesMutations.deleteUploadedFile,
+			api.storage.uploadedFiles.deleteUploadedFile,
 			{ ids: ids as Id<'uploadedFiles'>[] }
 		);
 		if (!result) return; // rate-limit or typed backend error — already toasted

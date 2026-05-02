@@ -6,6 +6,7 @@
 	import { Link } from '@/shared/components/ui/link/index.js';
 	import { TableCell, TableRow } from '@/shared/components/ui/table/index.js';
 	import { Checkbox } from '@/shared/components/ui/checkbox/index.js';
+	import CopyButton from '@/shared/components/ui/copy-button/copy-button.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
@@ -57,25 +58,28 @@
 				col.cellClass
 			)}
 		>
-			{#if customCells?.[col.id]}
-				<div class="min-w-0">
-					{@render customCells[col.id]!({ row, column: col, value })}
+			<div class={cn('min-w-0', col.hasCopy && 'flex items-center gap-1.5')}>
+				<div class="min-w-0 flex-1">
+					{#if customCells?.[col.id]}
+						{@render customCells[col.id]!({ row, column: col, value })}
+					{:else if col.linkHref}
+						<Link
+							href={col.linkHref(row)}
+							class="text-primary block truncate font-medium underline-offset-2 hover:underline"
+							title={formatCellValue(value)}
+						>
+							{formatCellValue(value)}
+						</Link>
+					{:else}
+						<span class="block truncate" title={formatCellValue(value)}>
+							{formatCellValue(value)}
+						</span>
+					{/if}
 				</div>
-			{:else if col.linkHref}
-				<div class="min-w-0">
-					<Link
-						href={col.linkHref(row)}
-						class="text-primary block truncate font-medium underline-offset-2 hover:underline"
-						title={formatCellValue(value)}
-					>
-						{formatCellValue(value)}
-					</Link>
-				</div>
-			{:else}
-				<span class="block truncate" title={formatCellValue(value)}>
-					{formatCellValue(value)}
-				</span>
-			{/if}
+				{#if col.hasCopy}
+					<CopyButton value={formatCellValue(value)} label={`Copy ${col.header}`} />
+				{/if}
+			</div>
 		</TableCell>
 	{/each}
 </TableRow>

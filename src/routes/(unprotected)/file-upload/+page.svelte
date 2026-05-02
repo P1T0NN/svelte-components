@@ -5,17 +5,17 @@
 	// COMPONENTS
 	import { toast } from 'svelte-sonner';
 	import Section from '@/shared/components/ui/section/section.svelte';
-	import UploadFileSingle from '@/shared/components/ui/upload-file/upload-file-single/upload-file-single.svelte';
-	import UploadFileMultiple from '@/shared/components/ui/upload-file/upload-file-multiple/upload-file-multiple.svelte';
+	import UploadFileSingle from '@/features/uploadFile/components/upload-file-single/upload-file-single.svelte';
+	import UploadFileMultiple from '@/features/uploadFile/components/upload-file-multiple/upload-file-multiple.svelte';
 	import { Button } from '@/shared/components/ui/button/index.js';
-	import UploadFileDropzone from '@/shared/components/ui/upload-file/upload-file-dropzone.svelte';
+	import UploadFileDropzone from '@/features/uploadFile/components/upload-file-dropzone.svelte';
 	import { Progress } from '@/shared/components/ui/progress/index.js';
 
 	// HOOKS
-	import { useProgress } from '@/shared/hooks/useProgress.svelte';
+	import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
 
 	// UTILS
-	import { optimizeImages } from '@/shared/utils/optimizeImages';
+	import { optimizeImages } from '@/features/uploadFile/utils/optimizeImages';
 	import { uploadFileToConvexStorage } from '@/shared/utils/convexHelpers';
 
 	let multipleFiles = $state(true);

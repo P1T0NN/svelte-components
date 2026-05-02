@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv *)",
+      "Bash(xargs sed *)",
+      "Bash(sed -i \"s|@/shared/components/ui/input-otp|@/features/auth/components/input-otp|g\" src/features/auth/components/password-reset-form/password-reset-form.svelte)",
+      "Bash(sed -i \"s|@/shared/utils/denyPasswordList|@/features/auth/utils/denyPasswordList|g\" src/features/auth/components/password-reset-form/password-reset-form-schema.ts src/features/auth/components/sign-up-form/sign-up-form-schema.ts)",
+      "Bash(sed -i \"s|../shared/utils/denyPasswordList|../features/auth/utils/denyPasswordList|g\" src/convex/auth.ts)",
+      "Bash(sed -i \"s|'../features/auth/utils/denyPasswordList.js'|'../../features/auth/utils/denyPasswordList.js'|\" src/convex/auth/auth.ts)",
+      "Bash(sed -i \"s|'../projectSettings'|'../../projectSettings'|\" src/convex/auth/emails/resendOTP.ts src/convex/auth/emails/resendOTPPasswordReset.ts)",
+      "Bash(sed -i \"s|from \\\\\"./auth\\\\\"|from \\\\\"./auth/auth\\\\\"|; s|from './auth'|from './auth/auth'|\" src/convex/http.ts)",
+      "Bash(sed -i \"s|'./requireAdmin.js'|'../auth/helpers/requireAdmin.js'|\" src/convex/helpers/resolveUploadAuth.ts src/convex/helpers/createDeleteMutation.ts)",
+      "Bash(sed *)",
+      "Bash(bunx tsc *)",
+      "Bash(bun run *)",
+      "Bash(sed -i \"s|'../../features/auth/utils/denyPasswordList.js'|'../features/auth/utils/denyPasswordList.js'|\" src/convex/auth.ts)",
+      "Bash(sed -i \"s|'./emails/resendOTPPasswordReset'|'./auth/emails/resendOTPPasswordReset'|; s|'./emails/resendOTP'|'./auth/emails/resendOTP'|\" src/convex/auth.ts)",
+      "Bash(sed -i \"s|from \\\\\"./auth/auth\\\\\"|from \\\\\"./auth\\\\\"|; s|from './auth/auth'|from './auth'|\" src/convex/http.ts)",
+      "Bash(sed -i -e 's|@/shared/components/ui/upload-file|@/features/uploadFile/components|g' -e 's|@/shared/hooks/useProgress|@/features/uploadFile/utils/useProgress|g' -e 's|@/shared/utils/optimizeImages|@/features/uploadFile/utils/optimizeImages|g' 'src/routes/\\(unprotected\\)/file-upload/+page.svelte')",
+      "Bash(sed -i \"s|@/shared/utils/optimizeImages|./optimizeImages|\" src/features/uploadFile/utils/useProgress.svelte.ts)",
+      "Bash(mkdir -p src/convex/storage/helpers src/convex/storage/tables)",
+      "Bash(rmdir src/convex/tables)",
+      "Bash(sed -i -e 's|'\\\\''../auth/helpers/requireAdmin.js'\\\\''|'\\\\''../../auth/helpers/requireAdmin.js'\\\\''|' -e 's|'\\\\''../_generated/server'\\\\''|'\\\\''../../_generated/server'\\\\''|' -e 's|'\\\\''../_generated/dataModel'\\\\''|'\\\\''../../_generated/dataModel'\\\\''|' -e 's|'\\\\''../types/convexTypes.js'\\\\''|'\\\\''../../types/convexTypes.js'\\\\''|' src/convex/storage/helpers/resolveUploadAuth.ts)",
+      "Bash(sed -i -e 's|'\\\\''../../_generated/api'\\\\''|'\\\\''../../../_generated/api'\\\\''|' -e 's|'\\\\''../../_generated/dataModel.js'\\\\''|'\\\\''../../../_generated/dataModel.js'\\\\''|' src/convex/storage/tables/uploadedFiles/uploadedFilesAggregate.ts)",
+      "Bash(sed -i \"s|'../../helpers/createDeleteMutation.js'|'../../../helpers/createDeleteMutation.js'|\" src/convex/storage/tables/uploadedFiles/uploadedFilesMutations.ts)",
+      "Bash(sed -i -e 's|'\\\\''../../_generated/server'\\\\''|'\\\\''../../../_generated/server'\\\\''|' -e 's|'\\\\''../../helpers/paginationHelpers.js'\\\\''|'\\\\''../../../helpers/paginationHelpers.js'\\\\''|' src/convex/storage/tables/uploadedFiles/uploadedFilesQueries.ts)",
+      "Bash(sed -i -e 's|'\\\\''../helpers/resolveUploadAuth.js'\\\\''|'\\\\''./helpers/resolveUploadAuth.js'\\\\''|' -e 's|'\\\\''../tables/uploadedFiles/uploadedFilesAggregate.js'\\\\''|'\\\\''./tables/uploadedFiles/uploadedFilesAggregate.js'\\\\''|' src/convex/storage/storageMutations.ts)",
+      "Bash(sed -i -e 's|'\\\\''../../../_generated/api'\\\\''|'\\\\''../../_generated/api'\\\\''|' -e 's|'\\\\''../../../_generated/dataModel.js'\\\\''|'\\\\''../../_generated/dataModel.js'\\\\''|' src/convex/storage/aggregate/uploadedFilesAggregate.ts)",
+      "Bash(sed -i -e 's|'\\\\''../../../helpers/createDeleteMutation.js'\\\\''|'\\\\''../../helpers/createDeleteMutation.js'\\\\''|' -e 's|'\\\\''./uploadedFilesAggregate.js'\\\\''|'\\\\''../aggregate/uploadedFilesAggregate.js'\\\\''|' src/convex/storage/mutations/uploadedFilesMutations.ts)",
+      "Bash(sed -i -e 's|'\\\\''../../../_generated/server'\\\\''|'\\\\''../../_generated/server'\\\\''|' -e 's|'\\\\''../../../helpers/paginationHelpers.js'\\\\''|'\\\\''../../helpers/paginationHelpers.js'\\\\''|' src/convex/storage/queries/uploadedFilesQueries.ts)",
+      "Bash(sed -i \"s|'./tables/uploadedFiles/uploadedFilesAggregate.js'|'./aggregate/uploadedFilesAggregate.js'|\" src/convex/storage/storageMutations.ts)",
+      "Bash(sed -i -e 's|api\\\\.storage\\\\.tables\\\\.uploadedFiles\\\\.uploadedFilesQueries|api.storage.queries.uploadedFilesQueries|g' -e 's|api\\\\.storage\\\\.tables\\\\.uploadedFiles\\\\.uploadedFilesMutations|api.storage.mutations.uploadedFilesMutations|g' 'src/routes/\\(unprotected\\)/table/+page.svelte')",
+      "Bash(git rm *)",
+      "Bash(rmdir src/convex/storage/queries src/convex/storage/mutations)",
+      "Bash(git add *)",
+      "Bash(sed -i -e 's|api\\\\.storage\\\\.queries\\\\.uploadedFilesQueries\\\\.fetchUploadedFiles|api.storage.uploadedFiles.fetchUploadedFiles|g' -e 's|api\\\\.storage\\\\.mutations\\\\.uploadedFilesMutations\\\\.deleteUploadedFile|api.storage.uploadedFiles.deleteUploadedFile|g' 'src/routes/\\(unprotected\\)/table/+page.svelte')"
+    ]
+  }
+}

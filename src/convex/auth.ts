@@ -5,15 +5,15 @@ import { Password } from '@convex-dev/auth/providers/Password';
 import { ConvexError } from 'convex/values';
 
 // CONFIG
-import { ResendOTPPasswordReset } from './emails/resendOTPPasswordReset';
-import { ResendOTP } from './emails/resendOTP';
+import { ResendOTPPasswordReset } from './auth/emails/resendOTPPasswordReset';
+import { ResendOTP } from './auth/emails/resendOTP';
 
 // UTILS
-import { isDeniedPassword } from '../shared/utils/denyPasswordList.js';
+import { isDeniedPassword } from '../features/auth/utils/denyPasswordList.js';
 
 // TYPES
-import type { MutationCtx } from './_generated/server';
-import type { ConvexErrorPayload } from './types/convexTypes';
+import type { MutationCtx } from '@/convex/_generated/server';
+import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [

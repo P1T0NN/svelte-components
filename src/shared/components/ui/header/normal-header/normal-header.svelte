@@ -2,11 +2,12 @@
 	// SVELTEKIT
 	import { page } from '$app/state';
 
-	// CONFIG
-	import { COMPANY_DATA, PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
-
 	// LIBRARIES
 	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+
+	// CONFIG
+	import { COMPANY_DATA, PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
 
 	// CLASSES
 	import {
@@ -20,8 +21,9 @@
 	import Link from '@/shared/components/ui/link/link.svelte';
 	import Logo from '@/shared/components/ui/logo/logo.svelte';
 	import LanguageSelector from '@/shared/components/ui/language-selector/language-selector.svelte';
-	import LogoutButton from '@/shared/components/ui/logout-button/logout-button.svelte';
+	import LogoutButton from '@/features/auth/components/logout-button/logout-button.svelte';
 	import NormalHeaderMobile from './normal-header-mobile.svelte';
+	import LoginButton from '@/features/auth/components/login-button/login-button.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
@@ -48,6 +50,9 @@
 		changeBgOnScroll = false,
 		hasLogo = true
 	}: Props = $props();
+
+	const auth = useAuth();
+	const isAuthenticated = $derived(auth.isAuthenticated);
 
 	const pathnameLogical = $derived(new URL(deLocalizeUrl(page.url.href)).pathname);
 
@@ -121,7 +126,11 @@
 			class="ml-auto flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 lg:ml-0"
 		>
 			<div class="hidden sm:block">
-				<LogoutButton />
+				{#if isAuthenticated}
+					<LogoutButton />
+				{:else}
+					<LoginButton />
+				{/if}
 			</div>
 
 			<LanguageSelector variant="default" />

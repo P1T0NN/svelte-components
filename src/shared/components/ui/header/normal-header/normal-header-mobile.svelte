@@ -3,11 +3,12 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 
-	// CONFIG
-	import { COMPANY_DATA } from '@/shared/constants.js';
-
 	// LIBRARIES
 	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+
+	// CONFIG
+	import { COMPANY_DATA } from '@/shared/constants.js';
 
 	// CLASSES
 	import {
@@ -24,9 +25,10 @@
 	import Link from '@/shared/components/ui/link/link.svelte';
 	import Logo from '@/shared/components/ui/logo/logo.svelte';
 	import LanguageSelector from '@/shared/components/ui/language-selector/language-selector.svelte';
-	import LogoutButton from '@/shared/components/ui/logout-button/logout-button.svelte';
+	import LogoutButton from '@/features/auth/components/logout-button/logout-button.svelte';
 	import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from '@/shared/components/ui/drawer';
 	import { Separator } from '@/shared/components/ui/separator';
+	import LoginButton from '@/features/auth/components/login-button/login-button.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
@@ -39,6 +41,9 @@
 	import XIcon from '@lucide/svelte/icons/x';
 
 	let { hasLogo = true }: { hasLogo?: boolean } = $props();
+
+	const auth = useAuth();
+	const isAuthenticated = $derived(auth.isAuthenticated);
 
 	const pathnameLogical = $derived(new URL(deLocalizeUrl(page.url.href)).pathname);
 
@@ -135,7 +140,11 @@
 			<Separator />
 
 			<div class="sm:hidden">
-				<LogoutButton />
+				{#if isAuthenticated}
+					<LogoutButton />
+				{:else}
+					<LoginButton />
+				{/if}
 			</div>
 		</div>
 	</DrawerContent>

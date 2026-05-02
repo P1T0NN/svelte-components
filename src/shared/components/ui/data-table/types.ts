@@ -57,6 +57,12 @@ export type ColumnDef<T> = {
 	 * `Link` using the accessor value as the visible label.
 	 */
 	linkHref?: (row: T) => string;
+	/**
+	 * Render a small copy-to-clipboard button next to the cell value. Useful for long
+	 * truncated values (URLs, IDs) where selecting the visible text isn't enough.
+	 * Copies `String(accessor(row))`.
+	 */
+	hasCopy?: boolean;
 };
 
 export type DataTableCellSnippetProps<T> = {

@@ -5,6 +5,10 @@
 		"login": "Login"
 	},
 
+	"LoginButton": {
+		"login": "Login"
+	},
+
 	"LogoutButton": {
 		"logout": "Logout"
 	},
@@ -15,6 +19,35 @@
 
 	"CreatedByOmnilabs": {
 		"label": "Created by"
+	},
+
+	"TestimonialsSection": {
+		"testimonial1": "Testimonial 1",
+		"testimonial2": "Testimonial 2",
+		"testimonial3": "Testimonial 3",
+		"testimonial4": "Testimonial 4",
+		"testimonial5": "Testimonial 5",
+		"testimonial6": "Testimonial 6",
+		"testimonial7": "Testimonial 7",
+		"testimonial8": "Testimonial 8",
+		"testimonial9": "Testimonial 9",
+		"testimonial10": "Testimonial 10",
+		"testimonial11": "Testimonial 11",
+		"testimonial12": "Testimonial 12",
+		"testimonial13": "Testimonial 13",
+		"UpDownAnimation": {
+			"view": "View",
+			"socialProof": "Social proof",
+			"seeWhyClientsKeepComingBack": "See Why Clients Keep Coming Back"
+		},
+		"LeftRightAnimation": {
+			"eyebrow": "Client Results",
+            "title": "Don't take our word for it."
+		},
+		"PremiumDesign": {
+			"eyebrow": "Real clients",
+            "title": "What clients say"
+		}
 	},
 
 	"ContactSection": {

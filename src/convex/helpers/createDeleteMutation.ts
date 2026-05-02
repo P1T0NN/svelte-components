@@ -5,7 +5,7 @@ import { mutation } from '../_generated/server';
 
 // HELPERS
 import { getRateLimitedUserId } from './getRateLimitedUserId.js';
-import { requireAdmin } from './requireAdmin.js';
+import { requireAdmin } from '../auth/helpers/requireAdmin.js';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';

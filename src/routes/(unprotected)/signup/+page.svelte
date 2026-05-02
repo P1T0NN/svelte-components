@@ -3,8 +3,8 @@
 	import { COMPANY_DATA, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 	// COMPONENTS
-	import SignUpFormNoImage from '@/shared/components/ui/sign-up-form/sign-up-form-no-image.svelte';
-	import SignUpFormWithImage from '@/shared/components/ui/sign-up-form/sign-up-form-with-image.svelte';
+	import SignUpFormNoImage from '@/features/auth/components/sign-up-form/sign-up-form-no-image.svelte';
+	import SignUpFormWithImage from '@/features/auth/components/sign-up-form/sign-up-form-with-image.svelte';
 	import Link from '@/shared/components/ui/link/link.svelte';
 
 	// LUCIDE ICONS

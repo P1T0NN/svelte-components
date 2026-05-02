@@ -20,7 +20,8 @@ export const UNPROTECTED_PAGE_ENDPOINTS = {
     TABLE: "/table",
     UPLOADED_FILES: "/uploaded-files/:id",
     SIGNUP: "/signup",
-    FORGOT_PASSWORD: "/forgot-password"
+    FORGOT_PASSWORD: "/forgot-password",
+    CONTACT: "/contact",
 } as const;
 
 /**

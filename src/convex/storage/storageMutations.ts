@@ -3,14 +3,17 @@ import { ConvexError, v } from 'convex/values';
 import { mutation } from '../_generated/server';
 
 // HELPERS
-import { resolveUploadAuth } from '../helpers/resolveUploadAuth.js';
+import { resolveUploadAuth } from './helpers/resolveUploadAuth.js';
 
 // AGGREGATES
-import { uploadedFilesTableAggregate } from '../tables/uploadedFiles/uploadedFilesAggregate.js';
+import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';
 
 // TYPES
 import type { ConvexErrorPayload } from '../types/convexTypes.js';
-import type { UploadAuthMode } from '../helpers/resolveUploadAuth.js';
+import type { UploadAuthMode } from './helpers/resolveUploadAuth.js';
+
+/** Change this one line when copying this file into a new project. */
+const TABLE = 'uploadedFiles' as const;
 
 /**
  * Who can call the upload endpoints in this file.
@@ -57,7 +60,7 @@ export const saveUploadedFile = mutation({
 			} satisfies ConvexErrorPayload);
 		}
 
-		const id = await ctx.db.insert('uploadedFiles', {
+		const id = await ctx.db.insert(TABLE, {
 			...(userId ? { ownerId: userId } : {}),
 			storageId: args.storageId,
 			url
