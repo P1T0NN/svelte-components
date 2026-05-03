@@ -1,7 +1,14 @@
 <script lang="ts">
+	// SVELTEKIT IMPORTS
+	import { goto } from '$app/navigation';
+
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
 	import { authClient } from '@/features/auth/lib/auth-client';
+	import { localizeHref } from '@/shared/lib/paraglide/runtime';
+
+	// CONFIG
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 	// COMPONENTS
 	import Button from '@/shared/components/ui/button/button.svelte';
@@ -23,6 +30,7 @@
 			toast.error(result.error.message as string);
 		} else {
 			toast.success(m['LogoutButton.logoutSuccess']());
+			goto(localizeHref(UNPROTECTED_PAGE_ENDPOINTS.LOGIN));
 		}
 
 		isLoggingOut = false;
