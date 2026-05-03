@@ -1,8 +1,10 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 	import { safeParse } from 'valibot';
+
+	// UTILS
+	import { authClient } from '@/features/auth/lib/auth-client';
 
 	// COMPONENTS
 	import * as Card from '@/shared/components/ui/card/index.js';
@@ -12,9 +14,11 @@
 		FieldLabel,
 		FieldError
 	} from '@/shared/components/ui/field/index.js';
-	import { Input } from '@/shared/components/ui/input/index.js';
 	import { Button } from '@/shared/components/ui/button/index.js';
+	import * as InputOTP from '@/features/auth/components/input-otp/index.js';
 	import EmailVerificationResend from './email-verification-resend.svelte';
+
+	const OTP_MAX_LENGTH = 8;
 
 	// UTILS
 	import { emailVerificationFormSchema } from './email-verification-form-schema.js';
@@ -29,7 +33,6 @@
 	import type { FieldErrors } from '@/shared/types/types';
 
 	const id = $props.id();
-	const { signIn } = useAuth();
 
 	let busy = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -82,9 +85,18 @@
 		errorMessage = null;
 
 		try {
-			await signIn('password', formData);
+			const { error } = await authClient.emailOtp.verifyEmail({
+				email: p.output.email,
+				otp: p.output.code
+			});
+			if (error) {
+				console.error('Email verification: verifyEmail failed:', error);
+				errorMessage = error.message ?? m['EmailVerificationForm.verificationFailed']();
+				busy = false;
+				return;
+			}
 		} catch (error) {
-			console.error('Email verification: signIn failed:', error);
+			console.error('Email verification: verifyEmail failed:', error);
 			errorMessage = m['EmailVerificationForm.verificationFailed']();
 			busy = false;
 			return;
@@ -118,15 +130,26 @@
 			<FieldGroup>
 				<Field>
 					<FieldLabel for="ev-code-{id}">{m['EmailVerificationForm.code']()}</FieldLabel>
-					<Input
-						id="ev-code-{id}"
+					<InputOTP.Root
+						id="ev-otp-{id}"
+						inputId="ev-code-{id}"
+						maxlength={OTP_MAX_LENGTH}
 						name="code"
-						type="text"
-						inputmode="numeric"
-						autocomplete="one-time-code"
+						required
 						autofocus
+						disabled={busy}
 						aria-invalid={fieldErrors.code ? 'true' : undefined}
-					/>
+					>
+						{#snippet children({ cells })}
+							<InputOTP.Group
+								class="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border"
+							>
+								{#each cells as cell, i (i)}
+									<InputOTP.Slot {cell} />
+								{/each}
+							</InputOTP.Group>
+						{/snippet}
+					</InputOTP.Root>
 					{#if fieldErrors.code}
 						<FieldError>{fieldErrors.code}</FieldError>
 					{/if}
@@ -178,15 +201,26 @@
 
 			<Field>
 				<FieldLabel for="ev-code-{id}-stacked">{m['EmailVerificationForm.code']()}</FieldLabel>
-				<Input
-					id="ev-code-{id}-stacked"
+				<InputOTP.Root
+					id="ev-otp-{id}-stacked"
+					inputId="ev-code-{id}-stacked"
+					maxlength={OTP_MAX_LENGTH}
 					name="code"
-					type="text"
-					inputmode="numeric"
-					autocomplete="one-time-code"
+					required
 					autofocus
+					disabled={busy}
 					aria-invalid={fieldErrors.code ? 'true' : undefined}
-				/>
+				>
+					{#snippet children({ cells })}
+						<InputOTP.Group
+							class="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border"
+						>
+							{#each cells as cell, i (i)}
+								<InputOTP.Slot {cell} />
+							{/each}
+						</InputOTP.Group>
+					{/snippet}
+				</InputOTP.Root>
 				{#if fieldErrors.code}
 					<FieldError>{fieldErrors.code}</FieldError>
 				{/if}

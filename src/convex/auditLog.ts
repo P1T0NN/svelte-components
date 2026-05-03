@@ -1,6 +1,5 @@
 // LIBRARIES
 import type { MutationCtx } from './_generated/server';
-import type { Id } from './_generated/dataModel';
 
 // CONFIG
 import { FEATURES } from './features';
@@ -31,7 +30,7 @@ export type AuditAction =
  */
 export async function logAudit(
 	ctx: MutationCtx,
-	userId: Id<'users'>,
+	userId: string,
 	action: AuditAction,
 	options?: {
 		targetTable?: string;

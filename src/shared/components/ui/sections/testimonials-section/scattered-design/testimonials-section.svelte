@@ -66,7 +66,7 @@
 			lg+: container becomes a fixed-height canvas; cards switch to absolute via the
 			`desktop` class string and scatter across it.
 		-->
-		<div class="relative flex flex-col gap-6 lg:block lg:h-[50rem]">
+		<div class="relative flex flex-col gap-6 lg:block lg:h-200">
 			{#each ITEMS as { testimonial, variant, desktop } (testimonial.name)}
 				<div class={desktop}>
 					<TestimonialsSectionItem {testimonial} {variant} />

@@ -4,7 +4,7 @@
 
 	// LIBRARIES
 	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
 	// CONFIG
 	import { COMPANY_DATA, PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';

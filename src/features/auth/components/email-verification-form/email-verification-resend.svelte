@@ -1,11 +1,13 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
 	import { FieldDescription } from '@/shared/components/ui/field/index.js';
+
+	// UTILS
+	import { authClient } from '@/features/auth/lib/auth-client';
 
 	// TYPES
 	import type { EmailVerificationResendConfig } from './emailVerificationFormTypes.js';
@@ -20,8 +22,6 @@
 		config: EmailVerificationResendConfig;
 		onSendingChange?: (inFlight: boolean) => void;
 	} = $props();
-
-	const { signIn } = useAuth();
 
 	const COOLDOWN_SECONDS = 30;
 
@@ -58,23 +58,13 @@
 		resending = true;
 		onSendingChange?.(true);
 
-		const formData = new FormData();
-
-		formData.set('email', config.email);
-		formData.set('flow', config.flow);
-
-		if (config.flow === 'signIn' || config.flow === 'signUp') {
-			formData.set('password', config.password);
-		}
-
-		if (config.flow === 'signUp') {
-			formData.set('name', config.name);
-		}
-
 		try {
-			const result = await signIn('password', formData);
-			if (result.signingIn && (config.flow === 'signIn' || config.flow === 'signUp')) {
-				await config.onSignedIn?.();
+			const { error } = await authClient.emailOtp.sendVerificationOtp({
+				email: config.email,
+				type: config.type
+			});
+			if (error) {
+				console.error('Email verification: resend failed:', error);
 			}
 		} catch (error) {
 			console.error('Email verification: resend failed:', error);

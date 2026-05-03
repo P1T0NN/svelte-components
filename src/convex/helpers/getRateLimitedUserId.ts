@@ -1,13 +1,12 @@
 // LIBRARIES
 import { ConvexError } from 'convex/values';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId } from '@/convex/auth/helpers/getAuthUserId';
 
 // UTILS
 import { rateLimiter } from '@/convex/rateLimiter';
 
 // TYPES
 import type { ActionCtx, MutationCtx } from '@/convex/_generated/server';
-import type { Id } from '@/convex/_generated/dataModel';
 import type { RateLimitName } from '@/convex/rateLimiter';
 import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
 
@@ -29,14 +28,10 @@ import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
  *              bulk endpoints so a request that does N units of work pays N tokens.
  */
 export const getRateLimitedUserId = async (
-	// Accepts both contexts so this helper is reusable from actions (Resend calls,
-	// 3rd-party API hits, schedulers) — `getAuthUserId` and `rateLimiter.limit`
-	// both work on `MutationCtx | ActionCtx` (the rate limiter only needs
-	// `runMutation`, which actions also expose).
 	ctx: MutationCtx | ActionCtx,
 	name: RateLimitName = 'mutation',
 	count?: number
-): Promise<Id<'users'>> => {
+): Promise<string> => {
 	const userId = await getAuthUserId(ctx);
 
 	if (!userId) {

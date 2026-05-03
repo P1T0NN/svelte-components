@@ -1,14 +1,15 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
 
+	// UTILS
+	import { authClient } from '@/features/auth/lib/auth-client';
+
 	let { class: className = '' }: { class?: string } = $props();
 
-	const { signIn } = useAuth();
 	let disabled = $state(false);
 
 	async function handleGoogleLogin() {
@@ -17,7 +18,11 @@
 		disabled = true;
 
 		try {
-			await signIn('google');
+			const { error } = await authClient.signIn.social({ provider: 'google' });
+			if (error) {
+				console.error('Failed to sign in with Google:', error);
+				disabled = false;
+			}
 		} catch (error) {
 			console.error('Failed to sign in with Google:', error);
 			disabled = false;

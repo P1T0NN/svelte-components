@@ -171,13 +171,7 @@
 		onCancel={form.onCancel}
 		onSuccess={form.onVerifySuccess}
 		resend={form.verifyContext
-			? {
-					flow: 'signUp',
-					name: form.verifyContext.name,
-					email: form.verifyContext.email,
-					password: form.verifyContext.password,
-					onSignedIn: form.onVerifySuccess
-				}
+			? { email: form.verifyContext.email, type: 'email-verification' }
 			: undefined}
 		class={cn('flex flex-col gap-6', className)}
 		bind:ref

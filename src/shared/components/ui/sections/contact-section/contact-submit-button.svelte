@@ -26,7 +26,8 @@
 		const data = {
 			name: contactSectionClass.contactInputs.name,
 			email: contactSectionClass.contactInputs.email,
-			message: contactSectionClass.contactInputs.message
+			message: contactSectionClass.contactInputs.message,
+			website: contactSectionClass.contactInputs.website
 		};
 
 		const validation = safeParse(sendContactFormEmailSchema, data);
@@ -42,11 +43,7 @@
 		submitting = true;
 
 		try {
-			const result = await sendContactFormEmail({
-				name: validation.output.name,
-				email: validation.output.email,
-				message: validation.output.message
-			});
+			const result = await sendContactFormEmail(validation.output);
 
 			if (!result.success) {
 				toast.error(result.message);

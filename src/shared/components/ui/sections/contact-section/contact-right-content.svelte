@@ -100,6 +100,22 @@
 			</FieldGroup>
 		</FieldSet>
 
+		<!--
+			Honeypot — invisible to humans (off-screen + aria-hidden + tabindex=-1),
+			but most form-stuffing bots will fill it in. Server rejects any non-empty value.
+		-->
+		<div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+			<label for="contact-website">Website</label>
+			<input
+				id="contact-website"
+				type="text"
+				name="website"
+				autocomplete="off"
+				tabindex={-1}
+				bind:value={contactSectionClass.contactInputs.website}
+			/>
+		</div>
+
 		<ContactSubmitButton />
 
 		<p class="mt-4 text-center text-xs leading-relaxed text-muted-foreground">

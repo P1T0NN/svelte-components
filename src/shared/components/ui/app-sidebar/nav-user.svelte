@@ -1,9 +1,9 @@
 <script lang="ts">
 	// CLASSES
-	import { usersClass } from '@/features/users/classes/users-class.svelte';
+	import { authClass } from '@/features/auth/classes/authClass.svelte';
 
 	// LIBRARIES
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 
 	// COMPONENTS
 	import * as Avatar from '@/shared/components/ui/avatar/index.js';
@@ -23,8 +23,8 @@
 
 	const auth = useAuth();
 
-	const user = $derived(usersClass.currentUser);
-	const userLoading = $derived(usersClass.userLoading);
+	const user = $derived(authClass.currentUser);
+	const userLoading = $derived(authClass.userLoading);
 	/** Avoid “Account” flash before auth + Convex have settled. */
 	const showUserLoading = $derived(auth.isLoading || userLoading || (auth.isAuthenticated && user === undefined));
 </script>

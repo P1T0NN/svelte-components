@@ -1,11 +1,11 @@
 // LIBRARIES
 import { ConvexError, v } from 'convex/values';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { getAuthUserId } from '@/convex/auth/helpers/getAuthUserId';
 import { mutation } from '../_generated/server';
 
 // HELPERS
 import { getRateLimitedUserId } from './getRateLimitedUserId.js';
-import { requireAdmin } from '../auth/helpers/requireAdmin.js';
+import { requireAdmin } from '../auth/middleware/authMiddleware.js';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';
@@ -255,8 +255,8 @@ export type DeleteMutationData = {
  *     fetch, or Phase 1/2.
  *   - `authorize` — per-row custom predicate, ADDITIONAL to the above. Access ctx, call
  *     `getAuthUserId` + `ctx.db.get(userId)` to inspect roles, cross-table lookups, etc.
- *     Don't call the rate-limiting `getRateLimitedUser*` helpers here — they'd
- *     double-charge the bucket already consumed at step 3.
+ *     Don't call `getRateLimitedUserId` here — it'd double-charge the bucket already
+ *     consumed at step 3.
  *
  * All supplied checks AND (every one must pass). For OR semantics (e.g. "admin OR owner"),
  * put the full rule inside `authorize` alone AND set `adminOnly: false` to disable the
@@ -280,7 +280,7 @@ export type DeleteMutationData = {
  * // "Admin OR owner" — custom rule in `authorize`, MUST disable the default admin gate
  * // or non-admin owners would be blocked before `authorize` ever runs.
  * // NOTE: factory already rate-limited once at step 3, so use `getAuthUserId` here (not
- * // `getRateLimitedUser*`) to avoid double-charging the bucket.
+ * // `getRateLimitedUserId`) to avoid double-charging the bucket.
  * export const deleteInvoice = createDeleteMutation({
  *   table: 'invoices',
  *   adminOnly: false,

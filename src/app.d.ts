@@ -1,12 +1,11 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
-import type { Doc } from '@/convex/_generated/dataModel';
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: Doc<'users'> | null;
+			token: string | undefined;
 		}
 		interface PageData {
 			/** Shown in app shells (e.g. `SiteHeader`) when set by a route `load`. */

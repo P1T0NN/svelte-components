@@ -4,18 +4,23 @@
 
 	// SVELTEKIT IMPORTS
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
 
 	// LIBRARIES
-	import { setupConvexAuth, useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '@/convex/_generated/api';
 	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { authClient } from '@/features/auth/lib/auth-client';
+	import { useQuery } from '@mmailaender/convex-svelte';
+	import { api } from '@/convex/_generated/api';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+
+	// CLASSES
+	import { authClass, type CurrentUser } from '@/features/auth/classes/authClass.svelte';
 
 	// CONFIG
 	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
-
-	// CLASSES
-	import { usersClass } from '@/features/users/classes/users-class.svelte';
 
 	// COMPONENTS
 	import { Toaster } from '@/shared/components/ui/sonner';
@@ -24,28 +29,34 @@
 
 	let { children, data } = $props();
 
-	setupConvexAuth({ getServerState: () => data.authState });
-
-	// Call useAuth once at layout init
-	const auth = useAuth();
-	const isAuthenticated = $derived(auth.isAuthenticated);
-
 	const pathnameLogical = $derived(new URL(deLocalizeUrl(page.url.href)).pathname);
 	const isLoginPage = $derived(pathnameLogical === UNPROTECTED_PAGE_ENDPOINTS.LOGIN);
 	const isSidebarShell = $derived(pathnameLogical.startsWith(UNPROTECTED_PAGE_ENDPOINTS.SIDEBAR));
 
-	// Only query user data when authenticated (prevents unnecessary auth token refreshes)
-	const currentUserQuery = useQuery(
-		api.tables.users.usersQueries.getCurrentUser,
-		() => (isAuthenticated ? {} : 'skip')
+	createSvelteAuthClient({
+		authClient,
+		getServerState: () => data.authState
+	});
+	injectAnalytics({ mode: dev ? 'development' : 'production' });
+	injectSpeedInsights();
+
+	// NOTE: Has to be after the `createSvelteAuthClient` call because it uses the `authClient` instance.
+	const auth = useAuth();
+
+	const currentUserResponse = useQuery(
+		api.auth.queries.authQueries.getCurrentUser,
+		() => (auth.isAuthenticated ? {} : 'skip'),
+		() => ({
+			initialData: data.currentUser ?? undefined,
+			keepPreviousData: true
+		})
 	);
-	
+
+	// Push the live query into the shared store so any component can read
+	// `authClass.currentUser` without re-subscribing.
 	$effect(() => {
-		if (auth.isLoading) {
-			usersClass.syncFromCurrentUserQuery(undefined, true);
-			return;
-		}
-		usersClass.syncFromCurrentUserQuery(currentUserQuery.data, currentUserQuery.isLoading);
+		const data = currentUserResponse.data as CurrentUser | null | undefined;
+		authClass.syncFromCurrentUserQuery(data, currentUserResponse.isLoading);
 	});
 </script>
 

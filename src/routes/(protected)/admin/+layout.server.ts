@@ -11,17 +11,16 @@ import { localizedPath } from '@/shared/utils/localizedPath';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async (event) => {
-	const { locals } = event;
-	if (!locals.user) {
+	// Reuse the user the root layout already fetched in `+layout.server.ts`.
+	const { currentUser } = await event.parent();
+
+	if (!currentUser) {
 		throw redirect(302, localizedPath(event, UNPROTECTED_PAGE_ENDPOINTS.LOGIN));
 	}
 
-	if (locals.user.role !== 'admin') {
+	if ((currentUser as { role?: string }).role !== 'admin') {
 		throw redirect(302, localizedPath(event, PROTECTED_PAGE_ENDPOINTS.HOME));
 	}
 
-	return {
-		user: locals.user
-	};
+	return { currentUser };
 };
-

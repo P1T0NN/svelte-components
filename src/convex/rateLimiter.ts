@@ -40,8 +40,12 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
 	// Destructive ops, charged `count` tokens per request so a 50-row delete pays
 	// 50 tokens. Capacity 100 = "one big batch then refill"; 200/min sustained
 	// keeps cleanup scripts and admin sweeps unblocked.
-	delete: { kind: 'token bucket', rate: 200, period: MINUTE, capacity: 100 }
+	delete: { kind: 'token bucket', rate: 200, period: MINUTE, capacity: 100 },
+
+	// File uploads — tighter than `mutation` because each call mints a storage URL
+	// and a row insert. 30/min sustained, bursts up to 10.
+	upload: { kind: 'token bucket', rate: 30, period: MINUTE, capacity: 10 }
 });
 
 /** Names of all configured rate-limit buckets. */
-export type RateLimitName = 'mutation' | 'action' | 'delete';
+export type RateLimitName = 'mutation' | 'action' | 'delete' | 'upload';

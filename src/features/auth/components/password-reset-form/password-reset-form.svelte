@@ -5,11 +5,9 @@
 
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 	import { safeParse } from 'valibot';
 	import { toast } from 'svelte-sonner';
-	import { ConvexError } from 'convex/values';
-	import { isRateLimitError } from '@convex-dev/rate-limiter';
+	import { authClient } from '@/features/auth/lib/auth-client';
 
 	// CONFIG
 	import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
@@ -37,10 +35,6 @@
 	import {
 		valibotIssuesToFieldErrors,
 	} from '@/shared/utils/validationUtils.js';
-	import {
-		hasTranslatableMessage,
-		translateFromBackend
-	} from '@/shared/utils/translateFromBackend.js';
 
 	// TYPES
 	import type { PasswordResetFormStep, PasswordResetField } from './passwordResetFormTypes.js';
@@ -50,7 +44,6 @@
 	const OTP_MAX_LENGTH = 8;
 
 	const id = $props.id();
-	const { signIn } = useAuth();
 
 	let step = $state<PasswordResetFormStep>('forgot');
 	let busy = $state(false);
@@ -85,10 +78,10 @@
 
 		const normalizedEmail = p.output.email;
 		try {
-			await signIn('password', formData);
+			// Anti-enumeration: ignore the result. The UI always advances to the reset
+			// step regardless of whether this email is registered.
+			await authClient.emailOtp.requestPasswordReset({ email: normalizedEmail });
 		} catch (error) {
-			// Anti-enumeration: never reveal whether this email is registered. The UI
-			// always advances to the reset step; outcomes are only visible in logs.
 			console.error('Password reset: send code (outcome hidden from user):', error);
 		} finally {
 			emailDraft = normalizedEmail;
@@ -132,28 +125,23 @@
 		errorMessage = null;
 
 		try {
-			await signIn('password', formData);
+			const { error } = await authClient.emailOtp.resetPassword({
+				email: p.output.email,
+				otp: p.output.code,
+				password: p.output.newPassword
+			});
+			if (error) {
+				console.error('Password reset: verification failed:', error);
+				if (/password/i.test(error.message ?? '')) {
+					fieldErrors = { newPassword: error.message ?? m['EmailVerificationForm.verificationFailed']() };
+				} else {
+					errorMessage = error.message ?? m['EmailVerificationForm.verificationFailed']();
+				}
+				busy = false;
+				return;
+			}
 		} catch (error) {
 			console.error('Password reset: verification failed:', error);
-
-			// Rate limit (no-op until/unless an OTP-specific limiter is added; cheap to keep).
-			if (isRateLimitError(error)) {
-				errorMessage = m['GenericMessages.TOO_MANY_REQUESTS']();
-				busy = false;
-				return;
-			}
-
-			// Typed backend error (currently: PASSWORD_TOO_SHORT / TOO_LONG / TOO_COMMON from
-			// `validatePasswordRequirements`). Surface under the password field so users see
-			// where to fix it, not as a top-level form error.
-			if (error instanceof ConvexError && hasTranslatableMessage(error.data)) {
-				fieldErrors = { newPassword: translateFromBackend(error.data.message) };
-				errorMessage = null;
-				busy = false;
-				return;
-			}
-
-			// Wrong / expired code, or anything else.
 			errorMessage = m['EmailVerificationForm.verificationFailed']();
 			busy = false;
 			return;
@@ -307,7 +295,7 @@
 
 					<EmailVerificationResend
 						disabled={busy}
-						config={{ flow: 'reset', email: step.email }}
+						config={{ email: step.email, type: 'forget-password' }}
 						onSendingChange={(inFlight) => {
 							if (inFlight) {
 								busy = true;

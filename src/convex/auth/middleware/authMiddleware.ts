@@ -1,4 +1,5 @@
 // LIBRARIES
+import { ConvexError } from 'convex/values';
 import {
 	customAction,
 	customCtx,
@@ -7,10 +8,52 @@ import {
 
 // UTILS
 import { action, mutation } from '@/convex/_generated/server';
+import { authComponent } from '@/convex/auth/auth';
 import { getRateLimitedUserId } from '@/convex/helpers/getRateLimitedUserId';
 
 // TYPES
+import type { ActionCtx, MutationCtx, QueryCtx } from '@/convex/_generated/server';
 import type { RateLimitName } from '@/convex/rateLimiter';
+import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
+import type { Id } from '@/convex/auth/component/_generated/dataModel';
+
+/**
+ * Assert the caller is an authenticated admin.
+ *
+ * Throws typed {@link ConvexError}s whose payload shape ({@link ConvexErrorPayload}) carries
+ * a `TranslatableMessage` — the client picks it up via `error.data.message` and feeds it
+ * straight into `translateFromBackend` for locale-aware toast text.
+ *
+ * - `NOT_AUTHENTICATED` — no session at all
+ * - `ADMIN_ACCESS_REQUIRED` — signed in but `role !== 'admin'`
+ *
+ * Returns the caller's better-auth user id (string).
+ *
+ * Used as a building block by {@link adminMutation} / {@link adminAction} (whole-endpoint
+ * gating) and called directly from flows where the admin check is conditional or branches
+ * with other modes (e.g. `createDeleteMutation`, `resolveUploadAuth`).
+ */
+export const requireAdmin = async (
+	ctx: MutationCtx | QueryCtx | ActionCtx
+): Promise<string> => {
+	const user = await authComponent.getAuthUser(ctx);
+
+	if (!user) {
+		throw new ConvexError({
+			code: 'NOT_AUTHENTICATED',
+			message: { key: 'GenericMessages.NOT_AUTHENTICATED' }
+		} satisfies ConvexErrorPayload);
+	}
+
+	if ((user as { role?: string }).role !== 'admin') {
+		throw new ConvexError({
+			code: 'ADMIN_ACCESS_REQUIRED',
+			message: { key: 'GenericMessages.ADMIN_ACCESS_REQUIRED' }
+		} satisfies ConvexErrorPayload);
+	}
+
+	return user.userId as Id<'user'>;
+};
 
 /**
  * Options passed to {@link authMutation} / {@link authAction}.
@@ -88,4 +131,47 @@ export const authAction = (opts: AuthOptions = {}) =>
 		customCtx(async (ctx) => ({
 			userId: await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action')
 		}))
+	);
+
+/**
+ * Wrap a Convex **mutation** so it's admin-only AND rate-limited.
+ *
+ * Throws:
+ * - `NOT_AUTHENTICATED` for anonymous callers
+ * - `ADMIN_ACCESS_REQUIRED` for signed-in non-admins
+ * - `RateLimitError` once the bucket is empty
+ *
+ * Rate-limit charge happens before the admin check so a legitimate admin's
+ * bursts are still bounded. `ctx.userId` is the BA user id of the admin.
+ *
+ * For per-row admin gating inside a more complex flow (e.g. `createDeleteMutation`),
+ * use {@link requireAdmin} directly instead of this wrapper.
+ *
+ * @example
+ * ```ts
+ * export const promoteUser = adminMutation()({
+ *   args: { userId: v.string() },
+ *   handler: async (ctx, args) => {  ...  }
+ * });
+ * ```
+ */
+export const adminMutation = (opts: AuthOptions = {}) =>
+	customMutation(
+		mutation,
+		customCtx(async (ctx) => {
+			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation');
+			await requireAdmin(ctx);
+			return { userId };
+		})
+	);
+
+/** Action variant of {@link adminMutation}. Default bucket: `'action'`. */
+export const adminAction = (opts: AuthOptions = {}) =>
+	customAction(
+		action,
+		customCtx(async (ctx) => {
+			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action');
+			await requireAdmin(ctx);
+			return { userId };
+		})
 	);

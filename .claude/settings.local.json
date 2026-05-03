@@ -33,7 +33,12 @@
       "Bash(git rm *)",
       "Bash(rmdir src/convex/storage/queries src/convex/storage/mutations)",
       "Bash(git add *)",
-      "Bash(sed -i -e 's|api\\\\.storage\\\\.queries\\\\.uploadedFilesQueries\\\\.fetchUploadedFiles|api.storage.uploadedFiles.fetchUploadedFiles|g' -e 's|api\\\\.storage\\\\.mutations\\\\.uploadedFilesMutations\\\\.deleteUploadedFile|api.storage.uploadedFiles.deleteUploadedFile|g' 'src/routes/\\(unprotected\\)/table/+page.svelte')"
+      "Bash(sed -i -e 's|api\\\\.storage\\\\.queries\\\\.uploadedFilesQueries\\\\.fetchUploadedFiles|api.storage.uploadedFiles.fetchUploadedFiles|g' -e 's|api\\\\.storage\\\\.mutations\\\\.uploadedFilesMutations\\\\.deleteUploadedFile|api.storage.uploadedFiles.deleteUploadedFile|g' 'src/routes/\\(unprotected\\)/table/+page.svelte')",
+      "WebFetch(domain:labs.convex.dev)",
+      "Bash(grep -rn 'process.env\\\\|$env/static' src/)",
+      "Bash(bun add *)",
+      "Bash(bunx --bun bun add botid)",
+      "Bash(npx --yes bun add botid)"
     ]
   }
 }

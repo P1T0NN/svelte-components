@@ -7,14 +7,17 @@ class ContactSectionClass {
 	public contactInputs = $state({
 		name: '',
 		email: '',
-		message: ''
+		message: '',
+		/** Honeypot — must remain empty. Hidden from real users via CSS. */
+		website: ''
 	});
 
 	clearInputs() {
 		this.contactInputs = {
 			name: '',
 			email: '',
-			message: ''
+			message: '',
+			website: ''
 		};
 		this.fieldErrors = {};
 	}

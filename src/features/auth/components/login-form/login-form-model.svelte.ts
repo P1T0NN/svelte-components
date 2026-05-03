@@ -3,7 +3,6 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 
 // LIBRARIES
-import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 import { safeParse } from 'valibot';
 import { toast } from 'svelte-sonner';
 
@@ -11,6 +10,7 @@ import { toast } from 'svelte-sonner';
 import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 // UTILS
+import { authClient } from '@/features/auth/lib/auth-client';
 import { loginFormSchema } from './login-form-schema.js';
 import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 
@@ -24,8 +24,6 @@ export type LoginFormCopy = {
 };
 
 export function createLoginForm(copy: LoginFormCopy) {
-	const { signIn } = useAuth();
-
 	let step = $state<LoginFormStep>('signIn');
 	let busy = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -57,14 +55,27 @@ export function createLoginForm(copy: LoginFormCopy) {
 		errorMessage = null;
 
 		try {
-			const result = await signIn('password', formData);
-			if (result.signingIn) {
-				await onVerifySuccess();
+			const { error } = await authClient.signIn.email({
+				email: p.output.email,
+				password: p.output.password
+			});
+			if (error) {
+				const code = (error as { code?: string }).code ?? '';
+				if (code === 'EMAIL_NOT_VERIFIED') {
+					await authClient.emailOtp.sendVerificationOtp({
+						email: p.output.email,
+						type: 'email-verification'
+					});
+					emailDraft = p.output.email;
+					verifyContext = { email: p.output.email, password: p.output.password };
+					step = { email: p.output.email };
+					return;
+				}
+				console.error('Login: sign in failed:', error);
+				errorMessage = error.message ?? copy.signInFailed();
 				return;
 			}
-			emailDraft = p.output.email;
-			verifyContext = { email: p.output.email, password: p.output.password };
-			step = { email: p.output.email };
+			await onVerifySuccess();
 		} catch (error) {
 			console.error('Login: sign in failed:', error);
 			errorMessage = copy.signInFailed();

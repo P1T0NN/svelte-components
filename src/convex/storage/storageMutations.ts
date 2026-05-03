@@ -1,56 +1,80 @@
 // LIBRARIES
 import { ConvexError, v } from 'convex/values';
-import { mutation } from '../_generated/server';
 
-// HELPERS
-import { resolveUploadAuth } from './helpers/resolveUploadAuth.js';
+// MIDDLEWARE
+import { authMutation } from '../auth/middleware/authMiddleware';
 
 // AGGREGATES
 import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';
 
 // TYPES
 import type { ConvexErrorPayload } from '../types/convexTypes.js';
-import type { UploadAuthMode } from './helpers/resolveUploadAuth.js';
 
 /** Change this one line when copying this file into a new project. */
 const TABLE = 'uploadedFiles' as const;
 
 /**
- * Who can call the upload endpoints in this file.
- *
- * - `'userId'` (default) — signed-in users only; `ownerId` is stamped on the row.
- * - `'admin'`            — only admins.
- * - `'insecure'`         — anyone, including anonymous visitors. Rows get no `ownerId`
- *                          and can only be deleted by admins.
- *
- * Flip this single constant to change behaviour for both `generateUploadUrl` and
- * `saveUploadedFile` at once — keeping the URL-gen and the row-save in lockstep is what
- * makes the two-step upload flow sensible. Per-endpoint divergence is almost always a bug.
+ * File upload constraints — enforced server-side at the `saveUploadedFile` step.
+ * The client-side picker should mirror these for UX, but the server is the trust
+ * boundary: client checks are advisory only.
  */
-const UPLOAD_AUTH_MODE: UploadAuthMode = 'userId';
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+/** Allow-list of accepted MIME types. Add/remove per project needs. */
+const ALLOWED_CONTENT_TYPES = new Set<string>([
+	'image/jpeg',
+	'image/png',
+	'image/webp',
+	'image/gif',
+	'application/pdf'
+]);
 
-/** Short-lived POST URL; response JSON includes `storageId`. Auth enforced per {@link UPLOAD_AUTH_MODE}. */
-export const generateUploadUrl = mutation({
+/**
+ * Short-lived POST URL; response JSON includes `storageId`.
+ *
+ * Auth: any signed-in user. To gate behind admin instead, swap `authMutation`
+ * for `adminMutation` (same shape, different role check) — apply to both
+ * functions in this file so URL-gen and row-save stay in lockstep.
+ */
+export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
 	args: {},
 	handler: async (ctx) => {
-		await resolveUploadAuth(ctx, UPLOAD_AUTH_MODE);
 		return await ctx.storage.generateUploadUrl();
 	}
 });
 
 /**
- * Persist a file row after upload.
+ * Persist a file row after upload. Stamps the caller as `ownerId` so the row can
+ * later be deleted through the owner path in {@link createDeleteMutation}.
  *
- * When the mode resolves a non-null `userId`, we stamp it as `ownerId` so the row can
- * later be deleted through the owner path in {@link createDeleteMutation}. In `'insecure'`
- * mode with an anonymous caller, `ownerId` is left unset.
+ * Validates against the storage metadata Convex recorded at upload time —
+ * trustworthy regardless of any client-supplied content-type or size hints.
  */
-export const saveUploadedFile = mutation({
+export const saveUploadedFile = authMutation({ rateLimit: 'upload' })({
 	args: {
 		storageId: v.id('_storage')
 	},
 	handler: async (ctx, args) => {
-		const userId = await resolveUploadAuth(ctx, UPLOAD_AUTH_MODE);
+		const meta = await ctx.db.system.get(args.storageId);
+		if (!meta) {
+			throw new ConvexError({
+				code: 'UPLOAD_NOT_FOUND',
+				message: { key: 'GenericMessages.UPLOAD_NOT_FOUND' }
+			} satisfies ConvexErrorPayload);
+		}
+		if (meta.size > MAX_UPLOAD_BYTES) {
+			await ctx.storage.delete(args.storageId);
+			throw new ConvexError({
+				code: 'UPLOAD_TOO_LARGE',
+				message: { key: 'GenericMessages.UPLOAD_TOO_LARGE' }
+			} satisfies ConvexErrorPayload);
+		}
+		if (!ALLOWED_CONTENT_TYPES.has(meta.contentType ?? '')) {
+			await ctx.storage.delete(args.storageId);
+			throw new ConvexError({
+				code: 'UPLOAD_TYPE_NOT_ALLOWED',
+				message: { key: 'GenericMessages.UPLOAD_TYPE_NOT_ALLOWED' }
+			} satisfies ConvexErrorPayload);
+		}
 
 		const url = await ctx.storage.getUrl(args.storageId);
 		if (!url) {
@@ -61,7 +85,7 @@ export const saveUploadedFile = mutation({
 		}
 
 		const id = await ctx.db.insert(TABLE, {
-			...(userId ? { ownerId: userId } : {}),
+			ownerId: ctx.userId,
 			storageId: args.storageId,
 			url
 		});

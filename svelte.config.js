@@ -15,8 +15,44 @@ const config = {
 		alias: {
             "@/*": "./src/*"
         },
+        // SvelteKit's CSRF origin check is on by default. Add extra allowed
+        // origins here only if needed (e.g. multi-domain setups). An empty list
+        // (or omitting `csrf` entirely) keeps the default same-origin policy.
+        csrf: {
+            trustedOrigins: []
+        },
         experimental: {
             remoteFunctions: true
+        },
+        // CSP: SvelteKit emits hashes for its own inline scripts/styles in 'auto'
+        // mode, so we don't need 'unsafe-inline' / 'unsafe-eval' for script-src.
+        // 'unsafe-inline' stays on style-src for Tailwind/inline styles.
+        csp: {
+            mode: 'auto',
+            directives: {
+                'default-src': ['self'],
+                'script-src': ['self', 'blob:', 'https://va.vercel-scripts.com'],
+                'worker-src': ['self', 'blob:'],
+                'style-src': ['self', 'unsafe-inline'],
+                'img-src': ['self', 'data:', 'https:', 'blob:'],
+                'font-src': ['self', 'data:'],
+                'connect-src': [
+                    'self',
+                    'https://accounts.google.com',
+                    'https://oauth2.googleapis.com',
+                    'https://www.googleapis.com',
+                    'https://*.convex.cloud',
+                    'wss://*.convex.cloud',
+                    // Vercel Analytics + Speed Insights telemetry endpoint
+                    'https://va.vercel-scripts.com'
+                ],
+                'frame-src': ['self', 'https://accounts.google.com'],
+                'object-src': ['none'],
+                'base-uri': ['self'],
+                'form-action': ['self'],
+                'frame-ancestors': ['none'],
+                'upgrade-insecure-requests': true
+            }
         }
 	},
     compilerOptions: {

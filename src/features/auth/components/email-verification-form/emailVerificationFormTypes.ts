@@ -1,23 +1,11 @@
 /** Names of validatable inputs in the email-verification form. */
 export type EmailVerificationField = 'code';
 
-/** What to send when the user taps “Resend” (Convex Auth Password provider). */
-export type EmailVerificationResendConfig =
-	| {
-			flow: 'signIn';
-			email: string;
-			password: string;
-			/** If the library completes sign-in without OTP (edge case), run success flow. */
-			onSignedIn?: () => void | Promise<void>;
-	  }
-	| {
-			flow: 'signUp';
-			name: string;
-			email: string;
-			password: string;
-			onSignedIn?: () => void | Promise<void>;
-	  }
-	| {
-			flow: 'reset';
-			email: string;
-	  };
+/** Better-auth emailOTP types. */
+export type EmailOtpType = 'sign-in' | 'email-verification' | 'forget-password';
+
+/** What to send when the user taps "Resend". */
+export type EmailVerificationResendConfig = {
+	email: string;
+	type: EmailOtpType;
+};

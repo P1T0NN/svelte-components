@@ -4,19 +4,16 @@ import { resolve } from '$app/paths';
 
 // LIBRARIES
 import { m } from '@/shared/lib/paraglide/messages';
-import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 import { safeParse } from 'valibot';
 import { toast } from 'svelte-sonner';
-import { ConvexError } from 'convex/values';
-import { isRateLimitError } from '@convex-dev/rate-limiter';
 
 // CONFIG
 import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 // UTILS
+import { authClient } from '@/features/auth/lib/auth-client';
 import { signUpFormSchema } from './sign-up-form-schema.js';
 import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
-import { hasTranslatableMessage, translateFromBackend } from '@/shared/utils/translateFromBackend.js';
 
 // TYPES
 import type { SignUpFormStep, SignUpField } from './signUpFormTypes.js';
@@ -28,8 +25,6 @@ export type SignUpFormCopy = {
 };
 
 export function createSignUpForm(copy: SignUpFormCopy) {
-	const { signIn } = useAuth();
-
 	let step = $state<SignUpFormStep>('signUp');
 	let busy = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -65,18 +60,27 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 			return;
 		}
 
-		formData.delete('confirmPassword');
-
 		fieldErrors = {};
 		busy = true;
 		errorMessage = null;
 
 		try {
-			const result = await signIn('password', formData);
-			if (result.signingIn) {
-				await onVerifySuccess();
+			const { error } = await authClient.signUp.email({
+				name: p.output.name,
+				email: p.output.email,
+				password: p.output.password
+			});
+
+			if (error) {
+				console.error('Sign up failed:', error);
+				if (/password/i.test(error.message ?? '')) {
+					fieldErrors = { password: error.message ?? copy.signUpFailed() };
+				} else {
+					errorMessage = error.message ?? copy.signUpFailed();
+				}
 				return;
 			}
+
 			nameDraft = p.output.name;
 			emailDraft = p.output.email;
 			verifyContext = {
@@ -87,22 +91,6 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 			step = { email: p.output.email };
 		} catch (error) {
 			console.error('Sign up failed:', error);
-
-			// Rate limit (no-op until/unless an OTP-specific limiter is added; cheap to keep).
-			if (isRateLimitError(error)) {
-				errorMessage = m['GenericMessages.TOO_MANY_REQUESTS']();
-				return;
-			}
-
-			// Typed backend error (currently: PASSWORD_TOO_SHORT / TOO_LONG / TOO_COMMON from
-			// `validatePasswordRequirements`). Surface under the password field so users see
-			// where to fix it, not as a top-level form error.
-			if (error instanceof ConvexError && hasTranslatableMessage(error.data)) {
-				fieldErrors = { password: translateFromBackend(error.data.message) };
-				errorMessage = null;
-				return;
-			}
-
 			errorMessage = copy.signUpFailed();
 		} finally {
 			busy = false;

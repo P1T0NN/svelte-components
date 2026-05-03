@@ -10,7 +10,8 @@
 	},
 
 	"LogoutButton": {
-		"logout": "Logout"
+		"logout": "Logout",
+		"logoutSuccess": "Logged out successfully."
 	},
 
 	"LoginPage": {
@@ -275,22 +276,27 @@
 	},
 
 	"GenericMessages": {
-		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
-		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
-		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min.",
+		"PASSWORD_TOO_SHORT": "Password must be at least {min} characters.",
+		"PASSWORD_TOO_LONG": "Password is too long.",
+		"PASSWORD_TOO_COMMON": "That password is too common. Please choose a stronger one.",
+		
 		"NO_ITEMS_PROVIDED": "No items provided.",
 		"NO_MATCHING_ITEMS": "No matching items found.",
 		"DATA_TABLE_DELETED_ALL": "Deleted {count} item(s).",
 		"DATA_TABLE_DELETED_WITH_MISSING": "Deleted {count} item(s); {missing} were already gone.",
+
 		"STORAGE_DELETE_FAILED": "Couldn't delete the file from storage. Nothing was removed.",
+		"STORAGE_URL_UNAVAILABLE": "Couldn't resolve the file URL.",
+		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again.",
+
+		"EMAIL_SENT_SUCCESSFULLY": "Email sent successfully.",
+
 		"BATCH_TOO_LARGE": "Too many items in a single request (max {limit}).",
 		"FORBIDDEN": "You're not allowed to perform this action.",
 		"NOT_AUTHENTICATED": "Please sign in to continue.",
 		"ADMIN_ACCESS_REQUIRED": "This action requires admin privileges.",
-		"STORAGE_URL_UNAVAILABLE": "Couldn't resolve the file URL.",
-		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again.",
-		"PASSWORD_TOO_SHORT": "Password must be at least {min} characters.",
-		"PASSWORD_TOO_LONG": "Password is too long.",
-		"PASSWORD_TOO_COMMON": "That password is too common. Please choose a stronger one."
+		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
+		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
+		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min."
 	}
 }

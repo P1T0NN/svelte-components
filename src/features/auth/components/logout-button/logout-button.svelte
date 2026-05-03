@@ -1,24 +1,30 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { authClient } from '@/features/auth/lib/auth-client';
 
 	// COMPONENTS
 	import Button from '@/shared/components/ui/button/button.svelte';
 	import Spinner from '@/shared/components/ui/spinner/spinner.svelte';
+	import { toast } from 'svelte-sonner';
 
 	// LUCIDE ICONS
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
-
-	// Call useAuth once
-	const auth = useAuth();
-	const { signOut } = auth;
 
 	let isLoggingOut = $state(false);
 
 	const handleLogout = async () => {
 		isLoggingOut = true;
-		await signOut();
+
+		const result = await authClient.signOut();
+
+		if (result.error) {
+			console.error('Sign out error:', result.error);
+			toast.error(result.error.message as string);
+		} else {
+			toast.success(m['LogoutButton.logoutSuccess']());
+		}
+
 		isLoggingOut = false;
 	};
 </script>

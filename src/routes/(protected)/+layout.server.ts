@@ -12,12 +12,9 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async (event) => {
 	const { locals } = event;
-	if (!locals.user) {
+	
+	if (!locals.token) {
 		throw redirect(302, localizedPath(event, UNPROTECTED_PAGE_ENDPOINTS.LOGIN));
 	}
-
-	return {
-		user: locals.user
-	};
 };
 
