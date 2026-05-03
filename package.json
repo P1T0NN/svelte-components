@@ -57,7 +57,7 @@
 		"@types/d3-scale": "^4.0.9",
 		"@vercel/analytics": "^2.0.1",
 		"@vercel/speed-insights": "^2.0.0",
-		"better-auth": "1.5.3",
+		"better-auth": "1.6.9",
 		"botid": "^1.5.11",
 		"browser-image-compression": "^2.0.2",
 		"chrono-node": "^2.9.0",
