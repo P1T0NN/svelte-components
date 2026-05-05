@@ -72,6 +72,7 @@
 		"ADMIN_ACCESS_REQUIRED": "Für diese Aktion sind Administratorrechte erforderlich.",
 		"STORAGE_URL_UNAVAILABLE": "Datei-URL konnte nicht aufgelöst werden.",
 		"UPLOAD_SAVE_FAILED": "Die hochgeladene Datei konnte nicht gespeichert werden. Bitte erneut versuchen.",
+		"UPLOAD_URL_READY": "Upload-URL erstellt.",
 		"PASSWORD_TOO_SHORT": "Passwort muss mindestens {min} Zeichen lang sein.",
 		"PASSWORD_TOO_LONG": "Passwort ist zu lang.",
 		"PASSWORD_TOO_COMMON": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."

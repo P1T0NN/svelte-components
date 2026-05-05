@@ -175,6 +175,15 @@ export type CreateDeleteMutationOptions<T extends TableNames> = {
 	 */
 	storageIds?: (doc: Doc<T>) => Id<'_storage'>[];
 	/**
+	 * Phase 1 hook for non-`_storage` blob backends (e.g. Cloudflare R2). Receives the full
+	 * batch of rows and is expected to remove every external object they reference. Runs in
+	 * Phase 1 alongside `storageIds`; a throw aborts the txn before any db/aggregate write.
+	 *
+	 * Use for tables whose blobs live outside Convex storage. For Convex `_storage`, prefer
+	 * `storageIds` — it dedupes blob ids and uses the built-in transactional `ctx.storage.delete`.
+	 */
+	externalStorageDelete?: (ctx: MutationCtx, docs: Doc<T>[]) => Promise<void>;
+	/**
 	 * Aggregate mirror for this table (e.g. `@convex-dev/aggregate` `TableAggregate`). Uses
 	 * `deleteIfExists` so pre-existing rows that were never registered don't throw.
 	 */
@@ -309,6 +318,7 @@ export function createDeleteMutation<T extends TableNames>(
 		ownerId: ownerIdCfg,
 		adminOnly,
 		storageIds,
+		externalStorageDelete,
 		aggregate,
 		onDelete,
 		maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
@@ -447,6 +457,26 @@ export function createDeleteMutation<T extends TableNames>(
 							table
 						} satisfies DeleteMutationErrorPayload);
 					}
+				}
+			}
+
+			// 7b. Phase 1 — external (non-_storage) blob backend, e.g. Cloudflare R2. Runs after
+			//     `storageIds` so any Convex storage cleanup that already happened gets rolled
+			//     back together with this hook on failure (sibling-txn semantics).
+			if (externalStorageDelete) {
+				try {
+					await externalStorageDelete(ctx, existing as Doc<T>[]);
+				} catch (error) {
+					console.error(
+						`[createDeleteMutation:${table}] externalStorageDelete failed`,
+						error instanceof Error ? error.message : error
+					);
+					throw new ConvexError({
+						code: 'STORAGE_DELETE_FAILED',
+						message: { key: 'GenericMessages.STORAGE_DELETE_FAILED' },
+						requestedCount: uniqueIds.length,
+						table
+					} satisfies DeleteMutationErrorPayload);
 				}
 			}
 

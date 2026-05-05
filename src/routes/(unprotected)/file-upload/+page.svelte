@@ -1,71 +1,15 @@
 <script lang="ts">
-	// LIBRARIES
-	import { useConvexClient } from 'convex-svelte';
-
 	// COMPONENTS
-	import { toast } from 'svelte-sonner';
 	import Section from '@/shared/components/ui/section/section.svelte';
 	import UploadFileSingle from '@/features/uploadFile/components/upload-file-single/upload-file-single.svelte';
 	import UploadFileMultiple from '@/features/uploadFile/components/upload-file-multiple/upload-file-multiple.svelte';
-	import { Button } from '@/shared/components/ui/button/index.js';
 	import UploadFileDropzone from '@/features/uploadFile/components/upload-file-dropzone.svelte';
-	import { Progress } from '@/shared/components/ui/progress/index.js';
-
-	// HOOKS
-	import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
-
-	// UTILS
-	import { optimizeImages } from '@/features/uploadFile/utils/optimizeImages';
-	import { uploadFileToConvexStorage } from '@/shared/utils/convexHelpers';
+	import SaveUploadedFile from '@/features/uploadFile/components/save-uploaded-file.svelte';
 
 	let multipleFiles = $state(true);
 
 	let file = $state<File | null>(null);
 	let files = $state<File[]>([]);
-
-	let saving = $state(false);
-
-	const convex = useConvexClient();
-	const progress = useProgress();
-
-	const hasSelection = $derived(multipleFiles ? files.length > 0 : file !== null);
-
-	async function save() {
-		const selected: File[] = multipleFiles ? [...files] : file ? [file] : [];
-		if (!selected.length || saving) return;
-
-		saving = true;
-		progress.start();
-		try {
-			const n = selected.length;
-
-			const optimizedImages = await optimizeImages(selected, undefined, progress.setOptimizeProgress);
-
-			const uploadedFileIds: Array<NonNullable<Awaited<ReturnType<typeof uploadFileToConvexStorage>>>> = [];
-			for (let j = 0; j < optimizedImages.length; j++) {
-				const f = optimizedImages[j];
-				const fileNum = j + 1;
-
-				progress.beforeUploadFile(fileNum, n);
-				const id = await uploadFileToConvexStorage(convex, f);
-				progress.afterUploadFile(fileNum, n);
-
-				if (!id) return; // error already toasted by safeMutation
-				uploadedFileIds.push(id);
-			}
-
-			progress.markDone();
-
-			toast.success(
-				multipleFiles
-					? `Saved ${uploadedFileIds.length} file(s) to storage`
-					: `Saved: ${optimizedImages[0]?.name ?? 'file'}`
-			);
-		} finally {
-			saving = false;
-			progress.clear();
-		}
-	}
 </script>
 
 <Section yPadding="md" containerClass="flex flex-col items-start gap-8">
@@ -87,16 +31,7 @@
 				<UploadFileSingle bind:file bind:files id="upload-main" />
 			{/if}
 
-			{#if saving}
-				<div class="flex w-full flex-col gap-2">
-					<Progress value={progress.percent} class="h-2" />
-					<p class="text-muted-foreground text-xs tabular-nums">{progress.label}</p>
-				</div>
-			{/if}
-
-			<Button type="button" class="w-full" disabled={!hasSelection || saving} onclick={save}>
-				{saving ? 'Saving…' : 'Save'}
-			</Button>
+			<SaveUploadedFile {file} {files} {multipleFiles} />
 		</div>
 	</div>
 </Section>

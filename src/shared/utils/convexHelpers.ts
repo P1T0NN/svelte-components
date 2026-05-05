@@ -84,7 +84,11 @@ export async function uploadFileToConvexStorage(
 	client: ConvexClient,
 	file: File
 ): Promise<Id<'uploadedFiles'> | null> {
-	const postUrl = await safeMutation(client, api.storage.storageMutations.generateUploadUrl, {});
+	const postUrl = await safeMutation(
+		client,
+		api.storage.convexStorage.storageMutations.generateUploadUrl,
+		{}
+	);
 	if (!postUrl) return null;
 
 	let uploaded: StorageUploadJson;
@@ -96,9 +100,56 @@ export async function uploadFileToConvexStorage(
 		return null;
 	}
 
-	return await safeMutation(client, api.storage.storageMutations.saveUploadedFile, {
+	return await safeMutation(client, api.storage.convexStorage.storageMutations.saveUploadedFile, {
 		storageId: uploaded.storageId
 	});
+}
+
+/**
+ * Upload a browser `File` to Cloudflare R2 (via `@convex-dev/r2`).
+ *
+ * Mirrors {@link uploadFileToConvexStorage} for the R2-backed table:
+ *   1. `generateUploadUrl` mints a signed URL + object key (auth-checked in `checkUpload`).
+ *   2. The browser PUTs the file directly to R2.
+ *   3. `syncMetadata` triggers the server `onUpload` hook, which charges the rate limit,
+ *      validates size/MIME against R2's HEAD metadata, and inserts the `uploadedFilesR2` row.
+ *
+ * Both Convex calls go through {@link safeMutation}, so typed backend errors become
+ * translated toasts and a `null` return. The intermediate R2 PUT is a raw `fetch`; on failure
+ * we toast the generic upload-failed copy and return `null`.
+ *
+ * @returns the R2 object `key` on success (the row's stable identifier in `uploadedFilesR2`),
+ *          or `null` when an error was already toasted.
+ */
+export async function uploadFileToR2(
+	client: ConvexClient,
+	file: File
+): Promise<string | null> {
+	const minted = await safeMutation(client, api.storage.r2.r2.generateUploadUrl, {});
+	if (!minted || !minted.success || !minted.data) return null;
+
+	const { url, key } = minted.data;
+
+	try {
+		const res = await fetch(url, { method: 'PUT', body: file });
+		if (!res.ok) throw new Error(`R2 upload failed: ${res.status}`);
+	} catch (error) {
+		console.error('[uploadFileToR2] R2 PUT failed', error);
+		toast.error(m['GenericMessages.UPLOAD_SAVE_FAILED']());
+		return null;
+	}
+
+	// Can't use `safeMutation` here: `syncMetadata` is declared `returns: v.null()`, so its
+	// success value collides with `safeMutation`'s null-on-handled-error sentinel. Inline the
+	// try/catch and reuse `handleConvexError` to keep the toast behaviour consistent.
+	try {
+		await client.mutation(api.storage.r2.r2.syncMetadata, { key });
+	} catch (error) {
+		if (handleConvexError(error)) return null;
+		throw error;
+	}
+
+	return key;
 }
 
 /**
@@ -138,7 +189,7 @@ function rateLimitToastMessage(retryAfterMs: number | undefined): string {
  *      genuine programming errors surface loudly in dev and hit error boundaries in
  *      prod. Converting them to silent toasts would hide bugs.
  */
-function handleConvexError(error: unknown): boolean {
+export function handleConvexError(error: unknown): boolean {
 	if (isRateLimitError(error)) {
 		toast.error(rateLimitToastMessage(error.data.retryAfter));
 		return true;

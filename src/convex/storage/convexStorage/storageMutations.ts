@@ -2,13 +2,13 @@
 import { ConvexError, v } from 'convex/values';
 
 // MIDDLEWARE
-import { authMutation } from '../auth/middleware/authMiddleware';
+import { authMutation } from '../../auth/middleware/authMiddleware';
 
 // AGGREGATES
 import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';
 
 // TYPES
-import type { ConvexErrorPayload } from '../types/convexTypes.js';
+import type { ConvexErrorPayload } from '../../types/convexTypes.js';
 
 /** Change this one line when copying this file into a new project. */
 const TABLE = 'uploadedFiles' as const;

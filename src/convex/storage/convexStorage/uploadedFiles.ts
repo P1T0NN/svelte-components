@@ -1,5 +1,5 @@
 // LIBRARIES
-import { query } from '../_generated/server';
+import { query } from '../../_generated/server';
 
 // HELPERS
 import {
@@ -7,8 +7,8 @@ import {
 	optionalOneBasedPageArg,
 	paginatedQueryArgs,
 	resolvePaginationOpts
-} from '../helpers/paginationHelpers.js';
-import { createDeleteMutation } from '../helpers/createDeleteMutation.js';
+} from '../../helpers/paginationHelpers.js';
+import { createDeleteMutation } from '../../helpers/createDeleteMutation.js';
 
 // AGGREGATES
 import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';

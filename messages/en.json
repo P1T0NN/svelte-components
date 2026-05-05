@@ -288,6 +288,7 @@
 		"STORAGE_DELETE_FAILED": "Couldn't delete the file from storage. Nothing was removed.",
 		"STORAGE_URL_UNAVAILABLE": "Couldn't resolve the file URL.",
 		"UPLOAD_SAVE_FAILED": "Could not save the uploaded file. Please try again.",
+		"UPLOAD_URL_READY": "Upload URL generated.",
 
 		"EMAIL_SENT_SUCCESSFULLY": "Email sent successfully.",
 

@@ -44,7 +44,10 @@ const config = {
                     'https://*.convex.cloud',
                     'wss://*.convex.cloud',
                     // Vercel Analytics + Speed Insights telemetry endpoint
-                    'https://va.vercel-scripts.com'
+                    'https://va.vercel-scripts.com',
+                    // Cloudflare R2 — direct browser PUT to signed upload URLs and GET on public objects
+                    'https://*.r2.cloudflarestorage.com',
+                    'https://*.r2.dev'
                 ],
                 'frame-src': ['self', 'https://accounts.google.com'],
                 'object-src': ['none'],

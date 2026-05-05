@@ -27,6 +27,15 @@ const schema = defineSchema({
 		url: v.string()
 	})
 		.index('by_storage_id', ['storageId'])
+		.index('by_owner', ['ownerId']),
+
+	/** Cloudflare R2 file reference + cached download URL. Owner-stamped at upload. */
+	uploadedFilesR2: defineTable({
+		ownerId: v.string(),
+		key: v.string(),
+		url: v.string()
+	})
+		.index('by_key', ['key'])
 		.index('by_owner', ['ownerId'])
 });
 

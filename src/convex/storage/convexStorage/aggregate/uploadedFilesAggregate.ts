@@ -1,9 +1,9 @@
 // LIBRARIES
 import { TableAggregate } from '@convex-dev/aggregate';
-import { components } from '../../_generated/api';
+import { components } from '../../../_generated/api';
 
 // TYPES
-import type { DataModel } from '../../_generated/dataModel.js';
+import type { DataModel } from '../../../_generated/dataModel.js';
 
 /**
  * O(log n) total row count for `uploadedFiles` (sortKey `null` = count-only).

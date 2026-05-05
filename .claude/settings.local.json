@@ -38,7 +38,16 @@
       "Bash(grep -rn 'process.env\\\\|$env/static' src/)",
       "Bash(bun add *)",
       "Bash(bunx --bun bun add botid)",
-      "Bash(npx --yes bun add botid)"
+      "Bash(npx --yes bun add botid)",
+      "WebFetch(domain:www.convex.dev)",
+      "Bash(mv r2.ts r2/r2.ts)",
+      "Bash(mv uploadedFilesR2.ts r2/uploadedFilesR2.ts)",
+      "Bash(mv aggregate/uploadedFilesR2Aggregate.ts r2/aggregate/uploadedFilesR2Aggregate.ts)",
+      "Bash(mv uploadedFiles.ts convexStorage/uploadedFiles.ts)",
+      "Bash(mv storageMutations.ts convexStorage/storageMutations.ts)",
+      "Bash(mv src/convex/storage/crons/cleanupR2.ts src/convex/storage/crons/cleanupOrphanDataR2.ts)",
+      "Bash(mv src/convex/storage/crons/cleanupConvexStorage.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts)",
+      "Bash(sed -i 's/cleanupR2/cleanupOrphanDataR2/g; s/cleanupConvexStorage/cleanupOrphanDataConvexStorage/g' src/convex/storage/crons/cleanupOrphanDataR2.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts src/convex/crons.ts)"
     ]
   }
 }
