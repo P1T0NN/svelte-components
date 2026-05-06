@@ -1,0 +1,90 @@
+<script lang="ts">
+	// LIBRARIES
+	import { email, minLength, object, picklist, pipe, string, trim } from 'valibot';
+	import { api } from '@/convex/_generated/api';
+
+	// COMPONENTS
+	import Section from '@/shared/components/ui/section/section.svelte';
+	import MutationForm from '@/shared/components/ui/mutation-form/mutation-form.svelte';
+
+	// TYPES
+	import type { InferOutput } from 'valibot';
+	import type { MutationFormFieldDef } from '@/shared/components/ui/mutation-form/types.js';
+
+	const contactFormSchema = object({
+		name: pipe(string(), trim(), minLength(1, 'Name is required.')),
+		email: pipe(
+			string(),
+			trim(),
+			minLength(1, 'Email is required.'),
+			email('Enter a valid email.')
+		),
+		role: picklist(['admin', 'editor', 'viewer'], 'Pick a role.'),
+		message: pipe(string(), trim(), minLength(10, 'Message must be at least 10 characters.'))
+	});
+
+	type ContactFormValues = InferOutput<typeof contactFormSchema>;
+
+	const fields: MutationFormFieldDef[] = [
+		{
+			id: 'name',
+			kind: 'input',
+			label: 'Full name',
+			placeholder: 'John Doe',
+			autocomplete: 'name',
+			autofocus: true
+		},
+		{
+			id: 'email',
+			kind: 'input',
+			label: 'Email',
+			type: 'email',
+			placeholder: 'm@example.com',
+			autocomplete: 'email',
+			description: "We'll only use this to reply."
+		},
+		{
+			id: 'role',
+			kind: 'select',
+			label: 'Role',
+			selectPlaceholder: 'Pick a role',
+			options: [
+				{ value: 'admin', label: 'Admin' },
+				{ value: 'editor', label: 'Editor' },
+				{ value: 'viewer', label: 'Viewer' }
+			]
+		},
+		{
+			id: 'message',
+			kind: 'textarea',
+			label: 'Message',
+			placeholder: 'Tell us a bit about what you need…',
+			rows: 5
+		}
+	];
+
+	let values = $state<ContactFormValues>({
+		name: '',
+		email: '',
+		role: '' as ContactFormValues['role'],
+		message: ''
+	});
+</script>
+
+<Section yPadding="md" containerClass="flex w-full max-w-2xl flex-col gap-6">
+	<header class="flex flex-col gap-1">
+		<h1 class="text-2xl font-semibold tracking-tight">Mutation form</h1>
+		<p class="text-muted-foreground text-sm">
+			Reusable form driven by a <code class="text-foreground text-xs">fields</code> config —
+			input, textarea, and select kinds with shared error / description handling.
+		</p>
+	</header>
+
+	<MutationForm
+		{fields}
+		bind:values
+		schema={contactFormSchema}
+		runFunction={api.tables.test.testMutations.createTestRow}
+		submitLabel="Send message"
+	/>
+</Section>

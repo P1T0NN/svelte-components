@@ -291,6 +291,7 @@
 		"UPLOAD_URL_READY": "Upload URL generated.",
 
 		"EMAIL_SENT_SUCCESSFULLY": "Email sent successfully.",
+		"TEST_ROW_CREATED": "Test row created.",
 
 		"BATCH_TOO_LARGE": "Too many items in a single request (max {limit}).",
 		"FORBIDDEN": "You're not allowed to perform this action.",

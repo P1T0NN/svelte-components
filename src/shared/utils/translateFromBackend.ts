@@ -36,9 +36,13 @@ type ParaglideCatalog = Record<string, ParaglideMessageFn>;
  * const result = await safeMutation(client, api.foo.bar, args);
  * if (result) toast[result.success ? 'success' : 'error'](translateFromBackend(result.message));
  */
-export function translateFromBackend(message: TranslatableMessage): string {
-	const fn = (m as unknown as ParaglideCatalog)[message.key];
-	return fn ? fn(message.params) : message.key;
+export function translateFromBackend(
+	message: TranslatableMessage | string
+): string {
+	const descriptor: TranslatableMessage =
+		typeof message === 'string' ? { key: message } : message;
+	const fn = (m as unknown as ParaglideCatalog)[descriptor.key];
+	return fn ? fn(descriptor.params) : descriptor.key;
 }
 
 /**

@@ -30,6 +30,7 @@ import type * as storage_crons_cleanupOrphanDataR2 from "../storage/crons/cleanu
 import type * as storage_r2_aggregate_uploadedFilesR2Aggregate from "../storage/r2/aggregate/uploadedFilesR2Aggregate.js";
 import type * as storage_r2_r2 from "../storage/r2/r2.js";
 import type * as storage_r2_uploadedFilesR2 from "../storage/r2/uploadedFilesR2.js";
+import type * as tables_test_testMutations from "../tables/test/testMutations.js";
 import type * as types_convexTypes from "../types/convexTypes.js";
 
 import type {
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "storage/r2/aggregate/uploadedFilesR2Aggregate": typeof storage_r2_aggregate_uploadedFilesR2Aggregate;
   "storage/r2/r2": typeof storage_r2_r2;
   "storage/r2/uploadedFilesR2": typeof storage_r2_uploadedFilesR2;
+  "tables/test/testMutations": typeof tables_test_testMutations;
   "types/convexTypes": typeof types_convexTypes;
 }>;
 

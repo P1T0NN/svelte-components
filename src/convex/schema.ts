@@ -36,7 +36,15 @@ const schema = defineSchema({
 		url: v.string()
 	})
 		.index('by_key', ['key'])
-		.index('by_owner', ['ownerId'])
+		.index('by_owner', ['ownerId']),
+
+	/** Throwaway table for exercising the MutationForm component end-to-end. */
+	testRows: defineTable({
+		name: v.string(),
+		email: v.string(),
+		role: v.union(v.literal('admin'), v.literal('editor'), v.literal('viewer')),
+		message: v.string()
+	})
 });
 
 export default schema;
