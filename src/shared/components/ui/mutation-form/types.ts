@@ -37,6 +37,21 @@ export type MutationFormFieldDef = {
 
 	/** kind: 'radio' */
 	radioOrientation?: 'vertical' | 'horizontal';
+
+	/** Grid columns the field occupies inside a section. Defaults to 2 (full width). */
+	colSpan?: 1 | 2;
+};
+
+export type MutationFormSection = {
+	id?: string;
+	title?: string;
+	description?: string;
+	fields: MutationFormFieldDef[];
+	/** Section grid column count. Defaults to 2. */
+	columns?: 1 | 2;
+	/** Render the section without a Card wrapper. */
+	plain?: boolean;
+	class?: string;
 };
 
 export type MutationFormFieldSnippetProps<T extends Record<string, unknown>> = {

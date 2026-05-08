@@ -8,6 +8,13 @@
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
 	import {
+		Card,
+		CardHeader,
+		CardTitle,
+		CardDescription,
+		CardContent
+	} from '@/shared/components/ui/card/index.js';
+	import {
 		FieldGroup,
 		Field,
 		FieldSet,
@@ -23,6 +30,7 @@
 	import RadioGroupField from './radio-group-field.svelte';
 
 	// UTILS
+	import { cn } from '@/shared/utils/utils.js';
 	import { safeMutation } from '@/shared/utils/convexHelpers';
 	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
 	import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
@@ -33,11 +41,13 @@
 	import type {
 		MutationFormCustomFields,
 		MutationFormFieldDef,
-		MutationFormFieldErrors
+		MutationFormFieldErrors,
+		MutationFormSection
 	} from './types.js';
 
 	let {
 		fields,
+		sections,
 		values = $bindable(),
 		initialValues,
 		runFunction,
@@ -48,37 +58,25 @@
 		resetOnSuccess = true,
 		customFields,
 		header,
-		footer,
+		extraFields,
 		actions,
 		class: className
 	}: {
-		fields: MutationFormFieldDef[];
+		/** Flat field list. Renders as a single plain section. Mutually exclusive with `sections`. */
+		fields?: MutationFormFieldDef[];
+		/** Grouped sections, each rendered as a Card with a 2-col grid by default. */
+		sections?: MutationFormSection[];
 		values: T;
-		/** Snapshot used to reset the form after a successful run. Defaults to the initial `values`. */
 		initialValues?: T;
-		/**
-		 * Convex mutation reference (e.g. `api.clients.addClient`). Called with the current `values`
-		 * via `safeMutation`, which already toasts typed/rate-limit errors. Expected return shape:
-		 * `{ success, message }` — toasted on success/info, success also clears the form.
-		 */
 		runFunction: FunctionReference<'mutation'>;
-		/**
-		 * Valibot schema validated on submit via `safeParse`. Issues are mapped to `fieldErrors`
-		 * by top-level path key (`valibotIssuesToFieldErrors`). A failing parse short-circuits submit.
-		 */
 		schema: GenericSchema<T>;
-		/**
-		 * Runs after validation, before the mutation. Use for side effects that must succeed first
-		 * (e.g. file uploads). Return an object to merge extra args into the mutation payload, or
-		 * `false` to abort silently. Throw to abort — the error is toasted. `busy` stays true throughout.
-		 */
 		beforeSubmit?: (values: T) => Promise<Partial<T> | void | false> | Partial<T> | void | false;
 		onSuccess?: (values: T) => void;
 		submitLabel?: string;
 		resetOnSuccess?: boolean;
 		customFields?: MutationFormCustomFields<T>;
 		header?: Snippet;
-		footer?: Snippet;
+		extraFields?: Snippet;
 		actions?: Snippet<[{ busy: boolean }]>;
 		class?: string;
 	} = $props();
@@ -86,12 +84,15 @@
 	const convex = useConvexClient();
 	const id = $props.id();
 
-	/** Captured once at mount; resets after a successful submit restore these values. */
 	// svelte-ignore state_referenced_locally
 	const resetSnapshot: T = $state.snapshot(initialValues ?? values) as T;
 
 	let fieldErrors = $state<MutationFormFieldErrors<T>>({});
 	let busy = $state(false);
+
+	const resolvedSections = $derived<MutationFormSection[]>(
+		sections ?? (fields ? [{ fields, plain: true }] : [])
+	);
 
 	function getValue(key: string): unknown {
 		return (values as Record<string, unknown>)[key];
@@ -100,10 +101,15 @@
 	function setValue(key: string, next: unknown) {
 		(values as Record<string, unknown>)[key] = next;
 		if (key in fieldErrors) {
-			const next = { ...fieldErrors };
-			delete next[key as keyof T & string];
-			fieldErrors = next;
+			const copy = { ...fieldErrors };
+			delete copy[key as keyof T & string];
+			fieldErrors = copy;
 		}
+	}
+
+	function spanClass(field: MutationFormFieldDef, columns: 1 | 2) {
+		if (columns === 1) return '';
+		return (field.colSpan ?? 2) === 1 ? 'sm:col-span-1' : 'sm:col-span-2';
 	}
 
 	async function onsubmit(event: SubmitEvent) {
@@ -112,7 +118,7 @@
 		const validation = safeParse(schema, $state.snapshot(values));
 		if (!validation.success) {
 			fieldErrors = valibotIssuesToFieldErrors<keyof T & string>(validation.issues);
-			toast.error(m["GenericMessages.YOU_NEED_TO_CORRECT_FORM_ERRORS"]());
+			toast.error(m['GenericMessages.YOU_NEED_TO_CORRECT_FORM_ERRORS']());
 			return;
 		}
 		fieldErrors = {};
@@ -133,10 +139,9 @@
 
 			const args = { ...($state.snapshot(values) as T), ...(extraArgs ?? {}) };
 
-			// Field config drives args; the concrete mutation defines the exact arg shape.
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const result = await safeMutation(convex, runFunction, args as any);
-			if (!result) return; // typed error / rate limit — already toasted by safeMutation
+			if (!result) return;
 
 			if (!result.success) {
 				toast.error(translateFromBackend(result.message));
@@ -152,103 +157,144 @@
 	}
 </script>
 
-<form {onsubmit} class={className}>
-	<FieldGroup>
-		{@render header?.()}
+{#snippet renderField(field: MutationFormFieldDef)}
+	{@const inputId = `${field.id}-${id}`}
+	{@const err = fieldErrors[field.id as keyof T & string]}
+	{@const custom = customFields?.[field.id]}
 
-		{#each fields as field (field.id)}
-			{@const inputId = `${field.id}-${id}`}
-			{@const err = fieldErrors[field.id as keyof T & string]}
-			{@const custom = customFields?.[field.id]}
-
-			{#if field.kind === 'checkbox' && !custom}
-				<Field orientation="horizontal" class={field.fieldClass}>
-					<CheckboxField
-						{field}
-						{inputId}
-						value={getValue(field.id)}
-						setValue={(v) => setValue(field.id, v)}
-						invalid={!!err}
-					/>
-					<FieldLabel for={inputId}>{field.label}</FieldLabel>
-
-					{#if err}
-						<FieldError>{err}</FieldError>
-					{:else if field.description}
-						<FieldDescription>{field.description}</FieldDescription>
-					{/if}
-				</Field>
-			{:else if field.kind === 'radio' && !custom}
-				<FieldSet class={field.fieldClass}>
-					<FieldLegend variant="label">{field.label}</FieldLegend>
-					<RadioGroupField
-						{field}
-						{inputId}
-						value={getValue(field.id)}
-						setValue={(v) => setValue(field.id, v)}
-						invalid={!!err}
-					/>
-					{#if err}
-						<FieldError>{err}</FieldError>
-					{:else if field.description}
-						<FieldDescription>{field.description}</FieldDescription>
-					{/if}
-				</FieldSet>
-			{:else}
-				<Field class={field.fieldClass}>
-					<FieldLabel for={inputId}>{field.label}</FieldLabel>
-
-					{#if custom}
-						{@render custom({
-							field,
-							value: getValue(field.id) as T[keyof T],
-							setValue: (next) => setValue(field.id, next),
-							error: err,
-							inputId
-						})}
-					{:else if field.kind === 'textarea'}
-						<TextareaField
-							{field}
-							{inputId}
-							value={getValue(field.id)}
-							setValue={(v) => setValue(field.id, v)}
-							invalid={!!err}
-						/>
-					{:else if field.kind === 'select'}
-						<SelectField
-							{field}
-							{inputId}
-							value={getValue(field.id)}
-							setValue={(v) => setValue(field.id, v)}
-							invalid={!!err}
-						/>
-					{:else}
-						<InputField
-							{field}
-							{inputId}
-							value={getValue(field.id)}
-							setValue={(v) => setValue(field.id, v)}
-							invalid={!!err}
-						/>
-					{/if}
-
-					{#if err}
-						<FieldError>{err}</FieldError>
-					{:else if field.description}
-						<FieldDescription>{field.description}</FieldDescription>
-					{/if}
-				</Field>
+	{#if field.kind === 'checkbox' && !custom}
+		<Field orientation="horizontal" class={field.fieldClass}>
+			<CheckboxField
+				{field}
+				{inputId}
+				value={getValue(field.id)}
+				setValue={(v) => setValue(field.id, v)}
+				invalid={!!err}
+			/>
+			<FieldLabel for={inputId}>{field.label}</FieldLabel>
+			{#if err}
+				<FieldError>{err}</FieldError>
+			{:else if field.description}
+				<FieldDescription>{field.description}</FieldDescription>
 			{/if}
+		</Field>
+	{:else if field.kind === 'radio' && !custom}
+		<FieldSet class={field.fieldClass}>
+			<FieldLegend variant="label">{field.label}</FieldLegend>
+			<RadioGroupField
+				{field}
+				{inputId}
+				value={getValue(field.id)}
+				setValue={(v) => setValue(field.id, v)}
+				invalid={!!err}
+			/>
+			{#if err}
+				<FieldError>{err}</FieldError>
+			{:else if field.description}
+				<FieldDescription>{field.description}</FieldDescription>
+			{/if}
+		</FieldSet>
+	{:else}
+		<Field class={field.fieldClass}>
+			<FieldLabel for={inputId}>{field.label}</FieldLabel>
+			{#if custom}
+				{@render custom({
+					field,
+					value: getValue(field.id) as T[keyof T],
+					setValue: (next) => setValue(field.id, next),
+					error: err,
+					inputId
+				})}
+			{:else if field.kind === 'textarea'}
+				<TextareaField
+					{field}
+					{inputId}
+					value={getValue(field.id)}
+					setValue={(v) => setValue(field.id, v)}
+					invalid={!!err}
+				/>
+			{:else if field.kind === 'select'}
+				<SelectField
+					{field}
+					{inputId}
+					value={getValue(field.id)}
+					setValue={(v) => setValue(field.id, v)}
+					invalid={!!err}
+				/>
+			{:else}
+				<InputField
+					{field}
+					{inputId}
+					value={getValue(field.id)}
+					setValue={(v) => setValue(field.id, v)}
+					invalid={!!err}
+				/>
+			{/if}
+			{#if err}
+				<FieldError>{err}</FieldError>
+			{:else if field.description}
+				<FieldDescription>{field.description}</FieldDescription>
+			{/if}
+		</Field>
+	{/if}
+{/snippet}
+
+{#snippet renderGrid(section: MutationFormSection)}
+	{@const columns = section.columns ?? 2}
+	<div
+		class={cn(
+			'grid gap-4',
+			columns === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
+		)}
+	>
+		{#each section.fields as field (field.id)}
+			<div class={spanClass(field, columns)}>
+				{@render renderField(field)}
+			</div>
 		{/each}
+	</div>
+{/snippet}
 
-		{@render footer?.()}
+<form {onsubmit} class={cn('flex flex-col gap-6', className)}>
+	{@render header?.()}
 
-		{#if actions}
-			{@render actions({ busy })}
+	{#each resolvedSections as section, i (section.id ?? i)}
+		{#if section.plain}
+			<FieldGroup class={section.class}>
+				{#if section.title}
+					<FieldSet>
+						<FieldLegend>{section.title}</FieldLegend>
+						{#if section.description}
+							<FieldDescription>{section.description}</FieldDescription>
+						{/if}
+					</FieldSet>
+				{/if}
+				{@render renderGrid(section)}
+			</FieldGroup>
 		{:else}
-			<Field>
-				<Button type="submit" class="w-full" disabled={busy}>{submitLabel}</Button>
-			</Field>
+			<Card class={section.class}>
+				{#if section.title || section.description}
+					<CardHeader>
+						{#if section.title}
+							<CardTitle>{section.title}</CardTitle>
+						{/if}
+						{#if section.description}
+							<CardDescription>{section.description}</CardDescription>
+						{/if}
+					</CardHeader>
+				{/if}
+				<CardContent>
+					{@render renderGrid(section)}
+				</CardContent>
+			</Card>
 		{/if}
-	</FieldGroup>
+	{/each}
+
+	{@render extraFields?.()}
+
+	{#if actions}
+		{@render actions({ busy })}
+	{:else}
+		<Button type="submit" class="w-full" disabled={busy}>{submitLabel}</Button>
+	{/if}
 </form>

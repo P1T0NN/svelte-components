@@ -19,7 +19,7 @@
 
 	// TYPES
 	import type { InferOutput } from 'valibot';
-	import type { MutationFormFieldDef } from '@/shared/components/ui/mutation-form/types.js';
+	import type { MutationFormSection } from '@/shared/components/ui/mutation-form/types.js';
 
 	const contactFormSchema = object({
 		name: pipe(string(), trim(), minLength(1, 'Name is required.')),
@@ -40,58 +40,79 @@
 
 	type ContactFormValues = InferOutput<typeof contactFormSchema>;
 
-	const fields: MutationFormFieldDef[] = [
+	const sections: MutationFormSection[] = [
 		{
-			id: 'name',
-			kind: 'input',
-			label: 'Full name',
-			placeholder: 'John Doe',
-			autocomplete: 'name',
-			autofocus: true
-		},
-		{
-			id: 'email',
-			kind: 'input',
-			label: 'Email',
-			type: 'email',
-			placeholder: 'm@example.com',
-			autocomplete: 'email',
-			description: "We'll only use this to reply."
-		},
-		{
-			id: 'role',
-			kind: 'select',
-			label: 'Role',
-			selectPlaceholder: 'Pick a role',
-			options: [
-				{ value: 'admin', label: 'Admin' },
-				{ value: 'editor', label: 'Editor' },
-				{ value: 'viewer', label: 'Viewer' }
+			title: 'Contact',
+			description: "Who you are and how we'll reach you.",
+			fields: [
+				{
+					id: 'name',
+					kind: 'input',
+					label: 'Full name',
+					placeholder: 'John Doe',
+					autocomplete: 'name',
+					autofocus: true,
+					colSpan: 1
+				},
+				{
+					id: 'email',
+					kind: 'input',
+					label: 'Email',
+					type: 'email',
+					placeholder: 'm@example.com',
+					autocomplete: 'email',
+					description: "We'll only use this to reply.",
+					colSpan: 1
+				}
 			]
 		},
 		{
-			id: 'plan',
-			kind: 'radio',
-			label: 'Plan',
-			radioOrientation: 'horizontal',
-			options: [
-				{ value: 'free', label: 'Free' },
-				{ value: 'pro', label: 'Pro' },
-				{ value: 'enterprise', label: 'Enterprise' }
-			],
-			description: 'You can change this later in settings.'
+			title: 'Access',
+			description: 'Pick a role and a plan for this account.',
+			fields: [
+				{
+					id: 'role',
+					kind: 'select',
+					label: 'Role',
+					selectPlaceholder: 'Pick a role',
+					options: [
+						{ value: 'admin', label: 'Admin' },
+						{ value: 'editor', label: 'Editor' },
+						{ value: 'viewer', label: 'Viewer' }
+					],
+					colSpan: 1
+				},
+				{
+					id: 'plan',
+					kind: 'radio',
+					label: 'Plan',
+					radioOrientation: 'horizontal',
+					options: [
+						{ value: 'free', label: 'Free' },
+						{ value: 'pro', label: 'Pro' },
+						{ value: 'enterprise', label: 'Enterprise' }
+					],
+					description: 'You can change this later in settings.',
+					colSpan: 1
+				}
+			]
 		},
 		{
-			id: 'message',
-			kind: 'textarea',
-			label: 'Message',
-			placeholder: 'Tell us a bit about what you need…',
-			rows: 5
-		},
-		{
-			id: 'acceptsTerms',
-			kind: 'checkbox',
-			label: 'I accept the terms and conditions'
+			title: 'Details',
+			fields: [
+				{
+					id: 'message',
+					kind: 'textarea',
+					label: 'Message',
+					placeholder: 'Tell us a bit about what you need…',
+					rows: 5
+				},
+				{
+					id: 'acceptsTerms',
+					kind: 'checkbox',
+					label: 'I accept the terms and conditions'
+				}
+			]
 		}
 	];
 
@@ -115,7 +136,7 @@
 	</header>
 
 	<MutationForm
-		{fields}
+		{sections}
 		bind:values
 		schema={contactFormSchema}
 		runFunction={api.tables.test.testMutations.createTestRow}
