@@ -1,7 +1,14 @@
 import type { Snippet } from 'svelte';
-import type { HTMLInputTypeAttribute } from 'svelte/elements';
+import type { FullAutoFill, HTMLInputTypeAttribute } from 'svelte/elements';
 
-export type MutationFormFieldKind = 'input' | 'textarea' | 'select' | 'checkbox' | 'radio';
+export type MutationFormFieldKind =
+	| 'input'
+	| 'textarea'
+	| 'select'
+	| 'checkbox'
+	| 'radio'
+	| 'upload-single'
+	| 'upload-multiple';
 
 export type MutationFormSelectOption = {
 	value: string;
@@ -18,7 +25,7 @@ export type MutationFormFieldDef = {
 	/** Common */
 	placeholder?: string;
 	description?: string;
-	autocomplete?: string;
+	autocomplete?: FullAutoFill;
 	autofocus?: boolean;
 	disabled?: boolean;
 	required?: boolean;
@@ -37,6 +44,9 @@ export type MutationFormFieldDef = {
 
 	/** kind: 'radio' */
 	radioOrientation?: 'vertical' | 'horizontal';
+
+	/** kind: 'upload-single' | 'upload-multiple' */
+	accept?: string;
 
 	/** Grid columns the field occupies inside a section. Defaults to 2 (full width). */
 	colSpan?: 1 | 2;

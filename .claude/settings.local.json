@@ -47,7 +47,8 @@
       "Bash(mv storageMutations.ts convexStorage/storageMutations.ts)",
       "Bash(mv src/convex/storage/crons/cleanupR2.ts src/convex/storage/crons/cleanupOrphanDataR2.ts)",
       "Bash(mv src/convex/storage/crons/cleanupConvexStorage.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts)",
-      "Bash(sed -i 's/cleanupR2/cleanupOrphanDataR2/g; s/cleanupConvexStorage/cleanupOrphanDataConvexStorage/g' src/convex/storage/crons/cleanupOrphanDataR2.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts src/convex/crons.ts)"
+      "Bash(sed -i 's/cleanupR2/cleanupOrphanDataR2/g; s/cleanupConvexStorage/cleanupOrphanDataConvexStorage/g' src/convex/storage/crons/cleanupOrphanDataR2.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts src/convex/crons.ts)",
+      "Bash(npx svelte-check *)"
     ]
   }
 }

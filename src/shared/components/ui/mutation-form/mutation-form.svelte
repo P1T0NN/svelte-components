@@ -28,12 +28,16 @@
 	import SelectField from './select-field.svelte';
 	import CheckboxField from './checkbox-field.svelte';
 	import RadioGroupField from './radio-group-field.svelte';
+	import UploadField from './upload-field.svelte';
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
 	import { safeMutation } from '@/shared/utils/convexHelpers';
 	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
 	import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+	import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
+	import { Progress } from '@/shared/components/ui/progress/index.js';
+	import { processUploadFields, hasUploadFields } from './utils.js';
 
 	// TYPES
 	import type { Snippet } from 'svelte';
@@ -52,7 +56,6 @@
 		initialValues,
 		runFunction,
 		schema,
-		beforeSubmit,
 		onSuccess,
 		submitLabel = 'Submit',
 		resetOnSuccess = true,
@@ -70,7 +73,6 @@
 		initialValues?: T;
 		runFunction: FunctionReference<'mutation'>;
 		schema: GenericSchema<T>;
-		beforeSubmit?: (values: T) => Promise<Partial<T> | void | false> | Partial<T> | void | false;
 		onSuccess?: (values: T) => void;
 		submitLabel?: string;
 		resetOnSuccess?: boolean;
@@ -83,6 +85,7 @@
 
 	const convex = useConvexClient();
 	const id = $props.id();
+	const progress = useProgress();
 
 	// svelte-ignore state_referenced_locally
 	const resetSnapshot: T = $state.snapshot(initialValues ?? values) as T;
@@ -124,20 +127,19 @@
 		fieldErrors = {};
 
 		busy = true;
+		progress.start();
 
 		try {
-			let extraArgs: Partial<T> | void | false = undefined;
-			if (beforeSubmit) {
-				try {
-					extraArgs = await beforeSubmit($state.snapshot(values) as T);
-				} catch (err) {
-					toast.error(err instanceof Error ? err.message : String(err));
-					return;
-				}
-				if (extraArgs === false) return;
-			}
+			const args = { ...($state.snapshot(values) as T) } as Record<string, unknown>;
 
-			const args = { ...($state.snapshot(values) as T), ...(extraArgs ?? {}) };
+			const ok = await processUploadFields({
+				convex,
+				sections: resolvedSections,
+				args,
+				progress
+			});
+			if (!ok) return;
+			progress.markDone();
 
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const result = await safeMutation(convex, runFunction, args as any);
@@ -153,8 +155,11 @@
 			if (resetOnSuccess) values = structuredClone(resetSnapshot);
 		} finally {
 			busy = false;
+			progress.clear();
 		}
 	}
+
+	const showUploadProgress = $derived(hasUploadFields(resolvedSections));
 </script>
 
 {#snippet renderField(field: MutationFormFieldDef)}
@@ -212,6 +217,13 @@
 					value={getValue(field.id)}
 					setValue={(v) => setValue(field.id, v)}
 					invalid={!!err}
+				/>
+			{:else if field.kind === 'upload-single' || field.kind === 'upload-multiple'}
+				<UploadField
+					{field}
+					{inputId}
+					value={getValue(field.id)}
+					setValue={(v) => setValue(field.id, v)}
 				/>
 			{:else if field.kind === 'select'}
 				<SelectField
@@ -291,6 +303,13 @@
 	{/each}
 
 	{@render extraFields?.()}
+
+	{#if busy && showUploadProgress}
+		<div class="flex w-full flex-col gap-2">
+			<Progress value={progress.percent} class="h-2" />
+			<p class="text-muted-foreground text-xs tabular-nums">{progress.label}</p>
+		</div>
+	{/if}
 
 	{#if actions}
 		{@render actions({ busy })}
