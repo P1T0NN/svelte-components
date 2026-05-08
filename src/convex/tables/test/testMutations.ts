@@ -14,7 +14,9 @@ export const createTestRow = mutation({
 		name: v.string(),
 		email: v.string(),
 		role: v.union(v.literal('admin'), v.literal('editor'), v.literal('viewer')),
-		message: v.string()
+		plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
+		message: v.string(),
+		acceptsTerms: v.boolean()
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.insert('testRows', args);

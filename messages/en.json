@@ -293,6 +293,7 @@
 		"EMAIL_SENT_SUCCESSFULLY": "Email sent successfully.",
 		"TEST_ROW_CREATED": "Test row created.",
 
+		"YOU_NEED_TO_CORRECT_FORM_ERRORS": "You need to correct form errors",
 		"BATCH_TOO_LARGE": "Too many items in a single request (max {limit}).",
 		"FORBIDDEN": "You're not allowed to perform this action.",
 		"NOT_AUTHENTICATED": "Please sign in to continue.",

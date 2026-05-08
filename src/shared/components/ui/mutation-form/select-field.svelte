@@ -27,8 +27,10 @@
 
 <Select.Root
 	type="single"
-	value={current ?? ''}
-	onValueChange={(v) => setValue(v)}
+	bind:value={
+		() => current ?? '',
+		(v) => setValue(v)
+	}
 	disabled={field.disabled}
 >
 	<Select.Trigger id={inputId} class="w-full" aria-invalid={invalid ? 'true' : undefined}>

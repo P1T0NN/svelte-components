@@ -1,7 +1,7 @@
 import type { Snippet } from 'svelte';
 import type { HTMLInputTypeAttribute } from 'svelte/elements';
 
-export type MutationFormFieldKind = 'input' | 'textarea' | 'select';
+export type MutationFormFieldKind = 'input' | 'textarea' | 'select' | 'checkbox' | 'radio';
 
 export type MutationFormSelectOption = {
 	value: string;
@@ -30,10 +30,13 @@ export type MutationFormFieldDef = {
 	/** kind: 'textarea' */
 	rows?: number;
 
-	/** kind: 'select' */
+	/** kind: 'select' | 'radio' */
 	options?: MutationFormSelectOption[];
 	/** Trigger label when the bound value is empty. */
 	selectPlaceholder?: string;
+
+	/** kind: 'radio' */
+	radioOrientation?: 'vertical' | 'horizontal';
 };
 
 export type MutationFormFieldSnippetProps<T extends Record<string, unknown>> = {

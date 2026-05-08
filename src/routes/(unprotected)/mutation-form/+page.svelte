@@ -1,6 +1,16 @@
 <script lang="ts">
 	// LIBRARIES
-	import { email, minLength, object, picklist, pipe, string, trim } from 'valibot';
+	import {
+		boolean,
+		check,
+		email,
+		minLength,
+		object,
+		picklist,
+		pipe,
+		string,
+		trim
+	} from 'valibot';
 	import { api } from '@/convex/_generated/api';
 
 	// COMPONENTS
@@ -20,7 +30,12 @@
 			email('Enter a valid email.')
 		),
 		role: picklist(['admin', 'editor', 'viewer'], 'Pick a role.'),
-		message: pipe(string(), trim(), minLength(10, 'Message must be at least 10 characters.'))
+		plan: picklist(['free', 'pro', 'enterprise'], 'Pick a plan.'),
+		message: pipe(string(), trim(), minLength(10, 'Message must be at least 10 characters.')),
+		acceptsTerms: pipe(
+			boolean(),
+			check((v) => v === true, 'You must accept the terms.')
+		)
 	});
 
 	type ContactFormValues = InferOutput<typeof contactFormSchema>;
@@ -55,11 +70,28 @@
 			]
 		},
 		{
+			id: 'plan',
+			kind: 'radio',
+			label: 'Plan',
+			radioOrientation: 'horizontal',
+			options: [
+				{ value: 'free', label: 'Free' },
+				{ value: 'pro', label: 'Pro' },
+				{ value: 'enterprise', label: 'Enterprise' }
+			],
+			description: 'You can change this later in settings.'
+		},
+		{
 			id: 'message',
 			kind: 'textarea',
 			label: 'Message',
 			placeholder: 'Tell us a bit about what you need…',
 			rows: 5
+		},
+		{
+			id: 'acceptsTerms',
+			kind: 'checkbox',
+			label: 'I accept the terms and conditions'
 		}
 	];
 
@@ -67,7 +99,9 @@
 		name: '',
 		email: '',
 		role: '' as ContactFormValues['role'],
-		message: ''
+		plan: '' as ContactFormValues['plan'],
+		message: '',
+		acceptsTerms: false
 	});
 </script>
 

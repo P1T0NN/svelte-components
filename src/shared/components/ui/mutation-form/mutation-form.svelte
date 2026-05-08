@@ -3,12 +3,15 @@
 	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
 	import { safeParse, type GenericSchema } from 'valibot';
+	import { m } from '@/shared/lib/paraglide/messages.js';
 
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
 	import {
 		FieldGroup,
 		Field,
+		FieldSet,
+		FieldLegend,
 		FieldLabel,
 		FieldDescription,
 		FieldError
@@ -16,6 +19,8 @@
 	import InputField from './input-field.svelte';
 	import TextareaField from './textarea-field.svelte';
 	import SelectField from './select-field.svelte';
+	import CheckboxField from './checkbox-field.svelte';
+	import RadioGroupField from './radio-group-field.svelte';
 
 	// UTILS
 	import { safeMutation } from '@/shared/utils/convexHelpers';
@@ -87,6 +92,11 @@
 
 	function setValue(key: string, next: unknown) {
 		(values as Record<string, unknown>)[key] = next;
+		if (key in fieldErrors) {
+			const next = { ...fieldErrors };
+			delete next[key as keyof T & string];
+			fieldErrors = next;
+		}
 	}
 
 	async function onsubmit(event: SubmitEvent) {
@@ -95,7 +105,7 @@
 		const validation = safeParse(schema, $state.snapshot(values));
 		if (!validation.success) {
 			fieldErrors = valibotIssuesToFieldErrors<keyof T & string>(validation.issues);
-			toast.error('You need to correct the errors');
+			toast.error(m["GenericMessages.YOU_NEED_TO_CORRECT_FORM_ERRORS"]());
 			return;
 		}
 		fieldErrors = {};
@@ -131,49 +141,84 @@
 			{@const err = fieldErrors[field.id as keyof T & string]}
 			{@const custom = customFields?.[field.id]}
 
-			<Field class={field.fieldClass}>
-				<FieldLabel for={inputId}>{field.label}</FieldLabel>
+			{#if field.kind === 'checkbox' && !custom}
+				<Field orientation="horizontal" class={field.fieldClass}>
+					<CheckboxField
+						{field}
+						{inputId}
+						value={getValue(field.id)}
+						setValue={(v) => setValue(field.id, v)}
+						invalid={!!err}
+					/>
+					<FieldLabel for={inputId}>{field.label}</FieldLabel>
 
-				{#if custom}
-					{@render custom({
-						field,
-						value: getValue(field.id) as T[keyof T],
-						setValue: (next) => setValue(field.id, next),
-						error: err,
-						inputId
-					})}
-				{:else if field.kind === 'textarea'}
-					<TextareaField
+					{#if err}
+						<FieldError>{err}</FieldError>
+					{:else if field.description}
+						<FieldDescription>{field.description}</FieldDescription>
+					{/if}
+				</Field>
+			{:else if field.kind === 'radio' && !custom}
+				<FieldSet class={field.fieldClass}>
+					<FieldLegend variant="label">{field.label}</FieldLegend>
+					<RadioGroupField
 						{field}
 						{inputId}
 						value={getValue(field.id)}
 						setValue={(v) => setValue(field.id, v)}
 						invalid={!!err}
 					/>
-				{:else if field.kind === 'select'}
-					<SelectField
-						{field}
-						{inputId}
-						value={getValue(field.id)}
-						setValue={(v) => setValue(field.id, v)}
-						invalid={!!err}
-					/>
-				{:else}
-					<InputField
-						{field}
-						{inputId}
-						value={getValue(field.id)}
-						setValue={(v) => setValue(field.id, v)}
-						invalid={!!err}
-					/>
-				{/if}
+					{#if err}
+						<FieldError>{err}</FieldError>
+					{:else if field.description}
+						<FieldDescription>{field.description}</FieldDescription>
+					{/if}
+				</FieldSet>
+			{:else}
+				<Field class={field.fieldClass}>
+					<FieldLabel for={inputId}>{field.label}</FieldLabel>
 
-				{#if err}
-					<FieldError>{err}</FieldError>
-				{:else if field.description}
-					<FieldDescription>{field.description}</FieldDescription>
-				{/if}
-			</Field>
+					{#if custom}
+						{@render custom({
+							field,
+							value: getValue(field.id) as T[keyof T],
+							setValue: (next) => setValue(field.id, next),
+							error: err,
+							inputId
+						})}
+					{:else if field.kind === 'textarea'}
+						<TextareaField
+							{field}
+							{inputId}
+							value={getValue(field.id)}
+							setValue={(v) => setValue(field.id, v)}
+							invalid={!!err}
+						/>
+					{:else if field.kind === 'select'}
+						<SelectField
+							{field}
+							{inputId}
+							value={getValue(field.id)}
+							setValue={(v) => setValue(field.id, v)}
+							invalid={!!err}
+						/>
+					{:else}
+						<InputField
+							{field}
+							{inputId}
+							value={getValue(field.id)}
+							setValue={(v) => setValue(field.id, v)}
+							invalid={!!err}
+						/>
+					{/if}
+
+					{#if err}
+						<FieldError>{err}</FieldError>
+					{:else if field.description}
+						<FieldDescription>{field.description}</FieldDescription>
+					{/if}
+				</Field>
+			{/if}
 		{/each}
 
 		{@render footer?.()}
