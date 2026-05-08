@@ -42,6 +42,7 @@
 		initialValues,
 		runFunction,
 		schema,
+		beforeSubmit,
 		onSuccess,
 		submitLabel = 'Submit',
 		resetOnSuccess = true,
@@ -66,6 +67,12 @@
 		 * by top-level path key (`valibotIssuesToFieldErrors`). A failing parse short-circuits submit.
 		 */
 		schema: GenericSchema<T>;
+		/**
+		 * Runs after validation, before the mutation. Use for side effects that must succeed first
+		 * (e.g. file uploads). Return an object to merge extra args into the mutation payload, or
+		 * `false` to abort silently. Throw to abort — the error is toasted. `busy` stays true throughout.
+		 */
+		beforeSubmit?: (values: T) => Promise<Partial<T> | void | false> | Partial<T> | void | false;
 		onSuccess?: (values: T) => void;
 		submitLabel?: string;
 		resetOnSuccess?: boolean;
@@ -113,9 +120,22 @@
 		busy = true;
 
 		try {
+			let extraArgs: Partial<T> | void | false = undefined;
+			if (beforeSubmit) {
+				try {
+					extraArgs = await beforeSubmit($state.snapshot(values) as T);
+				} catch (err) {
+					toast.error(err instanceof Error ? err.message : String(err));
+					return;
+				}
+				if (extraArgs === false) return;
+			}
+
+			const args = { ...($state.snapshot(values) as T), ...(extraArgs ?? {}) };
+
 			// Field config drives args; the concrete mutation defines the exact arg shape.
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const result = await safeMutation(convex, runFunction, values as any);
+			const result = await safeMutation(convex, runFunction, args as any);
 			if (!result) return; // typed error / rate limit — already toasted by safeMutation
 
 			if (!result.success) {
