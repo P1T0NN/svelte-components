@@ -66,6 +66,19 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
 				trustedProviders: ['google', 'credential']
 			}
 		},
+		// Tell better-auth where to read the real client IP from. The default checks
+		// a generic header list and ends up logging Vercel's edge IP in our setup.
+		// Vercel sets `x-forwarded-for` with the original client IP as the first
+		// entry (and `x-real-ip` as a single-value mirror); read those and ignore
+		// anything else. Order matters — better-auth uses the first header it
+		// finds, so list `x-forwarded-for` first since it's the canonical one.
+		// On non-Vercel hosts swap these for whatever header your edge sets
+		// (`cf-connecting-ip` for Cloudflare, `true-client-ip` for Akamai, etc.).
+		advanced: {
+			ipAddress: {
+				ipAddressHeaders: ['x-forwarded-for', 'x-real-ip']
+			}
+		},
 		socialProviders: {
 			google: {
 				clientId: process.env.GOOGLE_CLIENT_ID!,
