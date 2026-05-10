@@ -2,11 +2,12 @@
 import { v } from 'convex/values';
 import { R2, type R2Callbacks } from '@convex-dev/r2';
 import { components, internal } from '../../_generated/api';
-import { mutation } from '../../_generated/server';
 
 // HELPERS
-import { getRateLimitedUserId } from '../../helpers/getRateLimitedUserId.js';
 import { getAuthUserId } from '../../auth/helpers/getAuthUserId.js';
+import { logAudit } from '../../tables/auditLog/helpers/logAudit';
+import { AUDIT_ACTIONS } from '../../tables/auditLog/auditLogConfigs';
+import { authMutation } from '../../auth/middleware/authMiddleware';
 
 // TYPES
 import type { DataModel } from '../../_generated/dataModel';
@@ -39,7 +40,7 @@ const ALLOWED_CONTENT_TYPES = new Set<string>([
  * an orphan. Instead we charge the rate-limit + auth here, BEFORE the signed URL is
  * minted: any failure means no URL, no PUT, no orphan possible.
  */
-export const generateUploadUrl = mutation({
+export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
 	args: {},
 	returns: v.object({
 		success: v.boolean(),
@@ -49,9 +50,8 @@ export const generateUploadUrl = mutation({
 		}),
 		data: v.optional(v.object({ url: v.string(), key: v.string() }))
 	}),
-	handler: async (ctx): Promise<ConvexMutationResult<{ url: string; key: string }>> => {
-		// Auth + rate-limit. Throws on either failure → mutation aborts → no URL returned.
-		await getRateLimitedUserId(ctx, 'upload');
+	handler: async (): Promise<ConvexMutationResult<{ url: string; key: string }>> => {
+		// `authMutation` already handled auth + rate-limit before we got here.
 		const minted = await r2.generateUploadUrl();
 		return {
 			success: true,
@@ -108,10 +108,15 @@ export const { syncMetadata, onSyncMetadata } = r2.clientApi<DataModel>({
 			});
 			return;
 		}
-		await ctx.db.insert('uploadedFilesR2', {
+		const id = await ctx.db.insert('uploadedFilesR2', {
 			ownerId: userId,
 			key,
 			url: ''
+		});
+		logAudit(ctx, AUDIT_ACTIONS.FILE_UPLOAD, {
+			userId,
+			resource: { table: 'uploadedFilesR2', id },
+			after: { key }
 		});
 	},
 	callbacks: {

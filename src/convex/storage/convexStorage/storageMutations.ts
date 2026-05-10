@@ -4,6 +4,9 @@ import { ConvexError, v } from 'convex/values';
 // MIDDLEWARE
 import { authMutation } from '../../auth/middleware/authMiddleware';
 
+// AUDIT
+import { AUDIT_ACTIONS } from '../../tables/auditLog/auditLogConfigs';
+
 // TYPES
 import type { ConvexErrorPayload } from '../../types/convexTypes.js';
 
@@ -85,6 +88,10 @@ export const saveUploadedFile = authMutation({ rateLimit: 'upload' })({
 			ownerId: ctx.userId,
 			storageId: args.storageId,
 			url
+		});
+		ctx.audit(AUDIT_ACTIONS.FILE_UPLOAD, {
+			resource: { table: TABLE, id },
+			after: { storageId: args.storageId, contentType: meta.contentType, size: meta.size }
 		});
 		return id;
 	}

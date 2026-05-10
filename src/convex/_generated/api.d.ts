@@ -8,14 +8,12 @@
  * @module
  */
 
-import type * as auditLog from "../auditLog.js";
 import type * as auth_auth from "../auth/auth.js";
 import type * as auth_emails_sendVerificationOTP from "../auth/emails/sendVerificationOTP.js";
 import type * as auth_helpers_getAuthUserId from "../auth/helpers/getAuthUserId.js";
 import type * as auth_middleware_authMiddleware from "../auth/middleware/authMiddleware.js";
 import type * as auth_queries_authQueries from "../auth/queries/authQueries.js";
 import type * as crons from "../crons.js";
-import type * as features from "../features.js";
 import type * as helpers_createDeleteMutation from "../helpers/createDeleteMutation.js";
 import type * as helpers_fetchOptimized from "../helpers/fetchOptimized.js";
 import type * as helpers_getRateLimitedUserId from "../helpers/getRateLimitedUserId.js";
@@ -29,6 +27,14 @@ import type * as storage_crons_cleanupOrphanDataConvexStorage from "../storage/c
 import type * as storage_crons_cleanupOrphanDataR2 from "../storage/crons/cleanupOrphanDataR2.js";
 import type * as storage_r2_r2 from "../storage/r2/r2.js";
 import type * as storage_r2_uploadedFilesR2 from "../storage/r2/uploadedFilesR2.js";
+import type * as tables_auditLog_auditLogConfigs from "../tables/auditLog/auditLogConfigs.js";
+import type * as tables_auditLog_crons_auditLogCron from "../tables/auditLog/crons/auditLogCron.js";
+import type * as tables_auditLog_helpers_auditLogInternal from "../tables/auditLog/helpers/auditLogInternal.js";
+import type * as tables_auditLog_helpers_logAudit from "../tables/auditLog/helpers/logAudit.js";
+import type * as tables_auditLog_index from "../tables/auditLog/index.js";
+import type * as tables_auditLog_queries_auditLogQueries from "../tables/auditLog/queries/auditLogQueries.js";
+import type * as tables_auditLog_schemas_auditLogSchema from "../tables/auditLog/schemas/auditLogSchema.js";
+import type * as tables_auditLog_utils_auditLogUtils from "../tables/auditLog/utils/auditLogUtils.js";
 import type * as tables_test_testMutations from "../tables/test/testMutations.js";
 import type * as tables_test_testQueries from "../tables/test/testQueries.js";
 import type * as types_convexTypes from "../types/convexTypes.js";
@@ -40,14 +46,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  auditLog: typeof auditLog;
   "auth/auth": typeof auth_auth;
   "auth/emails/sendVerificationOTP": typeof auth_emails_sendVerificationOTP;
   "auth/helpers/getAuthUserId": typeof auth_helpers_getAuthUserId;
   "auth/middleware/authMiddleware": typeof auth_middleware_authMiddleware;
   "auth/queries/authQueries": typeof auth_queries_authQueries;
   crons: typeof crons;
-  features: typeof features;
   "helpers/createDeleteMutation": typeof helpers_createDeleteMutation;
   "helpers/fetchOptimized": typeof helpers_fetchOptimized;
   "helpers/getRateLimitedUserId": typeof helpers_getRateLimitedUserId;
@@ -61,6 +65,14 @@ declare const fullApi: ApiFromModules<{
   "storage/crons/cleanupOrphanDataR2": typeof storage_crons_cleanupOrphanDataR2;
   "storage/r2/r2": typeof storage_r2_r2;
   "storage/r2/uploadedFilesR2": typeof storage_r2_uploadedFilesR2;
+  "tables/auditLog/auditLogConfigs": typeof tables_auditLog_auditLogConfigs;
+  "tables/auditLog/crons/auditLogCron": typeof tables_auditLog_crons_auditLogCron;
+  "tables/auditLog/helpers/auditLogInternal": typeof tables_auditLog_helpers_auditLogInternal;
+  "tables/auditLog/helpers/logAudit": typeof tables_auditLog_helpers_logAudit;
+  "tables/auditLog/index": typeof tables_auditLog_index;
+  "tables/auditLog/queries/auditLogQueries": typeof tables_auditLog_queries_auditLogQueries;
+  "tables/auditLog/schemas/auditLogSchema": typeof tables_auditLog_schemas_auditLogSchema;
+  "tables/auditLog/utils/auditLogUtils": typeof tables_auditLog_utils_auditLogUtils;
   "tables/test/testMutations": typeof tables_test_testMutations;
   "tables/test/testQueries": typeof tables_test_testQueries;
   "types/convexTypes": typeof types_convexTypes;

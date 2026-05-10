@@ -2,23 +2,17 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
+// TABLES
+import { auditLogTable } from './tables/auditLog/schemas/auditLogSchema';
+
 const schema = defineSchema({
 	// Users (with `role` and other custom fields) live in the better-auth component;
 	// access via `authComponent.getAuthUser(ctx)`. Foreign-key columns below store the
 	// better-auth user id as a plain string.
 
-	// Audit logs table (enable via FEATURES.AUDIT_LOGS in features.ts)
-	auditLogs: defineTable({
-		userId: v.string(),
-		action: v.string(),
-		targetTable: v.optional(v.string()),
-		targetId: v.optional(v.string()),
-		metadata: v.optional(v.any()),
-		timestamp: v.number()
-	})
-		.index('by_user', ['userId'])
-		.index('by_action', ['action'])
-		.index('by_timestamp', ['timestamp']),
+	// Audit logs — toggle population via FEATURES.AUDIT_LOGS in projectSettings.ts.
+	// The table itself is always declared so flipping the flag needs no migration.
+	auditLogs: auditLogTable,
 
 	/** Convex file storage reference + resolved download URL. Owner-stamped at upload. */
 	uploadedFiles: defineTable({

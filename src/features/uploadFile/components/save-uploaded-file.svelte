@@ -16,7 +16,7 @@
 	import { uploadFileToR2, uploadFileToConvexStorage } from '@/shared/utils/convexHelpers';
 
 	// CONFIG
-	import { FEATURES } from '@/convex/features';
+	import { FEATURES } from '@/convex/projectSettings';
 
 	type Props = {
 		file: File | null;

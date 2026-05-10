@@ -20,7 +20,7 @@ export const createTestRow = mutation({
 	},
 	handler: async (ctx, args) => {
 		await ctx.db.insert('testRows', args);
-		
+
 		return {
 			success: true,
 			message: 'GenericMessages.TEST_ROW_CREATED'

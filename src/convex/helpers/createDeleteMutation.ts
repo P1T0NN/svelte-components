@@ -6,12 +6,14 @@ import { mutation } from '../_generated/server';
 // HELPERS
 import { getRateLimitedUserId } from './getRateLimitedUserId.js';
 import { requireAdmin } from '../auth/middleware/authMiddleware.js';
+import { logAudit } from '../tables/auditLog/helpers/logAudit';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';
 import type { Doc, TableNames } from '../_generated/dataModel';
 import type { RateLimitName } from '../rateLimiter.js';
 import type { ConvexMutationResult, TranslatableMessage } from '../types/convexTypes.js';
+import type { AuditAction } from '../tables/auditLog/auditLogConfigs';
 
 // ─── Config types ────────────────────────────────────────────────────────────
 
@@ -196,6 +198,21 @@ export type CreateDeleteMutationOptions<T extends TableNames> = {
 	 * full trade-off matrix. Defaults to `'sequential'` — the safe choice.
 	 */
 	phase2Strategy?: DeletePhase2Strategy;
+	/**
+	 * Audit-log policy for this endpoint.
+	 *
+	 * - **Default** (omit): one audit row per deleted doc with
+	 *   `action = "${table}.delete"`, `resource = { table, id }`, `before = doc`,
+	 *   and `userId` from the resolved caller. Off the hot path (scheduled write),
+	 *   no-op when `FEATURES.AUDIT_LOGS` is disabled.
+	 * - `false`: skip auditing for this endpoint (use for noisy / throwaway tables).
+	 * - `{ action }`: override the action key (e.g. `AUDIT_ACTIONS.USER_DELETE`).
+	 *
+	 * The audit write happens INSIDE Phase 2, just before `ctx.db.delete`, so it
+	 * shares the mutation's transactional guarantee — if anything later in the
+	 * batch throws, the schedule entry rolls back with everything else.
+	 */
+	audit?: false | { action?: AuditAction };
 };
 
 export type DeleteMutationData = {
@@ -303,8 +320,14 @@ export function createDeleteMutation<T extends TableNames>(
 		onDelete,
 		maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
 		rateLimit: rateLimitOption,
-		phase2Strategy = 'sequential'
+		phase2Strategy = 'sequential',
+		audit: auditOption
 	} = options;
+
+	// Resolve once, not per row. `false` → opt-out; otherwise default action key
+	// is `${table}.delete` so every endpoint gets sensible auditing for free.
+	const auditAction: AuditAction | null =
+		auditOption === false ? null : (auditOption?.action ?? `${table}.delete`);
 
 	return mutation({
 		args: {
@@ -443,6 +466,13 @@ export function createDeleteMutation<T extends TableNames>(
 			//    choice is only about *intra-batch* ordering guarantees, never about atomicity.
 			const deleteOne = async (doc: Doc<T>) => {
 				if (onDelete) await onDelete(ctx, doc);
+				if (auditAction) {
+					logAudit(ctx, auditAction, {
+						userId: userId ?? undefined,
+						resource: { table, id: doc._id },
+						before: doc
+					});
+				}
 				await ctx.db.delete(doc._id);
 			};
 			if (phase2Strategy === 'optimized') {

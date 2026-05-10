@@ -2,13 +2,13 @@
 	// LIBRARIES
 	import { api } from '@/convex/_generated/api';
 
+	// CONFIG
+	import { fillRoutePattern, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
+	import { FEATURES } from '@/convex/projectSettings';
+
 	// COMPONENTS
 	import Section from '@/shared/components/ui/section/section.svelte';
 	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
-
-	// CONFIG
-	import { fillRoutePattern, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
-	import { FEATURES } from '@/convex/features';
 
 	// TYPES
 	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';

@@ -51,4 +51,15 @@ crons.daily(
 	internal.storage.crons.cleanupOrphanDataConvexStorage.cleanupOrphanDataConvexStorage
 );
 
+/**
+ * Audit-log retention. No-op when `FEATURES.AUDIT_LOGS` is off (table will just
+ * be empty). Per-action retention is configured in `tables/auditLog/auditLogActions.ts`.
+ */
+crons.daily(
+	'purge stale audit logs',
+	{ hourUTC: 4, minuteUTC: 0 },
+	internal.tables.auditLog.crons.auditLogCron.purgeStaleAuditLogs,
+	{}
+);
+
 export default crons;

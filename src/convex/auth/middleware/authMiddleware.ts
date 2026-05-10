@@ -10,12 +10,15 @@ import {
 import { action, mutation } from '@/convex/_generated/server';
 import { authComponent } from '@/convex/auth/auth';
 import { getRateLimitedUserId } from '@/convex/helpers/getRateLimitedUserId';
+import { logAudit } from '@/convex/tables/auditLog/helpers/logAudit';
 
 // TYPES
 import type { ActionCtx, MutationCtx, QueryCtx } from '@/convex/_generated/server';
 import type { RateLimitName } from '@/convex/rateLimiter';
 import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
 import type { Id } from '@/convex/auth/component/_generated/dataModel';
+import type { AuditAction } from '@/convex/tables/auditLog/auditLogConfigs';
+import type { AuditOptions } from '@/convex/tables/auditLog/helpers/logAudit';
 
 /**
  * Assert the caller is an authenticated admin.
@@ -71,6 +74,17 @@ type AuthOptions = {
 };
 
 /**
+ * Build the `ctx.audit(action, opts?)` helper exposed to handlers. `userId` is
+ * pre-filled from the caller. IP / UA are intentionally NOT plumbed through —
+ * for forensic context, query better-auth's `session` table by `userId` and
+ * `_creationTime` window: it stamps `ipAddress` / `userAgent` server-side at
+ * sign-in, which is more trustworthy than anything we could re-derive per call.
+ */
+const buildAudit = (ctx: MutationCtx | ActionCtx, userId: string) =>
+	(action: AuditAction, auditOpts: Omit<AuditOptions, 'userId'> & { userId?: string } = {}) =>
+		logAudit(ctx, action, { userId, ...auditOpts });
+
+/**
  * Wrap a Convex **mutation** with auth + per-user rate limit in one step.
  *
  * - Throws `NOT_AUTHENTICATED` (typed `ConvexErrorPayload`) if the caller is anonymous.
@@ -101,9 +115,10 @@ type AuthOptions = {
 export const authMutation = (opts: AuthOptions = {}) =>
 	customMutation(
 		mutation,
-		customCtx(async (ctx) => ({
-			userId: await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation')
-		}))
+		customCtx(async (ctx) => {
+			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation');
+			return { userId, audit: buildAudit(ctx, userId) };
+		})
 	);
 
 /**
@@ -128,9 +143,10 @@ export const authMutation = (opts: AuthOptions = {}) =>
 export const authAction = (opts: AuthOptions = {}) =>
 	customAction(
 		action,
-		customCtx(async (ctx) => ({
-			userId: await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action')
-		}))
+		customCtx(async (ctx) => {
+			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action');
+			return { userId, audit: buildAudit(ctx, userId) };
+		})
 	);
 
 /**
@@ -161,7 +177,7 @@ export const adminMutation = (opts: AuthOptions = {}) =>
 		customCtx(async (ctx) => {
 			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation');
 			await requireAdmin(ctx);
-			return { userId };
+			return { userId, audit: buildAudit(ctx, userId) };
 		})
 	);
 
@@ -172,6 +188,6 @@ export const adminAction = (opts: AuthOptions = {}) =>
 		customCtx(async (ctx) => {
 			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action');
 			await requireAdmin(ctx);
-			return { userId };
+			return { userId, audit: buildAudit(ctx, userId) };
 		})
 	);

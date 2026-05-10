@@ -1,5 +1,5 @@
 // CONFIG
-import { FEATURES } from '@/convex/features';
+import { FEATURES } from '@/convex/projectSettings';
 
 // COMPONENTS
 import { toast } from 'svelte-sonner';
