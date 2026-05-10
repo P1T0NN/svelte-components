@@ -17,6 +17,9 @@
 	} from '@/shared/components/ui/table/index.js';
 	import { Card } from '@/shared/components/ui/card/index.js';
 	import { Checkbox } from '@/shared/components/ui/checkbox/index.js';
+	import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
+	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 
 	// UTILS
 	import { cn, type WithElementRef } from '@/shared/utils/utils.js';
@@ -31,7 +34,8 @@
 	import type {
 		ColumnDef as ColumnDefT,
 		DataTableCustomCells,
-		DataTableSelectionHeaderState
+		DataTableSelectionHeaderState,
+		DataTableSortDirection
 	} from './types.js';
 
 	type Props = WithElementRef<HTMLAttributes<HTMLDivElement>> & {
@@ -46,6 +50,18 @@
 		headerSelectionState?: DataTableSelectionHeaderState;
 		onToggleRow?: (id: string) => void;
 		onToggleAllOnPage?: () => void;
+		/** Active sort column id (matches `ColumnDef.id`); `undefined` = no sort applied. */
+		sortColumn?: string | undefined;
+		sortDirection?: DataTableSortDirection | undefined;
+		/** Click handler for sortable headers. Called with the column id; parent owns the cycle. */
+		onSort?: (columnId: string) => void;
+		/**
+		 * When `true`, sort affordances are suppressed: headers render as plain text and
+		 * no chevrons are shown. Use when the server's current access pattern overrides
+		 * any client sort — typically when a full-text search is active and Convex returns
+		 * relevance-ordered rows.
+		 */
+		isSearching?: boolean;
 	};
 
 	let {
@@ -61,6 +77,10 @@
 		headerSelectionState = 'none',
 		onToggleRow,
 		onToggleAllOnPage,
+		sortColumn,
+		sortDirection,
+		onSort,
+		isSearching = false,
 		...restProps
 	}: Props = $props();
 
@@ -110,15 +130,45 @@
 							</TableHead>
 						{/if}
 						{#each columns as col (col.id)}
+							{@const sortAffordance = !!col.sortable && !isSearching}
+							{@const isActive = sortAffordance && sortColumn === col.id}
+							{@const ariaSort = !sortAffordance
+								? undefined
+								: isActive
+									? sortDirection === 'asc'
+										? 'ascending'
+										: 'descending'
+									: 'none'}
 							<TableHead
 								scope="col"
+								aria-sort={ariaSort}
 								class={cn(
 									'text-muted-foreground h-auto px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase whitespace-normal',
 									breakpointTableClass(col.hideBelow),
 									col.headerClass
 								)}
 							>
-								{col.header}
+								{#if sortAffordance && onSort}
+									<button
+										type="button"
+										class={cn(
+											'flex items-center gap-1.5 text-inherit hover:text-foreground transition-colors',
+											isActive && 'text-foreground'
+										)}
+										onclick={() => onSort(col.id)}
+									>
+										<span>{col.header}</span>
+										{#if isActive && sortDirection === 'asc'}
+											<ChevronUpIcon class="size-3.5" aria-hidden="true" />
+										{:else if isActive && sortDirection === 'desc'}
+											<ChevronDownIcon class="size-3.5" aria-hidden="true" />
+										{:else}
+											<ChevronsUpDownIcon class="size-3.5 opacity-50" aria-hidden="true" />
+										{/if}
+									</button>
+								{:else}
+									{col.header}
+								{/if}
 							</TableHead>
 						{/each}
 					</TableRow>

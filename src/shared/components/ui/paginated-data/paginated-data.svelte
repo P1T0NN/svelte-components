@@ -14,7 +14,18 @@
 		class?: string;
 		/** 1-based page; use `bind:page` from parent. */
 		page?: number;
-		totalPages: number;
+		/**
+		 * Total pages when known (offset mode). Leave `undefined` for cursor mode — the label
+		 * collapses to "Page X" and `canGoNext` must be supplied explicitly so the next-button
+		 * can disable on `isDone`.
+		 */
+		totalPages?: number;
+		/**
+		 * Cursor-mode opt-in: parent computes `!isDone && hasResult` and passes it in. When
+		 * `totalPages` is set this is ignored — offset mode derives next-availability from
+		 * `page < totalPages`.
+		 */
+		canGoNext?: boolean;
 		/** Full-table / route loading (skeleton, ellipsis). */
 		isLoading: boolean;
 		/** Query in flight (e.g. Convex `useQuery` `isLoading`). */
@@ -27,12 +38,21 @@
 		class: className,
 		page = $bindable(1),
 		totalPages,
+		canGoNext: canGoNextProp,
 		isLoading,
 		queryLoading,
 		hasResult
 	}: Props = $props();
 
-	const canGoNext = $derived(page < totalPages && !queryLoading && hasResult);
+	/**
+	 * Offset mode: known total bounds the next button. Cursor mode: parent threads in
+	 * `!isDone` via `canGoNext` and we still gate on `queryLoading`/`hasResult` for parity.
+	 */
+	const canGoNext = $derived(
+		totalPages !== undefined
+			? page < totalPages && !queryLoading && hasResult
+			: (canGoNextProp ?? false) && !queryLoading && hasResult
+	);
 </script>
 
 <!--
@@ -47,8 +67,10 @@
 	<span class="text-muted-foreground text-sm tabular-nums">
 		{#if isLoading}
 			<span class="inline-block min-w-[8ch]" aria-busy="true">…</span>
-		{:else}
+		{:else if totalPages !== undefined}
 			{m['PaginatedData.paginationText']({ page, totalPages })}
+		{:else}
+			{m['PaginatedData.paginationTextCursor']({ page })}
 		{/if}
 	</span>
 
@@ -71,7 +93,8 @@
 			class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'rounded-full')}
 			disabled={!canGoNext || isLoading}
 			onclick={() => {
-				page = Math.min(totalPages, page + 1);
+				/** Cursor mode has no upper bound to clamp against — `canGoNext` already gates `isDone`. */
+				page = totalPages !== undefined ? Math.min(totalPages, page + 1) : page + 1;
 			}}
 		>
 			<ChevronRightIcon class="size-4" />

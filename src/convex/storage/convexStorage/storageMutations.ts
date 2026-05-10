@@ -4,9 +4,6 @@ import { ConvexError, v } from 'convex/values';
 // MIDDLEWARE
 import { authMutation } from '../../auth/middleware/authMiddleware';
 
-// AGGREGATES
-import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';
-
 // TYPES
 import type { ConvexErrorPayload } from '../../types/convexTypes.js';
 
@@ -89,20 +86,6 @@ export const saveUploadedFile = authMutation({ rateLimit: 'upload' })({
 			storageId: args.storageId,
 			url
 		});
-		const doc = await ctx.db.get(id);
-		if (!doc) {
-			// Exotic race — log server-side so we notice, surface a translatable message.
-			console.error('[saveUploadedFile] inserted row missing on immediate re-read', {
-				id,
-				storageId: args.storageId
-			});
-			throw new ConvexError({
-				code: 'UPLOAD_SAVE_FAILED',
-				message: { key: 'GenericMessages.UPLOAD_SAVE_FAILED' }
-			} satisfies ConvexErrorPayload);
-		}
-
-		await uploadedFilesTableAggregate.insert(ctx, doc);
 		return id;
 	}
 });

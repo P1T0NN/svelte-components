@@ -2,17 +2,27 @@ import type { Snippet } from 'svelte';
 import type { FunctionReference } from 'convex/server';
 
 /**
- * DataTable pagination orchestration; extend the union when adding cursor/aggregate modes.
- * Default constant: `PAGINATION_DATA.DEFAULT_OPTIMIZATION_STRATEGY` in `@/shared/config`.
+ * DataTable pagination orchestration. Mirrors the server-side `fetchOptimized` strategies —
+ * pick `'cursor'` for any non-tiny table; `'offset'` only when you need page-number jumps
+ * and an exact total. Default constant: `PAGINATION_DATA.DEFAULT_OPTIMIZATION_STRATEGY`.
+ *
+ * | strategy   | server cost | totalCount | jump-to-page | best for                        |
+ * | ---------- | ----------- | ---------- | ------------ | ------------------------------- |
+ * | `'cursor'` | O(perPage)  | unknown    | no           | any table that may grow large   |
+ * | `'offset'` | O(rows)     | exact      | yes          | small, finite tables (<~few k)  |
  */
-export type DataTableOptimizationStrategy = 'unoptimized';
+export type DataTableOptimizationStrategy = 'cursor' | 'offset';
 
-/** Shape returned by list queries that paginate with `page` + `paginationOpts` (see `paginatedQueryArgs`). */
+/**
+ * Shape returned by list queries paginated through `fetchOptimized`. `totalCount` is `null`
+ * in cursor mode (would be O(rows) to compute) and a finite number in offset mode.
+ * `continueCursor` is opaque in cursor mode and the empty string in offset mode.
+ */
 export type PaginatedListPayload<T = unknown> = {
 	page: T[];
 	isDone: boolean;
 	continueCursor: string;
-	totalCount: number;
+	totalCount: number | null;
 };
 
 /**
@@ -69,7 +79,17 @@ export type ColumnDef<T> = {
 	 * wrap normally. Default is `false` — tabular data should stay one line per row.
 	 */
 	wrap?: boolean;
+	/**
+	 * Render the header as a clickable sort toggle. Clicking cycles `desc → asc → off` and
+	 * surfaces `{ sortColumn: col.id, sortDirection }` through the table's `queryArgs`.
+	 * Server is responsible for picking the right index per `sortColumn` (typically inside
+	 * the `fetchOptimized` `where` builder).
+	 */
+	sortable?: boolean;
 };
+
+/** Direction value sent to the server when a sortable header is active. */
+export type DataTableSortDirection = 'asc' | 'desc';
 
 export type DataTableCellSnippetProps<T> = {
 	row: T;

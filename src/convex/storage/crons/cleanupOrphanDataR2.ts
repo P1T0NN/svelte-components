@@ -3,7 +3,6 @@ import { internalMutation } from '../../_generated/server';
 
 // R2
 import { r2 } from '../r2/r2';
-import { uploadedFilesR2TableAggregate } from '../r2/aggregate/uploadedFilesR2Aggregate';
 
 /**
  * Bidirectional cleanup between the R2 bucket and the `uploadedFilesR2` table.
@@ -11,7 +10,7 @@ import { uploadedFilesR2TableAggregate } from '../r2/aggregate/uploadedFilesR2Ag
  *
  *   - Row deleted from the Convex dashboard → orphaned R2 object → we delete the object.
  *   - R2 object deleted from the Cloudflare dashboard → row points at nothing → we delete
- *     the row + its aggregate entry.
+ *     the row.
  *
  * Safe to run bidirectionally because the R2 bucket is dedicated to this table — no
  * other feature stores keys here. If that ever changes, narrow the object→row direction.
@@ -43,7 +42,6 @@ export const cleanupOrphanDataR2 = internalMutation({
 		for (const row of rows) {
 			rowKeys.add(row.key);
 			if (!r2Keys.has(row.key)) {
-				await uploadedFilesR2TableAggregate.deleteIfExists(ctx, row);
 				await ctx.db.delete(row._id);
 				staleRows++;
 			}

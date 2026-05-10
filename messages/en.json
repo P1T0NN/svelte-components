@@ -213,7 +213,8 @@
 	},
 
 	"PaginatedData": {
-		"paginationText": "Page {page} of {totalPages}"
+		"paginationText": "Page {page} of {totalPages}",
+		"paginationTextCursor": "Page {page}"
 	},
 
 	"DataTable": {
@@ -227,7 +228,13 @@
 		"ariaDataRows": "Data rows",
 		"emptyTitle": "No results",
 		"emptyDescription": "Nothing to show yet. Try adjusting filters or add new data.",
-		"delete": "Delete"
+		"delete": "Delete",
+		"searchPlaceholder": "Search…",
+		"sortAscending": "Sort ascending",
+		"sortDescending": "Sort descending",
+		"clearSort": "Clear sort",
+		"sortBy": "Sort by",
+		"sortDefault": "Default order"
 	},
 
 	"AlertDialogButton": {

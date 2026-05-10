@@ -16,6 +16,41 @@
 
 	type R2Row = Doc<'uploadedFilesR2'>;
 	type StorageRow = Doc<'uploadedFiles'>;
+	type TestRow = Doc<'testRows'>;
+
+	const testColumns: ColumnDef<TestRow>[] = [
+		{
+			id: 'name',
+			header: 'Name',
+			accessor: (r) => r.name,
+			sortable: true
+		},
+		{
+			id: 'email',
+			header: 'Email',
+			accessor: (r) => r.email,
+			hideBelow: 'md'
+		},
+		{
+			id: 'role',
+			header: 'Role',
+			accessor: (r) => r.role,
+			hideBelow: 'md'
+		},
+		{
+			id: 'plan',
+			header: 'Plan',
+			accessor: (r) => r.plan,
+			hideBelow: 'lg'
+		},
+		{
+			id: 'created',
+			header: 'Created',
+			accessor: (r) => new Date(r._creationTime).toLocaleString(),
+			hideBelow: 'lg',
+			sortable: true
+		}
+	];
 
 	const r2Columns: ColumnDef<R2Row>[] = [
 		{
@@ -36,7 +71,8 @@
 			id: 'created',
 			header: 'Created',
 			accessor: (r) => new Date(r._creationTime).toLocaleString(),
-			hideBelow: 'lg'
+			hideBelow: 'lg',
+			sortable: true
 		}
 	];
 
@@ -59,7 +95,8 @@
 			id: 'created',
 			header: 'Created',
 			accessor: (r) => new Date(r._creationTime).toLocaleString(),
-			hideBelow: 'lg'
+			hideBelow: 'lg',
+			sortable: true
 		}
 	];
 </script>
@@ -120,4 +157,24 @@
 			deleteMutation={api.storage.convexStorage.uploadedFiles.deleteUploadedFile}
 		/>
 	{/if}
+
+	<header class="flex max-w-2xl flex-col gap-1 pt-8">
+		<h2 class="text-xl font-semibold tracking-tight">Test rows</h2>
+		<p class="text-muted-foreground text-sm">
+			Searchable + sortable table backed by
+			<code class="text-foreground text-xs">fetchTestRows</code>. Type in the box to
+			run a full-text search on <code class="text-foreground text-xs">name</code>;
+			click Name or Created to sort.
+		</p>
+	</header>
+
+	<DataTable
+		caption="Test rows"
+		query={api.tables.test.testQueries.fetchTestRows}
+		columns={testColumns}
+		getRowId={(r) => r._id}
+		controlsPlace="top"
+		searchable={true}
+		searchPlaceholder="Search by name…"
+	/>
 </Section>

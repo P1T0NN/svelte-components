@@ -17,20 +17,20 @@ import type * as auth_queries_authQueries from "../auth/queries/authQueries.js";
 import type * as crons from "../crons.js";
 import type * as features from "../features.js";
 import type * as helpers_createDeleteMutation from "../helpers/createDeleteMutation.js";
+import type * as helpers_fetchOptimized from "../helpers/fetchOptimized.js";
 import type * as helpers_getRateLimitedUserId from "../helpers/getRateLimitedUserId.js";
 import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js";
 import type * as http from "../http.js";
 import type * as projectSettings from "../projectSettings.js";
 import type * as rateLimiter from "../rateLimiter.js";
-import type * as storage_convexStorage_aggregate_uploadedFilesAggregate from "../storage/convexStorage/aggregate/uploadedFilesAggregate.js";
 import type * as storage_convexStorage_storageMutations from "../storage/convexStorage/storageMutations.js";
 import type * as storage_convexStorage_uploadedFiles from "../storage/convexStorage/uploadedFiles.js";
 import type * as storage_crons_cleanupOrphanDataConvexStorage from "../storage/crons/cleanupOrphanDataConvexStorage.js";
 import type * as storage_crons_cleanupOrphanDataR2 from "../storage/crons/cleanupOrphanDataR2.js";
-import type * as storage_r2_aggregate_uploadedFilesR2Aggregate from "../storage/r2/aggregate/uploadedFilesR2Aggregate.js";
 import type * as storage_r2_r2 from "../storage/r2/r2.js";
 import type * as storage_r2_uploadedFilesR2 from "../storage/r2/uploadedFilesR2.js";
 import type * as tables_test_testMutations from "../tables/test/testMutations.js";
+import type * as tables_test_testQueries from "../tables/test/testQueries.js";
 import type * as types_convexTypes from "../types/convexTypes.js";
 
 import type {
@@ -49,20 +49,20 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   features: typeof features;
   "helpers/createDeleteMutation": typeof helpers_createDeleteMutation;
+  "helpers/fetchOptimized": typeof helpers_fetchOptimized;
   "helpers/getRateLimitedUserId": typeof helpers_getRateLimitedUserId;
   "helpers/paginationHelpers": typeof helpers_paginationHelpers;
   http: typeof http;
   projectSettings: typeof projectSettings;
   rateLimiter: typeof rateLimiter;
-  "storage/convexStorage/aggregate/uploadedFilesAggregate": typeof storage_convexStorage_aggregate_uploadedFilesAggregate;
   "storage/convexStorage/storageMutations": typeof storage_convexStorage_storageMutations;
   "storage/convexStorage/uploadedFiles": typeof storage_convexStorage_uploadedFiles;
   "storage/crons/cleanupOrphanDataConvexStorage": typeof storage_crons_cleanupOrphanDataConvexStorage;
   "storage/crons/cleanupOrphanDataR2": typeof storage_crons_cleanupOrphanDataR2;
-  "storage/r2/aggregate/uploadedFilesR2Aggregate": typeof storage_r2_aggregate_uploadedFilesR2Aggregate;
   "storage/r2/r2": typeof storage_r2_r2;
   "storage/r2/uploadedFilesR2": typeof storage_r2_uploadedFilesR2;
   "tables/test/testMutations": typeof tables_test_testMutations;
+  "tables/test/testQueries": typeof tables_test_testQueries;
   "types/convexTypes": typeof types_convexTypes;
 }>;
 
@@ -96,6 +96,4 @@ export declare const components: {
   rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
   betterAuth: import("../auth/component/_generated/component.js").ComponentApi<"betterAuth">;
   r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
-  uploadedFilesAggregate: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"uploadedFilesAggregate">;
-  uploadedFilesR2Aggregate: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"uploadedFilesR2Aggregate">;
 };

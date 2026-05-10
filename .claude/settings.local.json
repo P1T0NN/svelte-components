@@ -48,7 +48,9 @@
       "Bash(mv src/convex/storage/crons/cleanupR2.ts src/convex/storage/crons/cleanupOrphanDataR2.ts)",
       "Bash(mv src/convex/storage/crons/cleanupConvexStorage.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts)",
       "Bash(sed -i 's/cleanupR2/cleanupOrphanDataR2/g; s/cleanupConvexStorage/cleanupOrphanDataConvexStorage/g' src/convex/storage/crons/cleanupOrphanDataR2.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts src/convex/crons.ts)",
-      "Bash(npx svelte-check *)"
+      "Bash(npx svelte-check *)",
+      "Bash(rm src/convex/storage/convexStorage/aggregate/uploadedFilesAggregate.ts src/convex/storage/r2/aggregate/uploadedFilesR2Aggregate.ts)",
+      "Bash(rmdir src/convex/storage/convexStorage/aggregate src/convex/storage/r2/aggregate)"
     ]
   }
 }

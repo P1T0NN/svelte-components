@@ -1,9 +1,6 @@
 // LIBRARIES
 import { internalMutation } from '../../_generated/server';
 
-// AGGREGATES
-import { uploadedFilesTableAggregate } from '../convexStorage/aggregate/uploadedFilesAggregate';
-
 /**
  * Bidirectional cleanup between Convex file storage (`_storage`) and the
  * `uploadedFiles` table. Mirrors {@link cleanupOrphanDataR2} for the Convex-storage backend.
@@ -33,7 +30,6 @@ export const cleanupOrphanDataConvexStorage = internalMutation({
 		for (const row of rows) {
 			rowStorageIds.add(row.storageId);
 			if (!storageIds.has(row.storageId)) {
-				await uploadedFilesTableAggregate.deleteIfExists(ctx, row);
 				await ctx.db.delete(row._id);
 				staleRows++;
 			}

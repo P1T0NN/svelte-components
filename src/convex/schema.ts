@@ -38,7 +38,7 @@ const schema = defineSchema({
 		.index('by_key', ['key'])
 		.index('by_owner', ['ownerId']),
 
-	/** Throwaway table for exercising the MutationForm component end-to-end. */
+	/** Throwaway table for exercising the MutationForm + DataTable components end-to-end. */
 	testRows: defineTable({
 		name: v.string(),
 		email: v.string(),
@@ -47,6 +47,16 @@ const schema = defineSchema({
 		message: v.string(),
 		acceptsTerms: v.boolean()
 	})
+		// Full-text search on `name`. `filterFields` lets the search builder narrow by
+		// `role` / `plan` later (eq-while-searching) without needing a second index.
+		.searchIndex('search_name', {
+			searchField: 'name',
+			filterFields: ['role', 'plan']
+		})
+		// Indexed sort by `name` (used when the user clicks the Name column header in
+		// non-search mode). Convex pairs each named index with `_creationTime` implicitly
+		// for tiebreakers; that's fine here.
+		.index('by_name', ['name'])
 });
 
 export default schema;

@@ -9,7 +9,7 @@ import { requireAdmin } from '../auth/middleware/authMiddleware.js';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';
-import type { Doc, Id, TableNames } from '../_generated/dataModel';
+import type { Doc, TableNames } from '../_generated/dataModel';
 import type { RateLimitName } from '../rateLimiter.js';
 import type { ConvexMutationResult, TranslatableMessage } from '../types/convexTypes.js';
 
@@ -17,14 +17,6 @@ import type { ConvexMutationResult, TranslatableMessage } from '../types/convexT
 
 /** Default cap on `ids.length` per request. Overridable per call site. */
 const DEFAULT_MAX_BATCH_SIZE = 200;
-
-/**
- * Minimal shape we need from an aggregate component. Matches `TableAggregate.deleteIfExists`
- * structurally so any `@convex-dev/aggregate` instance can be passed in without casting.
- */
-type AggregateLike<T extends TableNames> = {
-	deleteIfExists: (ctx: MutationCtx, doc: Doc<T>) => Promise<void>;
-};
 
 /**
  * Rate-limit config. Defaults to the dedicated `'delete'` bucket, keyed by the authenticated
@@ -44,18 +36,18 @@ export type DeleteMutationRateLimit =
 	  };
 
 /**
- * Phase 2 execution strategy. Controls how per-row work (`onDelete` → `aggregate.deleteIfExists`
- * → `ctx.db.delete`) is scheduled across the rows in a batch.
+ * Phase 2 execution strategy. Controls how per-row work (`onDelete` → `ctx.db.delete`)
+ * is scheduled across the rows in a batch.
  *
- * | value          | scheduling          | safe when…                                                                 |
- * | -------------- | ------------------- | -------------------------------------------------------------------------- |
- * | `'sequential'` | one row at a time   | `onDelete` may touch shared state (same parent row, counter, aggregate bucket) — default |
- * | `'optimized'`  | `Promise.all`       | rows are fully independent; `onDelete` does not cross-write between rows   |
+ * | value          | scheduling          | safe when…                                                               |
+ * | -------------- | ------------------- | ------------------------------------------------------------------------ |
+ * | `'sequential'` | one row at a time   | `onDelete` may touch shared state (same parent row, counter) — default   |
+ * | `'optimized'`  | `Promise.all`       | rows are fully independent; `onDelete` does not cross-write between rows |
  *
  * ## Trade-offs
  * - **`'sequential'` (default)**
- *   - Deterministic: rows execute in the order they arrived. `aggregate.deleteIfExists`
- *     fires in a predictable sequence; `onDelete` can safely read-then-write shared state.
+ *   - Deterministic: rows execute in the order they arrived. `onDelete` can safely
+ *     read-then-write shared state.
  *   - No intra-batch OCC conflicts: two rows both patching the same parent in `onDelete`
  *     won't race.
  *   - Cost: O(n) sequential local writes. At n=200 that's ~200 local transactional ops in a
@@ -68,8 +60,6 @@ export type DeleteMutationRateLimit =
  *     produce nondeterministic final state. The whole mutation still rolls back or commits
  *     atomically — but if you expected "each row subtracts 1 from parent", you might end up
  *     subtracting 1 total instead of N.
- *   - Aggregate ordering is nondeterministic. That's fine for `deleteIfExists` (idempotent)
- *     but a footgun if you add non-idempotent aggregate ops later.
  *
  * Rule of thumb: start with `'sequential'`. Flip to `'optimized'` when you've profiled a big
  * batch and confirmed `onDelete` has no cross-row writes.
@@ -169,25 +159,18 @@ export type CreateDeleteMutationOptions<T extends TableNames> = {
 	 */
 	adminOnly?: boolean;
 	/**
-	 * Enumerate storage blobs that must be removed atomically with the row. Return `[]` or
-	 * omit entirely for tables that don't reference `_storage`. If any storage delete fails,
-	 * the whole mutation aborts before any db/aggregate write — see "Atomicity" below.
-	 */
-	storageIds?: (doc: Doc<T>) => Id<'_storage'>[];
-	/**
-	 * Phase 1 hook for non-`_storage` blob backends (e.g. Cloudflare R2). Receives the full
-	 * batch of rows and is expected to remove every external object they reference. Runs in
-	 * Phase 1 alongside `storageIds`; a throw aborts the txn before any db/aggregate write.
+	 * Optional Phase 1 hook to remove blob storage referenced by the rows. Receives the full
+	 * batch and is expected to delete every object the rows point at — Convex `_storage`,
+	 * Cloudflare R2, S3, anything. Backend-specific concerns (id deduping, parallelism,
+	 * which client to call) live inside this callback, not in the factory.
 	 *
-	 * Use for tables whose blobs live outside Convex storage. For Convex `_storage`, prefer
-	 * `storageIds` — it dedupes blob ids and uses the built-in transactional `ctx.storage.delete`.
+	 * A throw aborts the txn before any db write — Convex rolls back any sibling
+	 * `ctx.storage.delete` calls that already succeeded. The factory wraps any error here
+	 * into a `STORAGE_DELETE_FAILED` {@link ConvexError}.
+	 *
+	 * Omit entirely for tables that don't reference any blob storage.
 	 */
-	externalStorageDelete?: (ctx: MutationCtx, docs: Doc<T>[]) => Promise<void>;
-	/**
-	 * Aggregate mirror for this table (e.g. `@convex-dev/aggregate` `TableAggregate`). Uses
-	 * `deleteIfExists` so pre-existing rows that were never registered don't throw.
-	 */
-	aggregate?: AggregateLike<T>;
+	runStorageDelete?: (ctx: MutationCtx, docs: Doc<T>[]) => Promise<void>;
 	/**
 	 * Hook that runs inside Phase 2, **before** the row is removed. Use for:
 	 *   - audit logging (`ctx.db.insert('auditLog', ...)`)
@@ -230,8 +213,8 @@ export type DeleteMutationData = {
 
 /**
  * Factory that produces a hybrid bulk-delete mutation for any table. One shape, every table:
- * pass `storageIds` when rows point at `_storage`, pass `aggregate` when you mirror counts,
- * pass `onDelete` when you need audit/cascade work to share the same transaction.
+ * pass `runStorageDelete` when rows reference blob storage, pass `onDelete` when you need
+ * audit/cascade work to share the same transaction.
  *
  * ## Order of operations (cheapest → most expensive, so hostile input is rejected early)
  *  1. Empty / oversize batch rejection
@@ -242,15 +225,15 @@ export type DeleteMutationData = {
  *  4. Dedupe of requested ids
  *  5. Row fetch
  *  6. Per-row `ownerId` match AND/or {@link CreateDeleteMutationOptions.authorize}
- *  7. **Phase 1** — `ctx.storage.delete` for every unique blob yielded by `storageIds`
- *  8. **Phase 2** — per row: `onDelete` → `aggregate.deleteIfExists` → `ctx.db.delete`
+ *  7. **Phase 1** — `runStorageDelete(ctx, rows)` (caller-supplied; backend-agnostic)
+ *  8. **Phase 2** — per row: `onDelete` → `ctx.db.delete`
  *     (serial by default; set `phase2Strategy: 'optimized'` for parallel — see
  *     {@link DeletePhase2Strategy} for the trade-offs)
  *
  * ## Atomicity
  * Convex mutations are fully transactional, including `ctx.storage.delete`. If Phase 1 throws,
- * Convex rolls back every storage delete in the batch and no db/aggregate writes ever run.
- * Phase 2 is itself a single transaction — if any row's `onDelete`, aggregate, or `db.delete`
+ * Convex rolls back every storage delete in the batch and no db writes ever run.
+ * Phase 2 is itself a single transaction — if any row's `onDelete` or `db.delete`
  * rejects, the whole thing rolls back and nothing changes. Net result is strictly all-or-nothing.
  * See: https://docs.convex.dev/database/advanced/occ
  *
@@ -278,8 +261,7 @@ export type DeleteMutationData = {
  * export const deleteApartment = createDeleteMutation({
  *   table: 'apartments',
  *   ownerId: { field: (doc) => doc.hostId },
- *   storageIds: (doc) => doc.imageIds,
- *   aggregate: apartmentsAggregate
+ *   runStorageDelete: deleteApartmentImages
  * });
  *
  * // Admin-only endpoint — no config needed beyond `table`, admin gate is the default
@@ -317,9 +299,7 @@ export function createDeleteMutation<T extends TableNames>(
 		authorize,
 		ownerId: ownerIdCfg,
 		adminOnly,
-		storageIds,
-		externalStorageDelete,
-		aggregate,
+		runStorageDelete,
 		onDelete,
 		maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
 		rateLimit: rateLimitOption,
@@ -434,41 +414,18 @@ export function createDeleteMutation<T extends TableNames>(
 				} satisfies DeleteMutationErrorPayload);
 			}
 
-			// 7. Phase 1 — storage first. A thrown ConvexError aborts the txn so no db/aggregate
-			//    writes run; Convex rolls back sibling storage deletes that succeeded concurrently.
-			//    We log the underlying error server-side (`console.error`) but do NOT include it
-			//    in the ConvexError payload — that payload is sent verbatim to clients.
-			//    Blob ids are deduped so rows sharing a storage blob (shared thumbnail/avatar/
-			//    template image) don't double-delete and trigger a spurious NOT_FOUND.
-			if (storageIds) {
-				const blobs = [...new Set(existing.flatMap((doc) => storageIds(doc as Doc<T>)))];
-				if (blobs.length > 0) {
-					try {
-						await Promise.all(blobs.map((sid) => ctx.storage.delete(sid)));
-					} catch (error) {
-						console.error(
-							`[createDeleteMutation:${table}] storage.delete failed`,
-							error instanceof Error ? error.message : error
-						);
-						throw new ConvexError({
-							code: 'STORAGE_DELETE_FAILED',
-							message: { key: 'GenericMessages.STORAGE_DELETE_FAILED' },
-							requestedCount: uniqueIds.length,
-							table
-						} satisfies DeleteMutationErrorPayload);
-					}
-				}
-			}
-
-			// 7b. Phase 1 — external (non-_storage) blob backend, e.g. Cloudflare R2. Runs after
-			//     `storageIds` so any Convex storage cleanup that already happened gets rolled
-			//     back together with this hook on failure (sibling-txn semantics).
-			if (externalStorageDelete) {
+			// 7. Phase 1 — storage. Backend-agnostic: the caller's `runStorageDelete` decides
+			//    which client to call (`ctx.storage`, R2, S3, …) and handles backend-specific
+			//    concerns like blob-id deduping. A throw aborts the txn so no db writes run;
+			//    Convex rolls back any sibling storage deletes the callback already issued.
+			//    The underlying error is logged server-side but NOT forwarded in the payload,
+			//    which is sent verbatim to clients.
+			if (runStorageDelete) {
 				try {
-					await externalStorageDelete(ctx, existing as Doc<T>[]);
+					await runStorageDelete(ctx, existing as Doc<T>[]);
 				} catch (error) {
 					console.error(
-						`[createDeleteMutation:${table}] externalStorageDelete failed`,
+						`[createDeleteMutation:${table}] runStorageDelete failed`,
 						error instanceof Error ? error.message : error
 					);
 					throw new ConvexError({
@@ -480,13 +437,12 @@ export function createDeleteMutation<T extends TableNames>(
 				}
 			}
 
-			// 8. Phase 2 — onDelete → aggregate → db. Execution shape is chosen by
+			// 8. Phase 2 — onDelete → db. Execution shape is chosen by
 			//    `phase2Strategy`; see {@link DeletePhase2Strategy} for the trade-offs.
 			//    Both branches roll back together via Convex's mutation transaction — the
 			//    choice is only about *intra-batch* ordering guarantees, never about atomicity.
 			const deleteOne = async (doc: Doc<T>) => {
 				if (onDelete) await onDelete(ctx, doc);
-				if (aggregate) await aggregate.deleteIfExists(ctx, doc);
 				await ctx.db.delete(doc._id);
 			};
 			if (phase2Strategy === 'optimized') {

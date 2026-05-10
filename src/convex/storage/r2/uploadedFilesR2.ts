@@ -1,64 +1,49 @@
 // LIBRARIES
-import { query } from '../../_generated/server';
+import { v } from 'convex/values';
 
 // HELPERS
-import {
-	normalizeOneBasedPage,
-	optionalOneBasedPageArg,
-	paginatedQueryArgs,
-	resolvePaginationOpts
-} from '../../helpers/paginationHelpers.js';
 import { createDeleteMutation } from '../../helpers/createDeleteMutation.js';
-
-// AGGREGATES
-import { uploadedFilesR2TableAggregate } from './aggregate/uploadedFilesR2Aggregate.js';
+import { fetchOptimized } from '../../helpers/fetchOptimized.js';
 
 // R2
 import { r2 } from './r2.js';
+
+// TYPES
+import type { MutationCtx } from '../../_generated/server';
+import type { Doc } from '../../_generated/dataModel';
 
 /** Change this one line when copying this file into a new project. */
 const TABLE = 'uploadedFilesR2' as const;
 
 /**
- * Mirror of `fetchUploadedFiles` for the R2-backed table. Same unoptimized
- * full-collect-then-slice — fine for small sets, swap to cursor + aggregate for big tables.
+ * Phase 1 storage cleanup for `uploadedFilesR2`. Dedupes R2 keys (rows can share an object)
+ * then deletes each in parallel via the R2 client. Wire this into any
+ * {@link createDeleteMutation} for tables whose rows reference R2.
  */
-export const fetchUploadedFilesR2 = query({
+export const deleteFilesFromR2 = async (ctx: MutationCtx, docs: Doc<typeof TABLE>[]) => {
+	const keys = [...new Set(docs.map((d) => d.key))];
+	await Promise.all(keys.map((k) => r2.deleteObject(ctx, k)));
+};
+
+/**
+ * Mirror of `fetchUploadedFiles` — sortable by Created via the implicit creation-time index.
+ */
+export const fetchUploadedFilesR2 = fetchOptimized({
+	table: TABLE,
 	args: {
-		...paginatedQueryArgs,
-		page: optionalOneBasedPageArg
+		sortColumn: v.optional(v.string()),
+		sortDirection: v.optional(v.union(v.literal('asc'), v.literal('desc')))
 	},
-	handler: async (ctx, args) => {
-		const perPage = resolvePaginationOpts(args.paginationOpts).numItems;
-
-		const page1Based = normalizeOneBasedPage(args.page);
-		const all = await ctx.db.query(TABLE).order('desc').collect();
-
-		const totalCount = all.length;
-		const start = Math.max(0, (page1Based - 1) * perPage);
-		const page = all.slice(start, start + perPage);
-		const isDone = start + page.length >= totalCount;
-
-		return {
-			page,
-			isDone,
-			continueCursor: '',
-			totalCount
-		};
-	}
+	order: (args) => args.sortDirection ?? 'desc'
 });
 
 /**
  * Owner-only bulk delete for `uploadedFilesR2`. Same factory as the Convex-storage path,
- * but the blob backend is R2 — passed through `externalStorageDelete` instead of `storageIds`.
+ * with the R2 cleanup callback wired through the universal `runStorageDelete` hook.
  */
 export const deleteUploadedFileR2 = createDeleteMutation({
 	table: TABLE,
 	ownerId: { field: (doc) => doc.ownerId },
-	externalStorageDelete: async (ctx, docs) => {
-		const keys = [...new Set(docs.map((d) => d.key))];
-		await Promise.all(keys.map((k) => r2.deleteObject(ctx, k)));
-	},
-	aggregate: uploadedFilesR2TableAggregate,
+	runStorageDelete: deleteFilesFromR2,
 	rateLimit: { name: 'delete' }
 });

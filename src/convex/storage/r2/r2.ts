@@ -4,9 +4,6 @@ import { R2, type R2Callbacks } from '@convex-dev/r2';
 import { components, internal } from '../../_generated/api';
 import { mutation } from '../../_generated/server';
 
-// AGGREGATES
-import { uploadedFilesR2TableAggregate } from './aggregate/uploadedFilesR2Aggregate.js';
-
 // HELPERS
 import { getRateLimitedUserId } from '../../helpers/getRateLimitedUserId.js';
 import { getAuthUserId } from '../../auth/helpers/getAuthUserId.js';
@@ -81,8 +78,7 @@ export const generateUploadUrl = mutation({
  *     syncMetadata orphans the R2 object.
  *   - `onUpload` is built to never throw. If auth is somehow gone we skip the insert and
  *     let `onSyncMetadata` notice the row-less object and delete it. If auth is present
- *     we insert. The DB insert + aggregate insert in a healthy Convex deployment do not
- *     fail.
+ *     we insert. The DB insert in a healthy Convex deployment does not fail.
  *   - `onSyncMetadata` is the canonical reconciliation point: it sees both the row (or
  *     lack of one) and the real R2 metadata. It NEVER throws — throwing would roll back
  *     the cleanup deletes themselves. It always converges to a consistent state:
@@ -112,15 +108,11 @@ export const { syncMetadata, onSyncMetadata } = r2.clientApi<DataModel>({
 			});
 			return;
 		}
-		const id = await ctx.db.insert('uploadedFilesR2', {
+		await ctx.db.insert('uploadedFilesR2', {
 			ownerId: userId,
 			key,
 			url: ''
 		});
-		const doc = await ctx.db.get(id);
-		if (doc) {
-			await uploadedFilesR2TableAggregate.insert(ctx, doc);
-		}
 	},
 	callbacks: {
 		// Self-reference: the component invokes this internal mutation after its
@@ -145,7 +137,6 @@ export const { syncMetadata, onSyncMetadata } = r2.clientApi<DataModel>({
 
 		const cleanup = async (reason: string) => {
 			console.warn(`[r2.onSyncMetadata] rejecting upload (${reason}), cleaning up`, { key });
-			await uploadedFilesR2TableAggregate.deleteIfExists(ctx, row);
 			await ctx.db.delete(row._id);
 			await r2.deleteObject(ctx, key);
 		};

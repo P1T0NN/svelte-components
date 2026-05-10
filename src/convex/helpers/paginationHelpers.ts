@@ -2,10 +2,17 @@
 import { paginationOptsValidator, type PaginationOptions } from 'convex/server';
 import { v } from 'convex/values';
 
-export const DEFAULT_PAGE_SIZE = 2;
+// CONFIG
+import { PAGINATION_DATA } from '@/shared/config.js';
 
+/**
+ * Server-side fallback used when a caller invokes a paginated query without supplying
+ * `paginationOpts` (e.g. internal `runQuery`, tests). The `DataTable` always sends explicit
+ * opts. Single source of truth lives in `shared/config.ts` so the client and server can't
+ * drift.
+ */
 export const defaultPaginationOpts: PaginationOptions = {
-	numItems: DEFAULT_PAGE_SIZE,
+	numItems: PAGINATION_DATA.DEFAULT_PAGE_SIZE,
 	cursor: null
 };
 

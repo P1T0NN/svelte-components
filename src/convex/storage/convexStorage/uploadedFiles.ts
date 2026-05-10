@@ -1,55 +1,50 @@
 // LIBRARIES
-import { query } from '../../_generated/server';
+import { v } from 'convex/values';
 
 // HELPERS
-import {
-	normalizeOneBasedPage,
-	optionalOneBasedPageArg,
-	paginatedQueryArgs,
-	resolvePaginationOpts
-} from '../../helpers/paginationHelpers.js';
 import { createDeleteMutation } from '../../helpers/createDeleteMutation.js';
+import { fetchOptimized } from '../../helpers/fetchOptimized.js';
 
-// AGGREGATES
-import { uploadedFilesTableAggregate } from './aggregate/uploadedFilesAggregate.js';
+// TYPES
+import type { MutationCtx } from '../../_generated/server';
+import type { Doc } from '../../_generated/dataModel';
 
 /** Change this one line when copying this file into a new project. */
 const TABLE = 'uploadedFiles' as const;
 
 /**
- * Unoptimized list: **full table `.collect()` on every run**, then slice by `page` / `perPage`.
- * Fine for small sets; for large tables use cursor pagination + aggregates instead.
- *
- * `totalCount` is always the full table length (for UI page count).
+ * Phase 1 storage cleanup for `uploadedFiles`. Dedupes blob ids (rows can share a thumbnail/
+ * avatar/template image) so a shared blob isn't double-deleted into a spurious NOT_FOUND,
+ * then issues parallel `ctx.storage.delete` calls. Wire this into any
+ * {@link createDeleteMutation} for tables whose rows reference Convex `_storage`.
  */
-export const fetchUploadedFiles = query({
+export const deleteFilesFromConvexStorage = async (
+	ctx: MutationCtx,
+	docs: Doc<typeof TABLE>[]
+) => {
+	const blobs = [...new Set(docs.map((d) => d.storageId))];
+	await Promise.all(blobs.map((sid) => ctx.storage.delete(sid)));
+};
+
+/**
+ * Sortable by Created (only). Other columns aren't useful sort keys for this table.
+ *
+ * `sortColumn` is forwarded by the data-table for any sortable column click — we only act
+ * on `'created'` here. `sortDirection` toggles asc/desc through the implicit
+ * `by_creation_time` index (no schema change needed for that direction).
+ */
+export const fetchUploadedFiles = fetchOptimized({
+	table: TABLE,
 	args: {
-		...paginatedQueryArgs,
-		page: optionalOneBasedPageArg
+		sortColumn: v.optional(v.string()),
+		sortDirection: v.optional(v.union(v.literal('asc'), v.literal('desc')))
 	},
-	handler: async (ctx, args) => {
-		const perPage = resolvePaginationOpts(args.paginationOpts).numItems;
-
-		const page1Based = normalizeOneBasedPage(args.page);
-		const all = await ctx.db.query(TABLE).order('desc').collect();
-
-		const totalCount = all.length;
-		const start = Math.max(0, (page1Based - 1) * perPage);
-		const page = all.slice(start, start + perPage);
-		const isDone = start + page.length >= totalCount;
-
-		return {
-			page,
-			isDone,
-			continueCursor: '',
-			totalCount
-		};
-	}
+	order: (args) => args.sortDirection ?? 'desc'
 });
 
 /**
  * Hybrid bulk delete for `uploadedFiles`. All heavy lifting (batch cap, weighted rate limit,
- * 2-phase atomicity, storage cleanup, aggregate sync, translatable results + errors) lives
+ * 2-phase atomicity, storage cleanup, translatable results + errors) lives
  * in {@link createDeleteMutation}.
  *
  * Authorization: owner-only. Supplying `ownerId` makes the factory skip the default
@@ -60,7 +55,6 @@ export const fetchUploadedFiles = query({
 export const deleteUploadedFile = createDeleteMutation({
 	table: TABLE,
 	ownerId: { field: (doc) => doc.ownerId },
-	storageIds: (doc) => [doc.storageId],
-	aggregate: uploadedFilesTableAggregate,
+	runStorageDelete: deleteFilesFromConvexStorage,
 	rateLimit: { name: 'delete' }
 });
