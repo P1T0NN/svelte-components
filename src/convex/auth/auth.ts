@@ -76,7 +76,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
 		// (`cf-connecting-ip` for Cloudflare, `true-client-ip` for Akamai, etc.).
 		advanced: {
 			ipAddress: {
-				ipAddressHeaders: ['x-forwarded-for', 'x-real-ip']
+				ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
+				disableIpTracking: false
 			}
 		},
 		socialProviders: {
