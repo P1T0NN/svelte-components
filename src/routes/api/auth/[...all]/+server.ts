@@ -49,9 +49,19 @@ const proxy: RequestHandler = async ({ request, getClientAddress }) => {
 	// The whole point of this file: hand better-auth the real client IP.
 	// SvelteKit's getClientAddress() reads the trusted `x-forwarded-for` set by
 	// Vercel's edge from the actual TCP socket — not anything client-controlled.
+	//
+	// We set a CUSTOM header name (`x-client-ip`) instead of `x-forwarded-for`
+	// because Convex sits behind Cloudflare, and Cloudflare rewrites the
+	// well-known IP headers (`x-forwarded-for`, `cf-connecting-ip`) to the
+	// immediate caller's IP — i.e. Vercel's egress. Custom header names pass
+	// through CDNs unchanged. Better-auth's `advanced.ipAddress.ipAddressHeaders`
+	// is configured (in `auth.ts`) to read this exact header.
+	//
+	// Spoofing risk: nil. The proxy strips all inbound headers above before
+	// setting this one, so a client setting `x-client-ip` on the browser
+	// request never reaches Convex.
 	const clientIp = getClientAddress();
-	forwarded.set('x-forwarded-for', clientIp);
-	forwarded.set('x-real-ip', clientIp);
+	forwarded.set('x-client-ip', clientIp);
 
 	for (const name of [...newRequest.headers.keys()]) newRequest.headers.delete(name);
 	for (const [name, value] of forwarded.entries()) newRequest.headers.set(name, value);

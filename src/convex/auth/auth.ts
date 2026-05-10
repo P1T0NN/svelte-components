@@ -66,18 +66,19 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
 				trustedProviders: ['google', 'credential']
 			}
 		},
-		// Tell better-auth where to read the real client IP from. The default checks
-		// a generic header list and ends up logging Vercel's edge IP in our setup.
-		// Vercel sets `x-forwarded-for` with the original client IP as the first
-		// entry (and `x-real-ip` as a single-value mirror); read those and ignore
-		// anything else. Order matters — better-auth uses the first header it
-		// finds, so list `x-forwarded-for` first since it's the canonical one.
-		// On non-Vercel hosts swap these for whatever header your edge sets
-		// (`cf-connecting-ip` for Cloudflare, `true-client-ip` for Akamai, etc.).
+		// Real client IP is delivered to us via our SvelteKit auth proxy under the
+		// custom header `x-client-ip` (see `routes/api/auth/[...all]/+server.ts`).
+		// We must use a custom name — not `x-forwarded-for` or `cf-connecting-ip`
+		// — because Convex sits behind Cloudflare, which rewrites the well-known
+		// IP headers to the immediate caller's IP (Vercel's egress) before
+		// better-auth ever sees them.
+		//
+		// Trust: our proxy strips all inbound headers and re-stamps `x-client-ip`
+		// from `event.getClientAddress()`, which on Vercel reads the trusted
+		// edge-set `x-forwarded-for`. The chain has no client-controlled link.
 		advanced: {
 			ipAddress: {
-				ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
-				disableIpTracking: false
+				ipAddressHeaders: ['x-client-ip']
 			}
 		},
 		socialProviders: {
