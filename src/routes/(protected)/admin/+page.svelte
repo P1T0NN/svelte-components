@@ -1,1 +1,0 @@
-<div>You can see me because you are admin</div>

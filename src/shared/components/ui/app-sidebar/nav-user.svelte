@@ -46,10 +46,6 @@
 							>
 								<Spinner class="size-4 text-sidebar-foreground" />
 							</div>
-							<div class="grid min-h-10 flex-1 content-center gap-1 text-start text-sm leading-tight">
-								<span class="text-muted-foreground truncate">Loading…</span>
-								<span class="text-muted-foreground/70 truncate text-xs">&nbsp;</span>
-							</div>
 						{:else}
 							<Avatar.Root class="size-8 rounded-lg">
 								<Avatar.Image src={user?.image} alt={user?.name ?? ''} />

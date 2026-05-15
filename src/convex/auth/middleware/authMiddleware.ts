@@ -30,7 +30,11 @@ import type { AuditOptions } from '@/convex/tables/auditLog/helpers/logAudit';
  * - `NOT_AUTHENTICATED` — no session at all
  * - `ADMIN_ACCESS_REQUIRED` — signed in but `role !== 'admin'`
  *
- * Returns the caller's better-auth user id (string).
+ * Returns the caller's better-auth user id — the Convex `_id` of the user row.
+ * This is the same value stored on `session.userId` / `account.userId` and is
+ * what the audit-log session lookup matches on. The optional `user.userId`
+ * field is a separate "external system" linkage that BA leaves null by default;
+ * using it here would silently break rate-limit bucket keys and IP enrichment.
  *
  * Used as a building block by {@link adminMutation} / {@link adminAction} (whole-endpoint
  * gating) and called directly from flows where the admin check is conditional or branches
@@ -55,7 +59,7 @@ export const requireAdmin = async (
 		} satisfies ConvexErrorPayload);
 	}
 
-	return user.userId as Id<'user'>;
+	return user._id as Id<'user'>;
 };
 
 /**

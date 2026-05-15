@@ -6,6 +6,12 @@ export const COMPANY_DATA = {
 	DESCRIPTION: 'We build dependable software and services so your team can focus on what matters most.'
 } as const;
 
+export const ADMIN_PAGE_ENDPOINTS = {
+    DASHBOARD: "/admin/dashboard",
+    USERS: "/admin/users",
+    USER: "/admin/users/:id"
+}
+
 export const PROTECTED_PAGE_ENDPOINTS = {
     HOME: "/home",
 } as const;

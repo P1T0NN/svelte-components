@@ -128,7 +128,7 @@
 			const { error } = await authClient.emailOtp.resetPassword({
 				email: p.output.email,
 				otp: p.output.code,
-				password: p.output.newPassword
+				password: p.output.newPassword,
 			});
 			if (error) {
 				console.error('Password reset: verification failed:', error);

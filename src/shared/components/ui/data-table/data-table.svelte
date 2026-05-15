@@ -27,6 +27,7 @@
 	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
 
 	// TYPES
+	import type { Snippet } from 'svelte';
 	import type { FunctionReference } from 'convex/server';
 	import type {
 		ColumnDef,
@@ -58,7 +59,8 @@
 		search = $bindable<string>(''),
 		searchPlaceholder,
 		searchArgName = 'search',
-		searchDebounceMs = 300
+		searchDebounceMs = 300,
+		filters
 	}: {
 		class?: string;
 		caption?: string;
@@ -117,6 +119,13 @@
 		searchArgName?: string;
 		/** Debounce window for the search input. Defaults to 300 ms. */
 		searchDebounceMs?: number;
+		/**
+		 * Toolbar slot for arbitrary filter controls. Rendered next to the search input on the
+		 * same row (wraps on narrow screens). The table is deliberately agnostic about what
+		 * lives here — callers own filter state and forward values via {@link queryArgs}, which
+		 * already drives cursor reset on change.
+		 */
+		filters?: Snippet;
 	} = $props();
 
 	const convex = useConvexClient();
@@ -398,7 +407,7 @@
 </script>
 
 <div class="flex w-full flex-col gap-4">
-	{#if searchable || sortableColumns.length > 0}
+	{#if searchable || sortableColumns.length > 0 || filters}
 		<div class="flex flex-col gap-2 md:flex-row md:items-center">
 			{#if searchable}
 				<div class="relative w-full md:max-w-sm">
@@ -410,6 +419,12 @@
 						aria-label={searchPlaceholder ?? m['DataTable.searchPlaceholder']()}
 						class="pl-9"
 					/>
+				</div>
+			{/if}
+
+			{#if filters}
+				<div class="flex flex-wrap items-center gap-2">
+					{@render filters()}
 				</div>
 			{/if}
 

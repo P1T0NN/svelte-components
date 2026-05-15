@@ -92,3 +92,13 @@ export function getDaysDifference(date1: Date, date2: Date): number {
 	return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * Format a timestamp (epoch number or ISO string) as a locale-formatted
+ * date/time. Returns an em-dash for unparseable input so callers can render
+ * the result directly without re-checking validity.
+ */
+export function formatTs(ts: number | string): string {
+	const d = new Date(ts);
+	return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
+}
+

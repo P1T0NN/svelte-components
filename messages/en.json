@@ -43,11 +43,11 @@
 		},
 		"LeftRightAnimation": {
 			"eyebrow": "Client Results",
-            "title": "Don't take our word for it."
+			"title": "Don't take our word for it."
 		},
 		"PremiumDesign": {
 			"eyebrow": "Real clients",
-            "title": "What clients say"
+			"title": "What clients say"
 		}
 	},
 
@@ -238,11 +238,154 @@
 	},
 
 	"AlertDialogButton": {
-        "title": "Action cannot be reversed",
-        "description": "Are you sure you want to do this? This action cannot be undone.",
-        "cancel": "Cancel",
-        "proceed": "Proceed"
-    },
+		"title": "Action cannot be reversed",
+		"description": "Are you sure you want to do this? This action cannot be undone.",
+		"cancel": "Cancel",
+		"proceed": "Proceed"
+	},
+
+	"AdminUsersPage": {
+		"title": "Users",
+		"description": "Search, filter, and manage user accounts.",
+		"caption": "Users",
+		"searchPlaceholder": "Search by {field}…",
+		"columnUser": "User",
+		"columnEmail": "Email",
+		"columnRole": "Role",
+		"columnVerified": "Verified",
+		"columnStatus": "Status",
+		"columnCreated": "Created",
+		"verifiedYes": "Yes",
+		"verifiedNo": "No",
+		"statusBanned": "Banned",
+		"statusActive": "Active",
+		"UsersFilters": {
+			"searchLabel": "Search: {field}",
+			"searchEmail": "Email",
+			"searchName": "Name",
+			"roleLabel": "Role: {role}",
+			"anyRole": "Any role",
+			"roleUser": "User",
+			"roleAdmin": "Admin",
+			"anyStatus": "Any status",
+			"statusBanned": "Banned",
+			"statusActive": "Active",
+			"anyVerification": "Any verification",
+			"verified": "Verified",
+			"unverified": "Unverified",
+			"clear": "Clear"
+		}
+	},
+
+	"AdminUserPage": {
+		"UserTabs": {
+			"overview": "Overview",
+			"sessions": "Sessions",
+			"accounts": "Accounts",
+			"activity": "Activity",
+			"danger": "Danger zone"
+		},
+		"UserOverview": {
+			"verified": "Verified",
+			"unverified": "Unverified",
+			"role": "Role",
+			"status": "Status",
+			"banReason": "Ban reason",
+			"created": "Created",
+			"updated": "Updated",
+			"userId": "User ID",
+			"copyUserId": "Copy user ID",
+			"bannedUntil": "Banned until {date}",
+			"bannedPermanent": "Banned (permanent)",
+			"active": "Active"
+		},
+		"UserSessions": {
+			"title": "Active sessions",
+			"description": "Devices currently signed in. Revoking signs the device out immediately.",
+			"revokeAll": "Revoke all",
+			"failedLoad": "Failed to load sessions.",
+			"noSessions": "No active sessions.",
+			"unknownDevice": "Unknown device",
+			"ip": "IP",
+			"created": "Created",
+			"expires": "Expires",
+			"revoke": "Revoke"
+		},
+		"UserAccounts": {
+			"title": "Linked accounts",
+			"description": "Sign-in providers connected to this user.",
+			"failedLoad": "Failed to load accounts.",
+			"noAccounts": "No linked accounts.",
+			"passwordSet": "Password set",
+			"noPassword": "No password",
+			"id": "ID",
+			"created": "Created",
+			"scope": "Scope"
+		},
+		"UserActivity": {
+			"title": "Activity",
+			"description": "Audit log entries scoped to this user. Newest first.",
+			"caption": "Activity",
+			"colAction": "Action",
+			"colStatus": "Status",
+			"colResource": "Resource",
+			"colIp": "IP",
+			"colWhen": "When",
+			"statusFailed": "Failed",
+			"statusSuccess": "Success"
+		},
+		"UserDangerZone": {
+			"title": "Danger zone",
+			"description": "Account-level actions. Changes here are audited and may be irreversible.",
+			"role": "Role: {role}",
+			"removeAdmin": "Remove admin privileges from this account.",
+			"grantAdmin": "Grant admin privileges to this account.",
+			"banned": "Banned",
+			"active": "Active",
+			"liftBan": "Lift the ban so the user can sign in again.",
+			"signOutPrevent": "Sign the user out and prevent further sign-ins."
+		},
+		"BanUserDialog": {
+			"ban": "Ban",
+			"title": "Ban {email}",
+			"description": "The user is signed out and cannot sign in again until unbanned. The optional reason is shown on next sign-in attempt.",
+			"reason": "Reason (optional)",
+			"reasonPlaceholder": "Violation of terms…",
+			"expires": "Expires",
+			"permanent": "Permanent",
+			"oneDay": "1 day",
+			"sevenDays": "7 days",
+			"thirtyDays": "30 days"
+		},
+		"UnbanUserButton": {
+			"unban": "Unban"
+		},
+		"ChangeRoleButton": {
+			"demote": "Demote to user",
+			"promote": "Promote to admin",
+			"demoteTitle": "Demote {email} to user?",
+			"promoteTitle": "Promote {email} to admin?",
+			"demoteDescription": "Are you sure you want to do this? The user will immediately lose admin privileges.",
+			"promoteDescription": "Are you sure you want to do this? The user will gain full admin privileges, including the ability to ban and delete other accounts."
+		},
+		"DeleteUserDialog": {
+			"delete": "Delete…",
+			"title": "Delete {email}?",
+			"description": "This is permanent and cascades to sessions and accounts. Type the email below to confirm.",
+			"adminTitle": "Cannot delete {email}",
+			"adminDescription": "Admins must be demoted to \"user\" before they can be deleted."
+		},
+		"UserPageEmpty": {
+			"title": "User not found",
+			"description": "The user you're looking for doesn't exist or may have been deleted.",
+			"backToUsers": "Back to users"
+		},
+		"UserPageError": {
+			"title": "Failed to load user",
+			"description": "Something went wrong while fetching this user. Please try again.",
+			"retry": "Retry"
+		}
+	},
 
 	"ValidationMessages": {
 		"LoginForm": {
@@ -286,7 +429,7 @@
 		"PASSWORD_TOO_SHORT": "Password must be at least {min} characters.",
 		"PASSWORD_TOO_LONG": "Password is too long.",
 		"PASSWORD_TOO_COMMON": "That password is too common. Please choose a stronger one.",
-		
+
 		"NO_ITEMS_PROVIDED": "No items provided.",
 		"NO_MATCHING_ITEMS": "No matching items found.",
 		"DATA_TABLE_DELETED_ALL": "Deleted {count} item(s).",
@@ -305,6 +448,14 @@
 		"FORBIDDEN": "You're not allowed to perform this action.",
 		"NOT_AUTHENTICATED": "Please sign in to continue.",
 		"ADMIN_ACCESS_REQUIRED": "This action requires admin privileges.",
+		"ADMIN_CANNOT_BE_DELETED": "Admins can't be deleted. Demote to \"user\" first.",
+		"USER_NOT_FOUND": "User not found.",
+		"USER_DELETED": "User deleted.",
+		"USER_BANNED": "User banned.",
+		"USER_UNBANNED": "User unbanned.",
+		"USER_ROLE_UPDATED": "User role updated.",
+		"SESSION_REVOKED": "Session revoked.",
+		"ALL_SESSIONS_REVOKED": "All sessions revoked.",
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
 		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
 		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min."

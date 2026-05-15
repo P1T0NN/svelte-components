@@ -6,6 +6,10 @@ import { paginationOptsValidator } from 'convex/server';
 import { query } from '@/convex/_generated/server';
 import { requireAdmin } from '@/convex/auth/middleware/authMiddleware';
 
+// TYPES
+import type { Doc } from '@/convex/_generated/dataModel';
+import type { PaginatedListPayload } from '@/shared/components/ui/data-table/types';
+
 /**
  * Paginated list for the admin audit-log viewer. Admin-only — audit data is
  * sensitive by definition. Newest entries first via `.order('desc')` over the
@@ -20,9 +24,14 @@ export const listAuditLogs = query({
 		paginationOpts: paginationOptsValidator,
 		userId: v.optional(v.string()),
 		action: v.optional(v.string()),
-		resource: v.optional(v.object({ table: v.string(), id: v.string() }))
+		resource: v.optional(v.object({ table: v.string(), id: v.string() })),
+		// Sort by `_creationTime` only; column id is accepted (forwarded by DataTable)
+		// but ignored since no other column is sort-eligible. Direction defaults to
+		// `'desc'` to preserve the newest-first ordering.
+		sortColumn: v.optional(v.string()),
+		sortDirection: v.optional(v.union(v.literal('asc'), v.literal('desc')))
 	},
-	handler: async (ctx, args) => {
+	handler: async (ctx, args): Promise<PaginatedListPayload<Doc<'auditLogs'>>> => {
 		await requireAdmin(ctx);
 
 		const base = ctx.db.query('auditLogs');
@@ -39,6 +48,16 @@ export const listAuditLogs = query({
 						)
 					: base;
 
-		return await filtered.order('desc').paginate(args.paginationOpts);
+		const result = await filtered
+			.order(args.sortDirection ?? 'desc')
+			.paginate(args.paginationOpts);
+
+		return {
+			page: result.page,
+			isDone: result.isDone,
+			continueCursor: result.continueCursor,
+			// Cursor mode — full-table count would be O(rows) per page request.
+			totalCount: null
+		};
 	}
 });

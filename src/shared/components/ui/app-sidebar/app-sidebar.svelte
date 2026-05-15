@@ -1,52 +1,12 @@
-<script lang="ts" module>
-	// CONFIG
-	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
-	
-	// LUCIDE ICONS
-	import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
-	import SendIcon from '@lucide/svelte/icons/send';
-	import FrameIcon from '@lucide/svelte/icons/frame';
-	import PieChartIcon from '@lucide/svelte/icons/pie-chart';
-
-	const data = {
-		user: {
-			name: 'shadcn',
-			email: 'm@example.com',
-			avatar: '/avatars/shadcn.jpg'
-		},
-		navMain: [
-			{
-				name: 'Sidebar',
-				url: UNPROTECTED_PAGE_ENDPOINTS.SIDEBAR,
-				icon: FrameIcon
-			},
-			{
-				name: 'Sales & Marketing',
-				url: '#',
-				icon: PieChartIcon
-			}
-		],
-		navSecondary: [
-			{
-				title: 'Support',
-				url: '#',
-				icon: LifeBuoyIcon
-			},
-			{
-				title: 'Feedback',
-				url: '#',
-				icon: SendIcon
-			}
-		]
-	};
-</script>
-
 <script lang="ts">
 	// SVELTEKIT IMPORTS
 	import { page } from '$app/state';
 
 	// LIBRARIES
 	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+
+	// CONFIG
+	import { COMPANY_DATA } from '@/shared/constants.js';
 
 	// COMPONENTS
 	import * as Sidebar from '@/shared/components/ui/sidebar/index.js';
@@ -55,32 +15,34 @@
 	import NavUser from './nav-user.svelte';
 	import Logo from '@/shared/components/ui/logo/logo.svelte';
 
-	// CONFIG
-	import { COMPANY_DATA } from '@/shared/constants.js';
-
 	// UTILS
 	import { isNavItemActive } from '@/shared/utils/isNavItemActive.js';
 
 	// TYPES
 	import type { ComponentProps } from 'svelte';
+	import type { AppSidebarNavItems } from './types.js';
 
 	let {
 		hasLogo = true,
+		navItems,
 		ref = $bindable(null),
 		...restProps
-	}: { hasLogo?: boolean } & ComponentProps<typeof Sidebar.Root> = $props();
+	}: {
+		hasLogo?: boolean;
+		navItems: AppSidebarNavItems;
+	} & ComponentProps<typeof Sidebar.Root> = $props();
 
 	const pathnameLogical = $derived(new URL(deLocalizeUrl(page.url.href)).pathname);
 
 	const navMainItems = $derived(
-		data.navMain.map((item) => ({
+		navItems.navMain.map((item) => ({
 			...item,
 			isActive: isNavItemActive(pathnameLogical, item.url)
 		}))
 	);
 
 	const navSecondaryItems = $derived(
-		data.navSecondary.map((item) => ({
+		navItems.navSecondary?.map((item) => ({
 			...item,
 			isActive: isNavItemActive(pathnameLogical, item.url)
 		}))
@@ -104,7 +66,9 @@
 
 	<Sidebar.Content>
 		<NavMain items={navMainItems} />
-		<NavSecondary items={navSecondaryItems} class="mt-auto" />
+		{#if navSecondaryItems}
+			<NavSecondary items={navSecondaryItems} class="mt-auto" />
+		{/if}
 	</Sidebar.Content>
 
 	<Sidebar.Footer>

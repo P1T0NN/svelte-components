@@ -50,7 +50,9 @@
       "Bash(sed -i 's/cleanupR2/cleanupOrphanDataR2/g; s/cleanupConvexStorage/cleanupOrphanDataConvexStorage/g' src/convex/storage/crons/cleanupOrphanDataR2.ts src/convex/storage/crons/cleanupOrphanDataConvexStorage.ts src/convex/crons.ts)",
       "Bash(npx svelte-check *)",
       "Bash(rm src/convex/storage/convexStorage/aggregate/uploadedFilesAggregate.ts src/convex/storage/r2/aggregate/uploadedFilesR2Aggregate.ts)",
-      "Bash(rmdir src/convex/storage/convexStorage/aggregate src/convex/storage/r2/aggregate)"
+      "Bash(rmdir src/convex/storage/convexStorage/aggregate src/convex/storage/r2/aggregate)",
+      "Bash(Remove-Item -Path \"D:\\\\Stvari\\\\Programiranje\\\\Svelte Components\\\\svelte-components-convex\\\\src\\\\convex\\\\tables\\\\auditLog\\\\mutations\\\\auditLogMutations.ts\" -Force)",
+      "Bash(Remove-Item -Path \"D:\\\\Stvari\\\\Programiranje\\\\Svelte Components\\\\svelte-components-convex\\\\src\\\\convex\\\\tables\\\\auditLog\\\\mutations\" -Force)"
     ]
   }
 }

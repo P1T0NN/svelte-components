@@ -1,4 +1,10 @@
 <script lang="ts">
+	// SVELTEKIT IMPORTS
+	import { page } from '$app/state';
+
+	// LIBRARIES
+	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+
 	// CONFIG
 	import { COMPANY_DATA } from '@/shared/constants.js';
 
@@ -13,7 +19,44 @@
 
 	const sidebar = Sidebar.useSidebar();
 
-	let { pageName }: { pageName: string } = $props();
+	let {
+		pageName,
+		hidePaths = []
+	}: {
+		pageName?: string;
+		/**
+		 * Cumulative paths to omit from the rendered breadcrumb trail (e.g.
+		 * `['/admin']` to hide the `Admin` crumb under the admin shell). Match is
+		 * against the cumulative `href` of each segment, so `'/admin'` hides only
+		 * that one crumb without affecting `/admin/users`.
+		 */
+		hidePaths?: string[];
+	} = $props();
+
+	function labelFromSegment(segment: string) {
+		return segment.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+	}
+
+	/**
+	 * Build a breadcrumb trail from every non-empty path segment. Each entry
+	 * carries the cumulative `href` so intermediate items can link back. The
+	 * last entry is rendered as the current page (no link).
+	 */
+	const trail = $derived.by(() => {
+		const pathname = new URL(deLocalizeUrl(page.url.href)).pathname;
+		const segments = pathname.split('/').filter(Boolean);
+		const hidden = new Set(hidePaths);
+		let href = '';
+		const items: Array<{ label: string; href: string }> = [];
+		for (const segment of segments) {
+			href += `/${segment}`;
+			if (hidden.has(href)) continue;
+			items.push({ label: labelFromSegment(segment), href });
+		}
+		return items;
+	});
+
+	const overridden = $derived(pageName !== undefined);
 </script>
 
 <header class="sticky top-0 z-50 flex w-full items-center border-b bg-background">
@@ -30,11 +73,23 @@
 					<Breadcrumb.Link href="##">{COMPANY_DATA.NAME}</Breadcrumb.Link>
 				</Breadcrumb.Item>
 
-				<Breadcrumb.Separator />
-				
-				<Breadcrumb.Item>
-					<Breadcrumb.Page>{pageName}</Breadcrumb.Page>
-				</Breadcrumb.Item>
+				{#if overridden}
+					<Breadcrumb.Separator />
+					<Breadcrumb.Item>
+						<Breadcrumb.Page>{pageName}</Breadcrumb.Page>
+					</Breadcrumb.Item>
+				{:else}
+					{#each trail as crumb, i (crumb.href)}
+						<Breadcrumb.Separator />
+						<Breadcrumb.Item>
+							{#if i === trail.length - 1}
+								<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
+							{:else}
+								<Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
+							{/if}
+						</Breadcrumb.Item>
+					{/each}
+				{/if}
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 	</div>

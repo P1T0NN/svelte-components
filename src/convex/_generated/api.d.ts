@@ -37,6 +37,8 @@ import type * as tables_auditLog_schemas_auditLogSchema from "../tables/auditLog
 import type * as tables_auditLog_utils_auditLogUtils from "../tables/auditLog/utils/auditLogUtils.js";
 import type * as tables_test_testMutations from "../tables/test/testMutations.js";
 import type * as tables_test_testQueries from "../tables/test/testQueries.js";
+import type * as tables_users_userMutations from "../tables/users/userMutations.js";
+import type * as tables_users_userQueries from "../tables/users/userQueries.js";
 import type * as types_convexTypes from "../types/convexTypes.js";
 
 import type {
@@ -75,6 +77,8 @@ declare const fullApi: ApiFromModules<{
   "tables/auditLog/utils/auditLogUtils": typeof tables_auditLog_utils_auditLogUtils;
   "tables/test/testMutations": typeof tables_test_testMutations;
   "tables/test/testQueries": typeof tables_test_testQueries;
+  "tables/users/userMutations": typeof tables_users_userMutations;
+  "tables/users/userQueries": typeof tables_users_userQueries;
   "types/convexTypes": typeof types_convexTypes;
 }>;
 

@@ -26,6 +26,7 @@
 	import { Toaster } from '@/shared/components/ui/sonner';
 	import NormalHeader from '@/shared/components/ui/header/normal-header/normal-header.svelte';
 	import Footer from '@/shared/components/ui/footer/footer.svelte';
+	import AuthErrorBanner from '@/features/auth/components/auth-error-banner/auth-error-banner.svelte';
 
 	let { children, data } = $props();
 
@@ -73,3 +74,4 @@
 	{/if}
 </div>
 <Toaster richColors />
+<AuthErrorBanner />

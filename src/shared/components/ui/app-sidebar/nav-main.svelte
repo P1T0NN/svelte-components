@@ -1,19 +1,17 @@
 <script lang="ts">
+	// LIBRARIES
+	import { localizeHref } from '@/shared/lib/paraglide/runtime.js';
+
 	// COMPONENTS
 	import * as Sidebar from '@/shared/components/ui/sidebar/index.js';
 	
 	// TYPES
-	import type { Component } from 'svelte';
+	import type { AppSidebarNavItemWithActive } from './types.js';
 
 	let {
 		items
 	}: {
-		items: {
-			name: string;
-			url: string;
-			icon: Component;
-			isActive?: boolean;
-		}[];
+		items: AppSidebarNavItemWithActive[];
 	} = $props();
 </script>
 
@@ -25,7 +23,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton isActive={item.isActive}>
 					{#snippet child({ props })}
-						<a href={item.url} {...props}>
+						<a href={localizeHref(item.url)} {...props}>
 							<item.icon />
 							<span>{item.name}</span>
 						</a>

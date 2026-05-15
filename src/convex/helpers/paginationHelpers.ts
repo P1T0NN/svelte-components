@@ -43,3 +43,49 @@ export function resolvePaginationOpts(
 ): PaginationOptions {
 	return opts ?? defaultPaginationOpts;
 }
+
+/**
+ * Shape returned by any offset/limit data source (BA admin API, REST upstreams,
+ * `.collect().slice()`, etc.). Decoupled from any specific library so a query
+ * built around an unknown source can plug straight into {@link toPaginatedListPayload}.
+ */
+export type OffsetLimitPage<T> = { items: T[]; total: number };
+
+/**
+ * Adapts an offset/limit data source into the `PaginatedListPayload` shape that
+ * `DataTable` consumes in `optimizationStrategy="offset"` mode. Universal — has no
+ * knowledge of the source (better-auth, REST, raw doc slicing). Pass a fetcher that
+ * returns `{ items, total }`; this computes `offset` from `(page, numItems)` and
+ * reshapes the result.
+ *
+ * @example
+ *   return toPaginatedListPayload({
+ *     page: args.page,
+ *     paginationOpts: args.paginationOpts,
+ *     fetch: ({ limit, offset }) => callUpstream({ limit, offset })
+ *   });
+ */
+export async function toPaginatedListPayload<T>(params: {
+	page: number | undefined;
+	paginationOpts: PaginationOptions | undefined;
+	fetch: (range: { limit: number; offset: number }) => Promise<OffsetLimitPage<T>>;
+}): Promise<{
+	page: T[];
+	isDone: boolean;
+	continueCursor: string;
+	totalCount: number;
+}> {
+	const oneBasedPage = normalizeOneBasedPage(params.page);
+	const { numItems } = resolvePaginationOpts(params.paginationOpts);
+	const offset = (oneBasedPage - 1) * numItems;
+
+	const { items, total } = await params.fetch({ limit: numItems, offset });
+
+	return {
+		page: items,
+		isDone: offset + items.length >= total,
+		// Empty string in offset mode (mirrors DataTable's own contract).
+		continueCursor: '',
+		totalCount: total
+	};
+}

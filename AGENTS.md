@@ -1,28 +1,268 @@
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+# AGENTS.md
 
-## Package manager
+## Package Manager
 
-This repo uses **Bun**. For one-off CLIs, use **`bunx`** (not `npx`), e.g. `bunx @sveltejs/mcp svelte-autofixer ...`, `bunx convex codegen`.
+This repository uses **Bun**.
 
-## Available MCP Tools:
+For one-off CLIs, always use `bunx` instead of `npx`.
 
-### 1. list-sections
+Examples:
+```bash
+bunx @sveltejs/mcp svelte-autofixer ...
+bunx convex codegen
+```
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+Never use `npx`.
 
-### 2. get-documentation
+---
 
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+# Svelte MCP Workflow
 
-### 3. svelte-autofixer
+You have access to the Svelte MCP server with comprehensive Svelte 5 and SvelteKit documentation.
 
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
-**Always run it with `bunx`** (e.g. `bunx @sveltejs/mcp svelte-autofixer ./path/to/Component.svelte --svelte-version 5`), never `npx`.
+Always use the MCP tools systematically instead of relying on memory alone.
 
-### 4. playground-link
+## Available MCP Tools
 
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+### 1. `list-sections`
+
+Use this FIRST when working with Svelte or SvelteKit.
+
+This returns available documentation sections with:
+- titles
+- use cases
+- paths
+
+You must analyze the returned sections and identify ALL potentially relevant documentation before proceeding.
+
+Do not skip this step.
+
+---
+
+### 2. `get-documentation`
+
+After using `list-sections`, fetch ALL documentation sections relevant to the task.
+
+Prioritize:
+- official patterns
+- idiomatic Svelte 5 approaches
+- SSR compatibility
+- accessibility
+- performance implications
+- recommended architecture patterns
+
+Never rely on assumptions when documentation is available.
+
+---
+
+### 3. `svelte-autofixer`
+
+Whenever writing or modifying Svelte code:
+1. Run the autofixer
+2. Review all warnings and suggestions
+3. Apply meaningful improvements
+4. Repeat until no relevant issues remain
+
+Always run with Bun:
+
+```bash
+bunx @sveltejs/mcp svelte-autofixer ./path/to/Component.svelte --svelte-version 5
+```
+
+Never use `npx`.
+
+Do not finalize Svelte code before running the autofixer.
+
+---
+
+# Engineering Philosophy
+
+This project is treated as a reusable long-term architecture foundation, not a one-off application.
+
+Assume components, utilities, patterns, and modules will later be:
+- copied into future projects
+- extracted into shared libraries
+- extended by other developers
+- connected to different backends
+- styled differently
+- reused in unrelated domains
+
+Optimize for:
+1. Reusability
+2. Maintainability
+3. Developer experience (DX)
+4. Architectural clarity
+5. Performance
+6. Simplicity
+7. Short-term implementation speed
+
+Never optimize for quick hacks that create future coupling.
+
+---
+
+# Architecture Standards
+
+Before implementing code, evaluate:
+- portability
+- scalability
+- composability
+- separation of concerns
+- backend independence
+- API ergonomics
+- future extensibility
+- long-term maintainability
+
+Prefer:
+- composition over inheritance
+- explicit APIs
+- backend-agnostic abstractions
+- dependency injection where appropriate
+- low coupling
+- high cohesion
+- predictable state flow
+- modular design
+- reusable primitives
+
+Avoid:
+- project-specific assumptions
+- hardcoded business logic
+- tightly coupled components
+- hidden dependencies
+- singleton-heavy architecture
+- app-specific naming
+- deeply nested reactive chains
+
+Business logic should remain separable from UI whenever practical.
+
+---
+
+# Convex Integration Rules
+
+Do not tightly couple UI components to Convex.
+
+Avoid embedding:
+- Convex-specific assumptions
+- database schema assumptions
+- direct mutation/query logic in reusable UI
+- app-specific backend logic
+- hardcoded endpoints
+
+Prefer:
+- adapters
+- composables
+- injected data sources
+- backend-independent interfaces
+
+Components should remain usable even if Convex is later replaced.
+
+---
+
+# Svelte 5 Standards
+
+Use idiomatic Svelte 5 patterns.
+
+Prefer:
+- runes where appropriate
+- local reasoning
+- explicit data flow
+- SSR-friendly patterns
+- progressive enhancement
+- composable components
+- minimal reactive complexity
+
+Avoid:
+- React-style architecture patterns
+- unnecessary stores
+- excessive derived state
+- lifecycle misuse
+- prop drilling caused by poor composition
+- over-engineered abstractions
+- unnecessary reactivity
+
+Keep components understandable and easy to extend.
+
+---
+
+# DX Standards
+
+Code should feel excellent to work with.
+
+Prioritize:
+- strong typing
+- intuitive APIs
+- self-documenting code
+- low cognitive overhead
+- clean naming
+- minimal boilerplate
+- safe defaults
+- easy debugging
+- consistent structure
+- maintainable abstractions
+
+Avoid cleverness that harms readability.
+
+Prefer APIs that are understandable without documentation.
+
+---
+
+# Performance Standards
+
+Default to production-grade performance patterns.
+
+Prefer:
+- minimal reactive cascades
+- low hydration cost
+- SSR when beneficial
+- lazy loading where appropriate
+- stable derived state
+- efficient rendering
+- scalable state management
+- efficient large-list rendering
+- minimal unnecessary client-side work
+
+Avoid premature micro-optimization.
+
+Prioritize architectural performance over trivial optimizations.
+
+---
+
+# Reusability Standards
+
+Assume every exported component may become part of a shared internal library.
+
+Therefore:
+- keep dependencies minimal
+- avoid hidden assumptions
+- expose extensible APIs
+- prefer configuration over hardcoding
+- support composition
+- design for portability
+- avoid app-locked patterns
+
+When reasonable, design components like reusable framework primitives rather than app-specific implementations.
+
+---
+
+# Mandatory Review Before Finalizing
+
+Before finalizing any implementation, perform an internal review.
+
+Evaluate:
+- Is this reusable?
+- Is this portable?
+- Is this overly coupled to the current project?
+- Is the abstraction level correct?
+- Is the API ergonomic?
+- Is this production-ready?
+- Is accessibility handled properly?
+- Is performance acceptable at scale?
+- Is there unnecessary complexity?
+- Is there unnecessary abstraction?
+- Will this still make sense in 12 months?
+- Could this be copied into another project cleanly?
+
+If a significantly better architecture or implementation exists, refactor before finalizing.
+
+Do not stop at “working”.
+
+Aim for production-grade, reusable, maintainable code.

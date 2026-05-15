@@ -31,6 +31,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
           input:
             | {
                 data: {
+                  banExpires?: null | number;
+                  banReason?: null | string;
+                  banned?: null | boolean;
                   createdAt: number;
                   email: string;
                   emailVerified: boolean;
@@ -46,6 +49,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 data: {
                   createdAt: number;
                   expiresAt: number;
+                  impersonatedBy?: null | string;
                   ipAddress?: null | string;
                   token: string;
                   updatedAt: number;
@@ -116,8 +120,11 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "image"
                     | "createdAt"
                     | "updatedAt"
-                    | "userId"
                     | "role"
+                    | "banned"
+                    | "banReason"
+                    | "banExpires"
+                    | "userId"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -153,6 +160,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
+                    | "impersonatedBy"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -337,8 +345,11 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "image"
                     | "createdAt"
                     | "updatedAt"
-                    | "userId"
                     | "role"
+                    | "banned"
+                    | "banReason"
+                    | "banExpires"
+                    | "userId"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -374,6 +385,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
+                    | "impersonatedBy"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -635,6 +647,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
+                  banExpires?: null | number;
+                  banReason?: null | string;
+                  banned?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -653,8 +668,11 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "image"
                     | "createdAt"
                     | "updatedAt"
-                    | "userId"
                     | "role"
+                    | "banned"
+                    | "banReason"
+                    | "banExpires"
+                    | "userId"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -683,6 +701,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 update: {
                   createdAt?: number;
                   expiresAt?: number;
+                  impersonatedBy?: null | string;
                   ipAddress?: null | string;
                   token?: string;
                   updatedAt?: number;
@@ -699,6 +718,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
+                    | "impersonatedBy"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -903,6 +923,9 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             | {
                 model: "user";
                 update: {
+                  banExpires?: null | number;
+                  banReason?: null | string;
+                  banned?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -921,8 +944,11 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "image"
                     | "createdAt"
                     | "updatedAt"
-                    | "userId"
                     | "role"
+                    | "banned"
+                    | "banReason"
+                    | "banExpires"
+                    | "userId"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -951,6 +977,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 update: {
                   createdAt?: number;
                   expiresAt?: number;
+                  impersonatedBy?: null | string;
                   ipAddress?: null | string;
                   token?: string;
                   updatedAt?: number;
@@ -967,6 +994,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "ipAddress"
                     | "userAgent"
                     | "userId"
+                    | "impersonatedBy"
                     | "_id";
                   mode?: "sensitive" | "insensitive";
                   operator?:
@@ -1151,6 +1179,45 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                 }>;
               };
           onUpdateHandle?: string;
+        },
+        any,
+        Name
+      >;
+    };
+    userQueries: {
+      listUserAccounts: FunctionReference<
+        "query",
+        "internal",
+        { userId: string },
+        any,
+        Name
+      >;
+      listUserSessions: FunctionReference<
+        "query",
+        "internal",
+        { userId: string },
+        any,
+        Name
+      >;
+      listUsersPaginated: FunctionReference<
+        "query",
+        "internal",
+        {
+          banned?: boolean;
+          emailVerified?: boolean;
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          role?: "user" | "admin";
+          search?: string;
+          searchField?: "email" | "name";
+          sortColumn?: "name" | "email" | "createdAt";
+          sortDirection?: "asc" | "desc";
         },
         any,
         Name

@@ -1,5 +1,5 @@
 export const PAGINATION_DATA = {
-	DEFAULT_PAGE_SIZE: 1,
+	DEFAULT_PAGE_SIZE: 10,
 	/** Default for `DataTable` `optimizationStrategy` (see `DataTableOptimizationStrategy` in data-table `types.ts`). */
 	DEFAULT_OPTIMIZATION_STRATEGY: 'cursor' as const
 } as const;

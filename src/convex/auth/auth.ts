@@ -4,7 +4,7 @@ import { convex } from '@convex-dev/better-auth/plugins';
 import { components } from '../_generated/api';
 import type { DataModel } from '../_generated/dataModel';
 import { betterAuth, type BetterAuthOptions } from 'better-auth/minimal';
-import { emailOTP } from 'better-auth/plugins';
+import { admin, emailOTP } from 'better-auth/plugins';
 import authConfig from './auth.config';
 import { sendVerificationOTP } from './emails/sendVerificationOTP';
 import authSchema from './component/schema';
@@ -76,9 +76,19 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
 		// Trust: our proxy strips all inbound headers and re-stamps `x-client-ip`
 		// from `event.getClientAddress()`, which on Vercel reads the trusted
 		// edge-set `x-forwarded-for`. The chain has no client-controlled link.
+		//
+		// Fallback to `cf-connecting-ip`: better-auth tries headers in order and
+		// returns the first hit. User-driven requests resolve via `x-client-ip`
+		// (correct, real client). Server-to-server requests that bypass our proxy
+		// (e.g. internal JWKs fetches at `/api/auth/convex/jwks`) lack
+		// `x-client-ip`, so without a fallback better-auth would skip rate
+		// limiting and emit a WARN per call. `cf-connecting-ip` is set by
+		// Cloudflare on every request reaching Convex; for those internal calls
+		// it's the immediate caller's IP (Vercel egress), which is fine for
+		// rate-limit bucketing on a public endpoint.
 		advanced: {
 			ipAddress: {
-				ipAddressHeaders: ['x-client-ip']
+				ipAddressHeaders: ['x-client-ip', 'cf-connecting-ip']
 			}
 		},
 		socialProviders: {
@@ -92,6 +102,10 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
 				otpLength: 8,
 				sendVerificationOnSignUp: true,
 				sendVerificationOTP
+			}),
+			admin({
+				defaultRole: 'user',
+				adminRoles: ['admin']
 			}),
 			convex({ authConfig })
 		]
