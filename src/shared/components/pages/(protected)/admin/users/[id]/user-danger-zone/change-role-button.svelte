@@ -12,10 +12,9 @@
 	import { toastResult } from '@/shared/utils/toastResult';
 
 	/**
-	 * Self-contained promote/demote toggle. Direction is derived from the
-	 * current role — clicking opens an `ActionButton` confirm dialog explaining
-	 * the consequence, then flips the role via the `setUserRole` Convex
-	 * mutation (which audits the change atomically).
+	 * Admin-only promote/demote control for this app’s two-role model (`user` ↔ `admin`).
+	 * Convex call, copy, and pending state stay in this file so the danger zone layout
+	 * does not own mutation wiring for a single nested action.
 	 */
 	let {
 		userId,
@@ -30,16 +29,16 @@
 	const convex = useConvexClient();
 	let isPending = $state(false);
 
-	const nextRole = $derived<'user' | 'admin'>(role === 'admin' ? 'user' : 'admin');
+	const demoting = $derived(role === 'admin');
 
-	async function changeRole() {
+	async function confirmRoleChange() {
+		const nextRole = role === 'admin' ? 'user' : 'admin';
 		isPending = true;
 		try {
-			const result = await safeMutation(
-				convex,
-				api.tables.users.userMutations.setUserRole,
-				{ userId, role: nextRole }
-			);
+			const result = await safeMutation(convex, api.tables.users.userMutations.setUserRole, {
+				userId,
+				role: nextRole
+			});
 			toastResult(result);
 		} finally {
 			isPending = false;
@@ -48,17 +47,15 @@
 </script>
 
 <ActionButton
-	function={changeRole}
+	function={confirmRoleChange}
 	variant="outline"
 	{isPending}
-	title={role === 'admin'
+	title={demoting
 		? m['AdminUserPage.ChangeRoleButton.demoteTitle']({ email: userEmail })
 		: m['AdminUserPage.ChangeRoleButton.promoteTitle']({ email: userEmail })}
-	description={role === 'admin'
+	description={demoting
 		? m['AdminUserPage.ChangeRoleButton.demoteDescription']()
 		: m['AdminUserPage.ChangeRoleButton.promoteDescription']()}
 >
-	{role === 'admin'
-		? m['AdminUserPage.ChangeRoleButton.demote']()
-		: m['AdminUserPage.ChangeRoleButton.promote']()}
+	{demoting ? m['AdminUserPage.ChangeRoleButton.demote']() : m['AdminUserPage.ChangeRoleButton.promote']()}
 </ActionButton>
