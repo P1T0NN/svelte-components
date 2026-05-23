@@ -1,19 +1,13 @@
-// CONFIG
-import { FEATURES } from '@/convex/projectSettings';
-
 // COMPONENTS
 import { toast } from 'svelte-sonner';
 
 // UTILS
-import { uploadFileToR2, uploadFileToConvexStorage } from '@/shared/utils/convexHelpers';
 import { optimizeImages } from '@/features/uploadFile/utils/optimizeImages';
-import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
 
 // TYPES
-import type { MutationFormSection } from './types.js';
-import type { ConvexClient } from 'convex/browser';
+import type { MutationFormProgress, MutationFormSection } from './types.js';
 
-type ProgressApi = ReturnType<typeof useProgress>;
+export type MutationFormUploadOne = (file: File) => Promise<string | null>;
 
 /**
  * Walks `sections`, finds upload-single / upload-multiple fields, optimizes and uploads
@@ -21,13 +15,12 @@ type ProgressApi = ReturnType<typeof useProgress>;
  * Returns `false` if the submission should abort (errors are toasted internally).
  */
 export async function processUploadFields(params: {
-	convex: ConvexClient;
 	sections: MutationFormSection[];
 	args: Record<string, unknown>;
-	progress: ProgressApi;
+	progress: MutationFormProgress;
+	uploadOne: MutationFormUploadOne;
 }): Promise<boolean> {
-	const { convex, sections, args, progress } = params;
-	const uploadOne = FEATURES.USE_R2 ? uploadFileToR2 : uploadFileToConvexStorage;
+	const { sections, args, progress, uploadOne } = params;
 
 	for (const section of sections) {
 		for (const f of section.fields) {
@@ -53,7 +46,7 @@ export async function processUploadFields(params: {
 				const n = optimized.length;
 				for (let j = 0; j < n; j++) {
 					progress.beforeUploadFile(j + 1, n);
-					const result = await uploadOne(convex, optimized[j]);
+					const result = await uploadOne(optimized[j]);
 					progress.afterUploadFile(j + 1, n);
 					if (!result) return false;
 					uploaded.push(result);

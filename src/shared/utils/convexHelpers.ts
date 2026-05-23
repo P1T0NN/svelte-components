@@ -22,6 +22,7 @@
 import { toast } from 'svelte-sonner';
 import { ConvexError } from 'convex/values';
 import { isRateLimitError } from '@convex-dev/rate-limiter';
+import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 import { m } from '@/shared/lib/paraglide/messages';
 import {
 	hasTranslatableMessage,
@@ -86,7 +87,7 @@ export async function uploadFileToConvexStorage(
 ): Promise<Id<'uploadedFiles'> | null> {
 	const postUrl = await safeMutation(
 		client,
-		api.storage.convexStorage.storageMutations.generateUploadUrl,
+		api.storage.convexStorage.storageMutations.generateConvexUploadUrl,
 		{}
 	);
 	if (!postUrl) return null;
@@ -109,7 +110,7 @@ export async function uploadFileToConvexStorage(
  * Upload a browser `File` to Cloudflare R2 (via `@convex-dev/r2`).
  *
  * Mirrors {@link uploadFileToConvexStorage} for the R2-backed table:
- *   1. `generateUploadUrl` mints a signed URL + object key (auth-checked in `checkUpload`).
+ *   1. `generateR2UploadUrl` mints a signed URL + object key (auth-checked before mint).
  *   2. The browser PUTs the file directly to R2.
  *   3. `syncMetadata` triggers the server `onUpload` hook, which charges the rate limit,
  *      validates size/MIME against R2's HEAD metadata, and inserts the `uploadedFilesR2` row.
@@ -125,7 +126,7 @@ export async function uploadFileToR2(
 	client: ConvexClient,
 	file: File
 ): Promise<string | null> {
-	const minted = await safeMutation(client, api.storage.r2.r2.generateUploadUrl, {});
+	const minted = await safeMutation(client, api.storage.r2.r2.generateR2UploadUrl, {});
 	if (!minted || !minted.success || !minted.data) return null;
 
 	const { url, key } = minted.data;
@@ -153,27 +154,6 @@ export async function uploadFileToR2(
 }
 
 /**
- * Format `retryAfter` (ms) as a localized "Too many requests" toast.
- *
- * - `< 60s` → seconds-grained toast (round up so users wait at least the advertised time).
- * - `>= 60s` → minutes-grained toast (also rounded up).
- * - Missing or non-positive → fall back to the generic "try again later" copy.
- */
-function rateLimitToastMessage(retryAfterMs: number | undefined): string {
-	if (typeof retryAfterMs !== 'number' || retryAfterMs <= 0) {
-		return m['GenericMessages.TOO_MANY_REQUESTS']();
-	}
-	if (retryAfterMs < 60_000) {
-		return m['GenericMessages.TOO_MANY_REQUESTS_SECONDS']({
-			seconds: Math.ceil(retryAfterMs / 1000)
-		});
-	}
-	return m['GenericMessages.TOO_MANY_REQUESTS_MINUTES']({
-		minutes: Math.ceil(retryAfterMs / 60_000)
-	});
-}
-
-/**
  * Centralised error-to-toast handling shared by `safeMutation` and `safeAction`.
  *
  * Returns `true` if the error was handled (caller should resolve with `null`), `false`
@@ -191,7 +171,7 @@ function rateLimitToastMessage(retryAfterMs: number | undefined): string {
  */
 export function handleConvexError(error: unknown): boolean {
 	if (isRateLimitError(error)) {
-		toast.error(rateLimitToastMessage(error.data.retryAfter));
+		toast.error(rateLimitMessage(error.data.retryAfter));
 		return true;
 	}
 	if (error instanceof ConvexError && hasTranslatableMessage(error.data)) {

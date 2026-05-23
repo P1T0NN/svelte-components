@@ -244,6 +244,29 @@
 		"proceed": "Proceed"
 	},
 
+	"SearchInput": {
+		"placeholder": "Search...",
+		"ariaLabel": "Search",
+		"resultsLabel": "Search results",
+		"loading": "Searching...",
+		"searchFailed": "Search failed. Please try again.",
+		"tooManyRequests": "Too many search requests. Please try again shortly.",
+		"unknownSource": "Unknown search source.",
+		"rateLimitKeyUnavailable": "Search rate limit key could not be resolved.",
+		"rateLimitNotConfigured": "Search rate limit is not configured.",
+		"clientAddressRequired": "Client address is required for public search.",
+		"SearchEmpty": {
+			"title": "No results found",
+			"description": "Try a different search term."
+		},
+		"SearchPage": {
+			"title": "Search input",
+			"description": "Search public test rows through the remote source.",
+			"placeholder": "Search test rows...",
+			"selected": "Selected:"
+		}
+	},
+
 	"AdminUsersPage": {
 		"title": "Users",
 		"description": "Search, filter, and manage user accounts.",

@@ -6,7 +6,7 @@ Work through these **one at a time**. Email, Resend, and `projectSettings` are o
 
 - [x] **Forgot-password anti-enumeration** — Always show the same “next step” after requesting a reset; do not reveal whether the email is registered. Log real outcomes server-side only.
 - [x] **Sign-up neutral errors** — Replace copy that implies “account already exists” with a generic message so addresses cannot be enumerated.
-- [ ] **Auth rate limiting** — Add per-email buckets for OTP send vs OTP verify (e.g. Password `profile()` + existing rate limiter). Convex Auth has some built-in limits; this adds an extra layer.
+- [x] **Auth rate limiting** — Per-IP and per-email buckets for OTP/sign-in/sign-up via `@convex-dev/rate-limiter` (`rateLimits/registry.ts` + BA `hooks.before`).
 - [x] **Distinct Resend provider `id`s** — Ensure verify vs password-reset OTP providers use different `id` values so they do not collide in the Auth registry.
 - [x] **Safe account linking** — Only link by email when the provider has proven ownership (e.g. vetted OAuth + post-OTP `verification`); avoid blind link-by-email for future providers.
 

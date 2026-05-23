@@ -4,10 +4,10 @@ Production-leaning starter combining:
 
 - **SvelteKit 5** (Svelte runes) + Tailwind + shadcn-svelte
 - **Convex** as the database / backend, with `@convex-dev/better-auth` in **local-install** mode (auth tables live in your schema; you control fields and indexes)
-- **Better Auth**: email/password + email OTP + Google OAuth + account linking + DB-backed rate limiting
+- **Better Auth**: email/password + email OTP + Google OAuth + account linking
 - **Paraglide** for i18n (`messages/en.json`, `messages/de.json`)
 - **Resend** for transactional email (OTP, contact form)
-- App-level rate limiting via `@convex-dev/rate-limiter`
+- Unified rate limiting via `@convex-dev/rate-limiter` (app mutations + Better Auth HTTP routes)
 - Audit log scaffolding (off by default — see `src/convex/features.ts`)
 
 ## Prerequisites
@@ -87,7 +87,7 @@ src/
       queries/               getCurrentUser, etc.
       component/crons/       cron handlers that touch BA tables (rate-limit GC)
                              (scheduled from convex/crons.ts via a parent wrapper)
-    helpers/                 createDeleteMutation, getRateLimitedUserId
+    helpers/                 createDeleteMutation, convexGetRateLimitedUserId
     crons.ts                 cron registry (entry; references handlers)
     schema.ts                app tables (auditLogs, uploadedFiles)
   features/                  feature-scoped UI + actions (auth, contact, ...)
@@ -106,8 +106,7 @@ Before deploying:
 - [ ] Tighten CSP in `src/shared/utils/securityHeaders.ts` — current config allows `'unsafe-inline'` / `'unsafe-eval'`. Migrate to SvelteKit's `kit.csp` nonce mode.
 - [ ] Set `SITE_URL` to your production URL (and update Google redirect URI).
 - [ ] Use a verified sender domain in Resend (`onboarding@resend.dev` only delivers to the account owner).
-- [ ] Add per-email / per-IP buckets to BA rate limit (`auth.ts` `customRules`).
-- [ ] Rate-limit storage upload mutations (`src/convex/storage/storageMutations.ts`).
+- [ ] Tighten per-endpoint auth limits in `src/convex/rateLimits/registry.ts` if prod traffic patterns differ from defaults.
 - [ ] Enable `FEATURES.AUDIT_LOGS` and wire `logAudit` into admin / destructive paths.
 
 ## Scripts

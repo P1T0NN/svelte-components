@@ -9,18 +9,26 @@
  */
 
 import type * as auth_auth from "../auth/auth.js";
+import type * as auth_authRoutes from "../auth/authRoutes.js";
+import type * as auth_convexCreateAuthRateLimitHook from "../auth/convexCreateAuthRateLimitHook.js";
 import type * as auth_emails_sendVerificationOTP from "../auth/emails/sendVerificationOTP.js";
 import type * as auth_helpers_getAuthUserId from "../auth/helpers/getAuthUserId.js";
 import type * as auth_middleware_authMiddleware from "../auth/middleware/authMiddleware.js";
 import type * as auth_queries_authQueries from "../auth/queries/authQueries.js";
+import type * as auth_utils_getEmailFromAuthBody from "../auth/utils/getEmailFromAuthBody.js";
+import type * as convexRateLimiter from "../convexRateLimiter.js";
 import type * as crons from "../crons.js";
+import type * as helpers_convexGetRateLimitedUserId from "../helpers/convexGetRateLimitedUserId.js";
 import type * as helpers_createDeleteMutation from "../helpers/createDeleteMutation.js";
+import type * as helpers_createSearchQuery from "../helpers/createSearchQuery.js";
 import type * as helpers_fetchOptimized from "../helpers/fetchOptimized.js";
-import type * as helpers_getRateLimitedUserId from "../helpers/getRateLimitedUserId.js";
 import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js";
 import type * as http from "../http.js";
 import type * as projectSettings from "../projectSettings.js";
-import type * as rateLimiter from "../rateLimiter.js";
+import type * as rateLimits_convexCreateRateLimit from "../rateLimits/convexCreateRateLimit.js";
+import type * as rateLimits_convexCreateRateLimitInternal from "../rateLimits/convexCreateRateLimitInternal.js";
+import type * as rateLimits_registry from "../rateLimits/registry.js";
+import type * as rateLimits_searchRateLimitMutations from "../rateLimits/searchRateLimitMutations.js";
 import type * as storage_convexStorage_storageMutations from "../storage/convexStorage/storageMutations.js";
 import type * as storage_convexStorage_uploadedFiles from "../storage/convexStorage/uploadedFiles.js";
 import type * as storage_crons_cleanupOrphanDataConvexStorage from "../storage/crons/cleanupOrphanDataConvexStorage.js";
@@ -49,18 +57,26 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "auth/auth": typeof auth_auth;
+  "auth/authRoutes": typeof auth_authRoutes;
+  "auth/convexCreateAuthRateLimitHook": typeof auth_convexCreateAuthRateLimitHook;
   "auth/emails/sendVerificationOTP": typeof auth_emails_sendVerificationOTP;
   "auth/helpers/getAuthUserId": typeof auth_helpers_getAuthUserId;
   "auth/middleware/authMiddleware": typeof auth_middleware_authMiddleware;
   "auth/queries/authQueries": typeof auth_queries_authQueries;
+  "auth/utils/getEmailFromAuthBody": typeof auth_utils_getEmailFromAuthBody;
+  convexRateLimiter: typeof convexRateLimiter;
   crons: typeof crons;
+  "helpers/convexGetRateLimitedUserId": typeof helpers_convexGetRateLimitedUserId;
   "helpers/createDeleteMutation": typeof helpers_createDeleteMutation;
+  "helpers/createSearchQuery": typeof helpers_createSearchQuery;
   "helpers/fetchOptimized": typeof helpers_fetchOptimized;
-  "helpers/getRateLimitedUserId": typeof helpers_getRateLimitedUserId;
   "helpers/paginationHelpers": typeof helpers_paginationHelpers;
   http: typeof http;
   projectSettings: typeof projectSettings;
-  rateLimiter: typeof rateLimiter;
+  "rateLimits/convexCreateRateLimit": typeof rateLimits_convexCreateRateLimit;
+  "rateLimits/convexCreateRateLimitInternal": typeof rateLimits_convexCreateRateLimitInternal;
+  "rateLimits/registry": typeof rateLimits_registry;
+  "rateLimits/searchRateLimitMutations": typeof rateLimits_searchRateLimitMutations;
   "storage/convexStorage/storageMutations": typeof storage_convexStorage_storageMutations;
   "storage/convexStorage/uploadedFiles": typeof storage_convexStorage_uploadedFiles;
   "storage/crons/cleanupOrphanDataConvexStorage": typeof storage_crons_cleanupOrphanDataConvexStorage;

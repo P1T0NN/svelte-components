@@ -9,12 +9,12 @@ import {
 // UTILS
 import { action, mutation } from '@/convex/_generated/server';
 import { authComponent } from '@/convex/auth/auth';
-import { getRateLimitedUserId } from '@/convex/helpers/getRateLimitedUserId';
+import { convexGetRateLimitedUserId } from '@/convex/helpers/convexGetRateLimitedUserId';
 import { logAudit } from '@/convex/tables/auditLog/helpers/logAudit';
 
 // TYPES
 import type { ActionCtx, MutationCtx, QueryCtx } from '@/convex/_generated/server';
-import type { RateLimitName } from '@/convex/rateLimiter';
+import type { ConvexRateLimitName } from '@/convex/rateLimits/registry';
 import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
 import type { Id } from '@/convex/auth/component/_generated/dataModel';
 import type { AuditAction } from '@/convex/tables/auditLog/auditLogConfigs';
@@ -63,21 +63,6 @@ export const requireAdmin = async (
 };
 
 /**
- * Options passed to {@link authMutation} / {@link authAction}.
- *
- * `rateLimit` picks which bucket from {@link import('@/convex/rateLimiter').rateLimiter}
- * gets charged. The bucket key is the authenticated user id, so each user has
- * their own counter.
- */
-type AuthOptions = {
-	/**
-	 * Bucket name. Defaults to `'mutation'` for mutations and `'action'` for
-	 * actions. Use `'delete'` (or any future bucket) to charge a heavier limit.
-	 */
-	rateLimit?: RateLimitName;
-};
-
-/**
  * Build the `ctx.audit(action, opts?)` helper exposed to handlers. `userId` is
  * pre-filled from the caller. IP / UA are intentionally NOT plumbed through —
  * for forensic context, query better-auth's `session` table by `userId` and
@@ -92,35 +77,30 @@ const buildAudit = (ctx: MutationCtx | ActionCtx, userId: string) =>
  * Wrap a Convex **mutation** with auth + per-user rate limit in one step.
  *
  * - Throws `NOT_AUTHENTICATED` (typed `ConvexErrorPayload`) if the caller is anonymous.
- * - Charges the named rate-limit bucket (`opts.rateLimit ?? 'mutation'`) keyed
- *   by the user id. On overflow throws a `RateLimitError` carrying `retryAfter`.
+ * - Charges the named rate-limit bucket keyed by the user id. On overflow throws a
+ *   `RateLimitError` carrying `retryAfter`.
  * - Injects `ctx.userId: Id<'users'>` into the handler — no need to re-auth inside.
+ *
+ * @param name  Function name — must match the export name and a key in {@link convexRateLimitRegistry}.
  *
  * @example
  * ```ts
  * import { v } from 'convex/values';
  * import { authMutation } from '@/convex/auth/middleware/authMiddleware';
  *
- * // Defaults: 'mutation' bucket.
- * export const updateName = authMutation()({
+ * export const updateName = authMutation('updateName')({
  *   args: { name: v.string() },
  *   handler: async (ctx, args) => {
  *     await ctx.db.patch(ctx.userId, { name: args.name });
  *   }
  * });
- *
- * // Heavier bucket for destructive ops.
- * export const massDelete = authMutation({ rateLimit: 'delete' })({
- *   args: { ids: v.array(v.id('items')) },
- *   handler: async (ctx, args) => { ... }
- * });
  * ```
  */
-export const authMutation = (opts: AuthOptions = {}) =>
+export const authMutation = (name: ConvexRateLimitName) =>
 	customMutation(
 		mutation,
 		customCtx(async (ctx) => {
-			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation');
+			const userId = await convexGetRateLimitedUserId(ctx, name);
 			return { userId, audit: buildAudit(ctx, userId) };
 		})
 	);
@@ -129,14 +109,16 @@ export const authMutation = (opts: AuthOptions = {}) =>
  * Wrap a Convex **action** with auth + per-user rate limit.
  *
  * Same contract as {@link authMutation} but for actions (external API calls,
- * long-running work). Default bucket is `'action'`.
+ * long-running work).
+ *
+ * @param name  Function name — must match the export name and a key in {@link convexRateLimitRegistry}.
  *
  * @example
  * ```ts
  * import { v } from 'convex/values';
  * import { authAction } from '@/convex/auth/middleware/authMiddleware';
  *
- * export const sendEmail = authAction()({
+ * export const sendEmail = authAction('sendEmail')({
  *   args: { to: v.string(), body: v.string() },
  *   handler: async (ctx, args) => {
  *     // ctx.userId is the signed-in user; rate limit already charged.
@@ -144,11 +126,11 @@ export const authMutation = (opts: AuthOptions = {}) =>
  * });
  * ```
  */
-export const authAction = (opts: AuthOptions = {}) =>
+export const authAction = (name: ConvexRateLimitName) =>
 	customAction(
 		action,
 		customCtx(async (ctx) => {
-			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action');
+			const userId = await convexGetRateLimitedUserId(ctx, name);
 			return { userId, audit: buildAudit(ctx, userId) };
 		})
 	);
@@ -167,30 +149,32 @@ export const authAction = (opts: AuthOptions = {}) =>
  * For per-row admin gating inside a more complex flow (e.g. `createDeleteMutation`),
  * use {@link requireAdmin} directly instead of this wrapper.
  *
+ * @param name  Function name — must match the export name and a key in {@link convexRateLimitRegistry}.
+ *
  * @example
  * ```ts
- * export const promoteUser = adminMutation()({
+ * export const promoteUser = adminMutation('promoteUser')({
  *   args: { userId: v.string() },
  *   handler: async (ctx, args) => {  ...  }
  * });
  * ```
  */
-export const adminMutation = (opts: AuthOptions = {}) =>
+export const adminMutation = (name: ConvexRateLimitName) =>
 	customMutation(
 		mutation,
 		customCtx(async (ctx) => {
-			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'mutation');
+			const userId = await convexGetRateLimitedUserId(ctx, name);
 			await requireAdmin(ctx);
 			return { userId, audit: buildAudit(ctx, userId) };
 		})
 	);
 
-/** Action variant of {@link adminMutation}. Default bucket: `'action'`. */
-export const adminAction = (opts: AuthOptions = {}) =>
+/** Action variant of {@link adminMutation}. */
+export const adminAction = (name: ConvexRateLimitName) =>
 	customAction(
 		action,
 		customCtx(async (ctx) => {
-			const userId = await getRateLimitedUserId(ctx, opts.rateLimit ?? 'action');
+			const userId = await convexGetRateLimitedUserId(ctx, name);
 			await requireAdmin(ctx);
 			return { userId, audit: buildAudit(ctx, userId) };
 		})

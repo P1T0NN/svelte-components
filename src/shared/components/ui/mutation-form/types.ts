@@ -79,3 +79,31 @@ export type MutationFormCustomFields<T extends Record<string, unknown>> = Partia
 export type MutationFormFieldErrors<T extends Record<string, unknown>> = Partial<
 	Record<keyof T & string, string | undefined>
 >;
+
+export type MutationFormProgress = {
+	readonly percent: number;
+	readonly label: string;
+	start: (message?: string) => void;
+	clear: () => void;
+	setOptimizeProgress: (info: {
+		overallOptimizePercent: number;
+		fileIndex: number;
+		totalFiles: number;
+		fileCompressionPercent: number;
+	}) => void;
+	beforeUploadFile: (fileNum: number, totalFiles: number) => void;
+	afterUploadFile: (fileNum: number, totalFiles: number) => void;
+	markDone: (doneLabel?: string) => void;
+};
+
+export type MutationFormPrepareSubmit<T extends Record<string, unknown>> = (context: {
+	values: T;
+	args: Record<string, unknown>;
+	sections: MutationFormSection[];
+	progress: MutationFormProgress;
+}) => boolean | void | Promise<boolean | void>;
+
+export type MutationFormSubmitHandler<T extends Record<string, unknown>> = (
+	args: Record<string, unknown>,
+	values: T
+) => boolean | void | Promise<boolean | void>;

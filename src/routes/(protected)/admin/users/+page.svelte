@@ -9,7 +9,7 @@
 
 	// COMPONENTS
 	import SvelteHead from '@/shared/components/ui/svelte-head/svelte-head.svelte';
-	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
+	import DataTable from '@/shared/components/ui/data-table/convex-data-table.svelte';
 	import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar/index.js';
 	import UsersFilters from '@/shared/components/pages/(protected)/admin/users/users-filters.svelte';
 

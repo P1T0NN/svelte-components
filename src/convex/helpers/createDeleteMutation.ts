@@ -4,14 +4,14 @@ import { getAuthUserId } from '@/convex/auth/helpers/getAuthUserId';
 import { mutation } from '../_generated/server';
 
 // HELPERS
-import { getRateLimitedUserId } from './getRateLimitedUserId.js';
+import { convexGetRateLimitedUserId } from './convexGetRateLimitedUserId.js';
 import { requireAdmin } from '../auth/middleware/authMiddleware.js';
 import { logAudit } from '../tables/auditLog/helpers/logAudit';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';
 import type { Doc, TableNames } from '../_generated/dataModel';
-import type { RateLimitName } from '../rateLimiter.js';
+import type { ConvexRateLimitName } from '../rateLimits/registry.js';
 import type { ConvexMutationResult, TranslatableMessage } from '../types/convexTypes.js';
 import type { AuditAction } from '../tables/auditLog/auditLogConfigs';
 
@@ -19,23 +19,6 @@ import type { AuditAction } from '../tables/auditLog/auditLogConfigs';
 
 /** Default cap on `ids.length` per request. Overridable per call site. */
 const DEFAULT_MAX_BATCH_SIZE = 200;
-
-/**
- * Rate-limit config. Defaults to the dedicated `'delete'` bucket, keyed by the authenticated
- * user id (via {@link getRateLimitedUserId}). Anonymous callers are rejected with
- * `NOT_AUTHENTICATED` before the bucket is even touched. Pass `false` to opt out entirely
- * (e.g. for trusted internal jobs invoking via `runMutation`).
- *
- * The bucket is charged `ids.length` tokens per request so a 100-row delete is 100× more
- * expensive than a 1-row delete — prevents one caller from draining a tight bucket via a
- * single large batch.
- */
-export type DeleteMutationRateLimit =
-	| false
-	| {
-			/** Bucket name from `rateLimiter.ts`. Defaults to `'delete'`. */
-			name?: RateLimitName;
-	  };
 
 /**
  * Phase 2 execution strategy. Controls how per-row work (`onDelete` → `ctx.db.delete`)
@@ -189,10 +172,10 @@ export type CreateDeleteMutationOptions<T extends TableNames> = {
 	 */
 	maxBatchSize?: number;
 	/**
-	 * Rate limit guard. Runs before any db reads or storage work so a flooding client can't
-	 * drain db ops before being rejected. See {@link DeleteMutationRateLimit}.
+	 * Skip rate limiting for trusted internal callers (e.g. `runMutation` jobs).
+	 * By default the function-specific bucket is charged `ids.length` tokens per request.
 	 */
-	rateLimit?: DeleteMutationRateLimit;
+	skipRateLimit?: true;
 	/**
 	 * How Phase 2 iterates the rows in a batch. See {@link DeletePhase2Strategy} for the
 	 * full trade-off matrix. Defaults to `'sequential'` — the safe choice.
@@ -237,7 +220,7 @@ export type DeleteMutationData = {
  *  1. Empty / oversize batch rejection
  *  2. Admin guard via {@link requireAdmin} (runs when `adminOnly` is `true`, which is the
  *     default whenever `ownerId` is not supplied — see Authorization below)
- *  3. Rate limit + user id resolution via {@link getRateLimitedUserId}
+ *  3. Rate limit + user id resolution via {@link convexGetRateLimitedUserId}
  *     (charges `ids.length` tokens against the configured bucket)
  *  4. Dedupe of requested ids
  *  5. Row fetch
@@ -264,7 +247,7 @@ export type DeleteMutationData = {
  *     fetch, or Phase 1/2.
  *   - `authorize` — per-row custom predicate, ADDITIONAL to the above. Access ctx, call
  *     `getAuthUserId` + `ctx.db.get(userId)` to inspect roles, cross-table lookups, etc.
- *     Don't call `getRateLimitedUserId` here — it'd double-charge the bucket already
+ *     Don't call `convexGetRateLimitedUserId` here — it'd double-charge the bucket already
  *     consumed at step 3.
  *
  * All supplied checks AND (every one must pass). For OR semantics (e.g. "admin OR owner"),
@@ -275,7 +258,7 @@ export type DeleteMutationData = {
  * ```ts
  * // Ownership by column — works for `ownerId`, `hostId`, `userId`, any field name.
  * // `adminOnly` auto-defaults to false here because `ownerId` is set.
- * export const deleteApartment = createDeleteMutation({
+ * export const deleteApartment = createDeleteMutation('deleteApartment', {
  *   table: 'apartments',
  *   ownerId: { field: (doc) => doc.hostId },
  *   runStorageDelete: deleteApartmentImages
@@ -283,13 +266,13 @@ export type DeleteMutationData = {
  *
  * // Admin-only endpoint — no config needed beyond `table`, admin gate is the default
  * // when `ownerId` is absent.
- * export const deleteLocation = createDeleteMutation({ table: 'locations' });
+ * export const deleteLocation = createDeleteMutation('deleteLocation', { table: 'locations' });
  *
  * // "Admin OR owner" — custom rule in `authorize`, MUST disable the default admin gate
  * // or non-admin owners would be blocked before `authorize` ever runs.
  * // NOTE: factory already rate-limited once at step 3, so use `getAuthUserId` here (not
- * // `getRateLimitedUserId`) to avoid double-charging the bucket.
- * export const deleteInvoice = createDeleteMutation({
+ * // `convexGetRateLimitedUserId`) to avoid double-charging the bucket.
+ * export const deleteInvoice = createDeleteMutation('deleteInvoice', {
  *   table: 'invoices',
  *   adminOnly: false,
  *   authorize: async (ctx, doc) => {
@@ -301,7 +284,7 @@ export type DeleteMutationData = {
  * });
  *
  * // Admin AND owner — both checks must pass:
- * export const deleteAuditedDoc = createDeleteMutation({
+ * export const deleteAuditedDoc = createDeleteMutation('deleteAuditedDoc', {
  *   table: 'auditedDocs',
  *   adminOnly: true,
  *   ownerId: { field: (doc) => doc.ownerId }
@@ -309,6 +292,7 @@ export type DeleteMutationData = {
  * ```
  */
 export function createDeleteMutation<T extends TableNames>(
+	name: ConvexRateLimitName,
 	options: CreateDeleteMutationOptions<T>
 ) {
 	const {
@@ -319,7 +303,7 @@ export function createDeleteMutation<T extends TableNames>(
 		runStorageDelete,
 		onDelete,
 		maxBatchSize = DEFAULT_MAX_BATCH_SIZE,
-		rateLimit: rateLimitOption,
+		skipRateLimit,
 		phase2Strategy = 'sequential',
 		audit: auditOption
 	} = options;
@@ -364,7 +348,7 @@ export function createDeleteMutation<T extends TableNames>(
 			if (requireAdminEnforced) await requireAdmin(ctx);
 
 			// 3. Rate limit + caller id resolution in one pass via the shared helper.
-			//    - Rate-limit enabled  → `getRateLimitedUserId` charges tokens, throws
+			//    - Rate-limit enabled  → `convexGetRateLimitedUserId` charges tokens, throws
 			//      `NOT_AUTHENTICATED` for anon, and returns the authed user id.
 			//    - Rate-limit disabled → fall back to bare `getAuthUserId` (may be null for
 			//      trusted internal jobs); the ownerId default still has something to
@@ -372,14 +356,9 @@ export function createDeleteMutation<T extends TableNames>(
 			//    Weighted by `ids.length` so bulk deletes pay proportional cost. A thrown
 			//    limit error propagates and the client's `safeMutation` wrapper catches it
 			//    via `isRateLimitError`.
-			const userId =
-				rateLimitOption === false
-					? await getAuthUserId(ctx)
-					: await getRateLimitedUserId(
-							ctx,
-							rateLimitOption?.name ?? 'delete',
-							ids.length
-						);
+			const userId = skipRateLimit
+				? await getAuthUserId(ctx)
+				: await convexGetRateLimitedUserId(ctx, name, ids.length);
 
 			// 4. Dedupe — a buggy client sending the same id twice can't bypass rate limits
 			//    (already charged) but still shouldn't double-work below.

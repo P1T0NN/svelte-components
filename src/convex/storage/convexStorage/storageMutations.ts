@@ -35,7 +35,7 @@ const ALLOWED_CONTENT_TYPES = new Set<string>([
  * for `adminMutation` (same shape, different role check) — apply to both
  * functions in this file so URL-gen and row-save stay in lockstep.
  */
-export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
+export const generateConvexUploadUrl = authMutation('generateConvexUploadUrl')({
 	args: {},
 	handler: async (ctx) => {
 		return await ctx.storage.generateUploadUrl();
@@ -49,7 +49,7 @@ export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
  * Validates against the storage metadata Convex recorded at upload time —
  * trustworthy regardless of any client-supplied content-type or size hints.
  */
-export const saveUploadedFile = authMutation({ rateLimit: 'upload' })({
+export const saveUploadedFile = authMutation('saveUploadedFile')({
 	args: {
 		storageId: v.id('_storage')
 	},

@@ -1,6 +1,5 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
 	// LIBRARIES
-	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
 	import { safeParse, type GenericSchema } from 'valibot';
 	import { m } from '@/shared/lib/paraglide/messages.js';
@@ -32,21 +31,20 @@
 
 	// UTILS
 	import { cn } from '@/shared/utils/utils.js';
-	import { safeMutation } from '@/shared/utils/convexHelpers';
-	import { translateFromBackend } from '@/shared/utils/translateFromBackend';
 	import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 	import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
 	import { Progress } from '@/shared/components/ui/progress/index.js';
-	import { processUploadFields, hasUploadFields } from './utils.js';
+	import { hasUploadFields } from './utils.js';
 
 	// TYPES
 	import type { Snippet } from 'svelte';
-	import type { FunctionReference } from 'convex/server';
 	import type {
 		MutationFormCustomFields,
 		MutationFormFieldDef,
 		MutationFormFieldErrors,
-		MutationFormSection
+		MutationFormPrepareSubmit,
+		MutationFormSection,
+		MutationFormSubmitHandler
 	} from './types.js';
 
 	let {
@@ -54,7 +52,8 @@
 		sections,
 		values = $bindable(),
 		initialValues,
-		runFunction,
+		onSubmit,
+		prepareSubmit,
 		schema,
 		onSuccess,
 		submitLabel = 'Submit',
@@ -71,7 +70,8 @@
 		sections?: MutationFormSection[];
 		values: T;
 		initialValues?: T;
-		runFunction: FunctionReference<'mutation'>;
+		onSubmit: MutationFormSubmitHandler<T>;
+		prepareSubmit?: MutationFormPrepareSubmit<T>;
 		schema: GenericSchema<T>;
 		onSuccess?: (values: T) => void;
 		submitLabel?: string;
@@ -83,7 +83,6 @@
 		class?: string;
 	} = $props();
 
-	const convex = useConvexClient();
 	const id = $props.id();
 	const progress = useProgress();
 
@@ -115,10 +114,11 @@
 		return (field.colSpan ?? 2) === 1 ? 'sm:col-span-1' : 'sm:col-span-2';
 	}
 
-	async function onsubmit(event: SubmitEvent) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
-		const validation = safeParse(schema, $state.snapshot(values));
+		const valueSnapshot = $state.snapshot(values) as T;
+		const validation = safeParse(schema, valueSnapshot);
 		if (!validation.success) {
 			fieldErrors = valibotIssuesToFieldErrors<keyof T & string>(validation.issues);
 			toast.error(m['GenericMessages.YOU_NEED_TO_CORRECT_FORM_ERRORS']());
@@ -130,27 +130,19 @@
 		progress.start();
 
 		try {
-			const args = { ...($state.snapshot(values) as T) } as Record<string, unknown>;
+			const args = { ...valueSnapshot } as Record<string, unknown>;
 
-			const ok = await processUploadFields({
-				convex,
+			const prepared = await prepareSubmit?.({
+				values: valueSnapshot,
 				sections: resolvedSections,
 				args,
 				progress
 			});
-			if (!ok) return;
+			if (prepared === false) return;
 			progress.markDone();
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const result = await safeMutation(convex, runFunction, args as any);
-			if (!result) return;
-
-			if (!result.success) {
-				toast.error(translateFromBackend(result.message));
-				return;
-			}
-
-			toast.success(translateFromBackend(result.message));
+			const submitted = await onSubmit(args, valueSnapshot);
+			if (submitted === false) return;
 			onSuccess?.($state.snapshot(values) as T);
 			if (resetOnSuccess) values = structuredClone(resetSnapshot);
 		} finally {
@@ -267,7 +259,7 @@
 	</div>
 {/snippet}
 
-<form {onsubmit} class={cn('flex flex-col gap-6', className)}>
+<form onsubmit={handleSubmit} class={cn('flex flex-col gap-6', className)}>
 	{@render header?.()}
 
 	{#each resolvedSections as section, i (section.id ?? i)}

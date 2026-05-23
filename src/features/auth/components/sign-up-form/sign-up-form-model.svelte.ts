@@ -14,6 +14,7 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 import { authClient } from '@/features/auth/lib/auth-client';
 import { signUpFormSchema } from './sign-up-form-schema.js';
 import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 // TYPES
 import type { SignUpFormStep, SignUpField } from './signUpFormTypes.js';
@@ -76,7 +77,7 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 				if (/password/i.test(error.message ?? '')) {
 					fieldErrors = { password: error.message ?? copy.signUpFailed() };
 				} else {
-					errorMessage = error.message ?? copy.signUpFailed();
+					errorMessage = rateLimitMessage(error.message, copy.signUpFailed());
 				}
 				return;
 			}

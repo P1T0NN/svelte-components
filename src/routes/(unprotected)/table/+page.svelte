@@ -8,7 +8,7 @@
 
 	// COMPONENTS
 	import Section from '@/shared/components/ui/section/section.svelte';
-	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
+	import DataTable from '@/shared/components/ui/data-table/convex-data-table.svelte';
 
 	// TYPES
 	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';

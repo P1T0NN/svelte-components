@@ -52,9 +52,8 @@ export const fetchUploadedFiles = fetchOptimized({
  * other users' files via this endpoint. If a cross-user admin delete is ever needed, build
  * it as a separate mutation with `adminOnly: true` (never widen this one).
  */
-export const deleteUploadedFile = createDeleteMutation({
+export const deleteUploadedFile = createDeleteMutation('deleteUploadedFile', {
 	table: TABLE,
 	ownerId: { field: (doc) => doc.ownerId },
-	runStorageDelete: deleteFilesFromConvexStorage,
-	rateLimit: { name: 'delete' }
+	runStorageDelete: deleteFilesFromConvexStorage
 });

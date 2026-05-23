@@ -1,22 +1,19 @@
 import type { Snippet } from 'svelte';
-import type { FunctionReference } from 'convex/server';
 
 /**
- * DataTable pagination orchestration. Mirrors the server-side `fetchOptimized` strategies —
- * pick `'cursor'` for any non-tiny table; `'offset'` only when you need page-number jumps
- * and an exact total. Default constant: `PAGINATION_DATA.DEFAULT_OPTIMIZATION_STRATEGY`.
+ * Pagination strategy expected by adapters that feed DataTable.
  *
- * | strategy   | server cost | totalCount | jump-to-page | best for                        |
- * | ---------- | ----------- | ---------- | ------------ | ------------------------------- |
- * | `'cursor'` | O(perPage)  | unknown    | no           | any table that may grow large   |
- * | `'offset'` | O(rows)     | exact      | yes          | small, finite tables (<~few k)  |
+ * | strategy   | totalCount | jump-to-page | best for                        |
+ * | ---------- | ---------- | ------------ | ------------------------------- |
+ * | `'cursor'` | unknown    | no           | any table that may grow large   |
+ * | `'offset'` | exact      | yes          | small, finite tables (<~few k)  |
  */
 export type DataTableOptimizationStrategy = 'cursor' | 'offset';
 
 /**
- * Shape returned by list queries paginated through `fetchOptimized`. `totalCount` is `null`
- * in cursor mode (would be O(rows) to compute) and a finite number in offset mode.
- * `continueCursor` is opaque in cursor mode and the empty string in offset mode.
+ * Shape returned by paginated list adapters. `totalCount` is `null` in cursor mode
+ * and a finite number in offset mode. `continueCursor` is opaque in cursor mode
+ * and the empty string in offset mode.
  */
 export type PaginatedListPayload<T = unknown> = {
 	page: T[];
@@ -24,18 +21,6 @@ export type PaginatedListPayload<T = unknown> = {
 	continueCursor: string;
 	totalCount: number | null;
 };
-
-/**
- * Convex query ref for {@link PaginatedListPayload}; `Args` should accept optional `page` and `paginationOpts`.
- * Use at call sites: `query={api.someModule.listThings}`.
- */
-export type PaginatedListQuery<T extends Record<string, unknown>> = FunctionReference<
-	'query',
-	'public',
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	any,
-	PaginatedListPayload<T>
->;
 
 /** Minimum breakpoint at which the column becomes visible in the table layout. */
 export type ColumnHideBelow = 'sm' | 'md' | 'lg';

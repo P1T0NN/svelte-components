@@ -1,14 +1,15 @@
 // LIBRARIES
 import { initBotId } from 'botid/client/core';
 
+// CONFIG
+import { BOTID_PROTECTED_ROUTES } from '@/shared/config.js';
+
 /**
  * Vercel BotID — instruments outgoing fetches to listed paths so server-side
- * `checkBotId()` can verify them. SvelteKit remote functions submit to
- * `/_app/remote/<id>` (POST), so we match that prefix with a regex to cover
- * every current/future remote command.
+ * `checkBotId()` can verify them. See {@link BOTID_PROTECTED_ROUTES}.
  */
 export function init() {
 	initBotId({
-		protect: [{ path: '/_app/remote/*', method: 'POST' }]
+		protect: BOTID_PROTECTED_ROUTES
 	});
 }

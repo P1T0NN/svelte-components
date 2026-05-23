@@ -8,6 +8,7 @@
 	import { safeParse } from 'valibot';
 	import { toast } from 'svelte-sonner';
 	import { authClient } from '@/features/auth/lib/auth-client';
+	import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 	// CONFIG
 	import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
@@ -135,7 +136,10 @@
 				if (/password/i.test(error.message ?? '')) {
 					fieldErrors = { newPassword: error.message ?? m['EmailVerificationForm.verificationFailed']() };
 				} else {
-					errorMessage = error.message ?? m['EmailVerificationForm.verificationFailed']();
+					errorMessage = rateLimitMessage(
+						error.message,
+						m['EmailVerificationForm.verificationFailed']()
+					);
 				}
 				busy = false;
 				return;

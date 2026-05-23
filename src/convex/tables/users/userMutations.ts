@@ -36,7 +36,7 @@ type AdminResult = Infer<typeof adminResult>;
  * non-BA project, swap those for `ctx.db.get(args.userId)` and
  * `ctx.db.patch(args.userId, { role: args.role })`.
  */
-export const setUserRole = adminMutation()({
+export const setUserRole = adminMutation('setUserRole')({
 	args: {
 		userId: v.string(),
 		role: v.union(v.literal('user'), v.literal('admin'))
@@ -69,7 +69,7 @@ export const setUserRole = adminMutation()({
  * Portability: replace `auth.api.banUser` with a patch on your local `users`
  * table that sets `banned`, `banReason`, `banExpires` (epoch ms) fields.
  */
-export const banUser = adminMutation()({
+export const banUser = adminMutation('banUser')({
 	args: {
 		userId: v.string(),
 		banReason: v.optional(v.string()),
@@ -102,7 +102,7 @@ export const banUser = adminMutation()({
  * Unban a user. Portability: replace `auth.api.unbanUser` with a patch that
  * clears the ban fields on your local `users` row.
  */
-export const unbanUser = adminMutation()({
+export const unbanUser = adminMutation('unbanUser')({
 	args: { userId: v.string() },
 	returns: adminResult,
 	handler: async (ctx, args): Promise<AdminResult> => {
@@ -123,7 +123,7 @@ export const unbanUser = adminMutation()({
  * Portability: replace `auth.api.revokeUserSession` with a delete against your
  * own `sessions` table indexed by token.
  */
-export const revokeSession = adminMutation()({
+export const revokeSession = adminMutation('revokeSession')({
 	args: { sessionToken: v.string(), userId: v.string() },
 	returns: adminResult,
 	handler: async (ctx, args): Promise<AdminResult> => {
@@ -145,7 +145,7 @@ export const revokeSession = adminMutation()({
  * `ctx.db.query('sessions').withIndex('byUserId', q => q.eq('userId', args.userId))`
  * loop that deletes each row.
  */
-export const revokeAllSessions = adminMutation()({
+export const revokeAllSessions = adminMutation('revokeAllSessions')({
 	args: { userId: v.string() },
 	returns: adminResult,
 	handler: async (ctx, args): Promise<AdminResult> => {
@@ -178,7 +178,7 @@ export const revokeAllSessions = adminMutation()({
  * the cascade block and audit step are unchanged. The audit log is retained
  * 5 years (see AUDIT_RETENTION_DAYS).
  */
-export const deleteUser = adminMutation({ rateLimit: 'delete' })({
+export const deleteUser = adminMutation('deleteUser')({
 	args: { userId: v.string() },
 	returns: adminResult,
 	handler: async (ctx, args): Promise<AdminResult> => {

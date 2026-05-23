@@ -4,7 +4,7 @@
 	import { m } from '@/shared/lib/paraglide/messages';
 
 	// COMPONENTS
-	import DataTable from '@/shared/components/ui/data-table/data-table.svelte';
+	import DataTable from '@/shared/components/ui/data-table/convex-data-table.svelte';
 
 	// UTILS
 	import { capitalize } from '@/shared/utils/stringUtils';

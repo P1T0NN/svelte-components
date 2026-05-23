@@ -13,6 +13,7 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 import { authClient } from '@/features/auth/lib/auth-client';
 import { loginFormSchema } from './login-form-schema.js';
 import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 // TYPES
 import type { LoginFormStep, LoginField } from './loginFormTypes.js';
@@ -72,7 +73,7 @@ export function createLoginForm(copy: LoginFormCopy) {
 					return;
 				}
 				console.error('Login: sign in failed:', error);
-				errorMessage = error.message ?? copy.signInFailed();
+				errorMessage = rateLimitMessage(error.message, copy.signInFailed());
 				return;
 			}
 			await onVerifySuccess();

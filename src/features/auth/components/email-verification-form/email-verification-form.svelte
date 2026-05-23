@@ -26,6 +26,7 @@
 	import {
 		valibotIssuesToFieldErrors,
 	} from '@/shared/utils/validationUtils.js';
+	import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 	// TYPES
 	import type { HTMLFormAttributes } from 'svelte/elements';
@@ -91,7 +92,10 @@
 			});
 			if (error) {
 				console.error('Email verification: verifyEmail failed:', error);
-				errorMessage = error.message ?? m['EmailVerificationForm.verificationFailed']();
+				errorMessage = rateLimitMessage(
+					error.message,
+					m['EmailVerificationForm.verificationFailed']()
+				);
 				busy = false;
 				return;
 			}

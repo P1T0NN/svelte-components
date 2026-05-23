@@ -10,7 +10,6 @@
 
 import type * as adapter from "../adapter.js";
 import type * as auth from "../auth.js";
-import type * as crons_purgeStaleRateLimits from "../crons/purgeStaleRateLimits.js";
 import type * as userQueries from "../userQueries.js";
 
 import type {
@@ -23,7 +22,6 @@ import { anyApi, componentsGeneric } from "convex/server";
 const fullApi: ApiFromModules<{
   adapter: typeof adapter;
   auth: typeof auth;
-  "crons/purgeStaleRateLimits": typeof crons_purgeStaleRateLimits;
   userQueries: typeof userQueries;
 }> = anyApi as any;
 

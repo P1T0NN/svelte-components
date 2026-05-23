@@ -1,6 +1,9 @@
 // SVELTEKIT IMPORTS
 import { PUBLIC_CONVEX_SITE_URL } from '$env/static/public';
 
+// UTILS
+import { CLIENT_IP_HEADER, resolveClientAddress } from '@/shared/utils/clientAddress.js';
+
 // TYPES
 import type { RequestHandler } from './$types';
 
@@ -30,7 +33,8 @@ const FORWARDED_AUTH_HEADER_NAMES = new Set([
 	'user-agent'
 ]);
 
-const proxy: RequestHandler = async ({ request, getClientAddress }) => {
+const proxy: RequestHandler = async (event) => {
+	const { request, getClientAddress } = event;
 	const requestUrl = new URL(request.url);
 	const nextUrl = `${PUBLIC_CONVEX_SITE_URL}${requestUrl.pathname}${requestUrl.search}`;
 	const newRequest = new Request(nextUrl, request);
@@ -60,8 +64,11 @@ const proxy: RequestHandler = async ({ request, getClientAddress }) => {
 	// Spoofing risk: nil. The proxy strips all inbound headers above before
 	// setting this one, so a client setting `x-client-ip` on the browser
 	// request never reaches Convex.
-	const clientIp = getClientAddress();
-	forwarded.set('x-client-ip', clientIp);
+	const clientIp = resolveClientAddress({ getClientAddress });
+	if (!clientIp) {
+		return new Response('Could not resolve client address.', { status: 400 });
+	}
+	forwarded.set(CLIENT_IP_HEADER, clientIp);
 
 	for (const name of [...newRequest.headers.keys()]) newRequest.headers.delete(name);
 	for (const [name, value] of forwarded.entries()) newRequest.headers.set(name, value);

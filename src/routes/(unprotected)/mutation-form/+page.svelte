@@ -15,7 +15,7 @@
 
 	// COMPONENTS
 	import Section from '@/shared/components/ui/section/section.svelte';
-	import MutationForm from '@/shared/components/ui/mutation-form/mutation-form.svelte';
+	import MutationForm from '@/shared/components/ui/mutation-form/convex-mutation-form.svelte';
 
 	// TYPES
 	import type { InferOutput } from 'valibot';

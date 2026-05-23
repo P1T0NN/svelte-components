@@ -40,7 +40,7 @@ const ALLOWED_CONTENT_TYPES = new Set<string>([
  * an orphan. Instead we charge the rate-limit + auth here, BEFORE the signed URL is
  * minted: any failure means no URL, no PUT, no orphan possible.
  */
-export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
+export const generateR2UploadUrl = authMutation('generateR2UploadUrl')({
 	args: {},
 	returns: v.object({
 		success: v.boolean(),
@@ -64,7 +64,7 @@ export const generateUploadUrl = authMutation({ rateLimit: 'upload' })({
 /**
  * Lifecycle hooks for the R2 sync pipeline. The library's flow is:
  *
- *   1. (Our) `generateUploadUrl` mutation above mints the signed URL.
+ *   1. (Our) `generateR2UploadUrl` mutation above mints the signed URL.
  *   2. Browser PUTs the file to R2.
  *   3. `syncMetadata` mutation runs `checkUpload` then `onUpload`, then schedules the
  *      component's internal `syncMetadata` action.

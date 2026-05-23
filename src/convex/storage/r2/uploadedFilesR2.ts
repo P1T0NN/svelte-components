@@ -41,9 +41,8 @@ export const fetchUploadedFilesR2 = fetchOptimized({
  * Owner-only bulk delete for `uploadedFilesR2`. Same factory as the Convex-storage path,
  * with the R2 cleanup callback wired through the universal `runStorageDelete` hook.
  */
-export const deleteUploadedFileR2 = createDeleteMutation({
+export const deleteUploadedFileR2 = createDeleteMutation('deleteUploadedFileR2', {
 	table: TABLE,
 	ownerId: { field: (doc) => doc.ownerId },
-	runStorageDelete: deleteFilesFromR2,
-	rateLimit: { name: 'delete' }
+	runStorageDelete: deleteFilesFromR2
 });

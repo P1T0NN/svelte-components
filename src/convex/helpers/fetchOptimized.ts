@@ -7,13 +7,13 @@ import { query } from '../_generated/server';
 import { defaultPaginationOpts, normalizeOneBasedPage } from './paginationHelpers.js';
 import { getAuthUserId } from '../auth/helpers/getAuthUserId.js';
 import { requireAdmin } from '../auth/middleware/authMiddleware.js';
-import { rateLimiter } from '../rateLimiter.js';
+import { convexRateLimiter } from '../convexRateLimiter.js';
 
 // TYPES
 import { ConvexError } from 'convex/values';
 import type { QueryCtx } from '../_generated/server';
 import type { ConvexErrorPayload } from '../types/convexTypes.js';
-import type { RateLimitName } from '../rateLimiter.js';
+import type { ConvexRateLimitName } from '../rateLimits/registry.js';
 import type { Doc, DataModel, TableNames } from '../_generated/dataModel';
 import type {
 	IndexNames,
@@ -126,35 +126,14 @@ type AccessBuilder<Extra, R> = (
 export type FetchOptimizedAuth = 'user' | 'admin';
 
 /**
- * Rate-limit configuration for the query.
+ * Advisory rate-limit note for rate-limited query variants.
  *
- * **Important caveat — advisory only.** Convex queries cannot consume rate-limit tokens
- * (writes aren't allowed in queries), so we use `rateLimiter.check(...)` which inspects
- * the bucket without decrementing it. The throw is real (typed `ConvexError` recognized
- * by `isRateLimitError` on the client), but a malicious caller that ignores the error
- * and re-subscribes won't actually be slowed down. In practice that's still fine because:
- *
- *  1. Convex queries are reactive subscriptions — they re-execute on data changes, not on
- *     client request. The "request rate" of a query equals the rate of `args` changes.
- *     For a search box that's debounced keystrokes, capped naturally.
- *  2. Honest clients hitting accidental loops (retry storms, component bugs) get blocked
- *     immediately, which is the realistic abuse case.
- *  3. The throw surfaces in monitoring/logs, so real abuse becomes visible.
- *
- * For real enforcement against malicious clients, gate the search behind a mutation that
- * issues a short-lived token, then have the query require the token in its `where` builder.
- * That's heavy and rarely needed; this advisory check covers the realistic threat model.
- *
- * Pair with `auth: 'user'` so the bucket key is per-user. Without `auth`, the bucket falls
- * back to a global `'anonymous'` key — one user's burst affects every other anon caller.
+ * Convex queries cannot consume rate-limit tokens (writes aren't allowed in queries), so we
+ * use `convexRateLimiter.check(...)` which inspects the bucket without decrementing it. The throw
+ * is real (typed `ConvexError` recognized by `isRateLimitError` on the client), but a
+ * malicious caller that ignores the error and re-subscribes won't actually be slowed down.
+ * Pair with `auth: 'user'` so the bucket key is per-user.
  */
-export type FetchOptimizedRateLimit =
-	| RateLimitName
-	| {
-			name: RateLimitName;
-			/** Token weight to check. Defaults to 1. */
-			count?: number;
-	  };
 
 export type FetchOptimizedOptions<
 	T extends TableNames,
@@ -169,12 +148,6 @@ export type FetchOptimizedOptions<
 	 * resolution and any db work; non-passing callers get a typed `ConvexError`.
 	 */
 	auth?: FetchOptimizedAuth;
-	/**
-	 * Advisory rate limit. See {@link FetchOptimizedRateLimit}. Runs after `auth` so the
-	 * bucket key can be the authenticated user id; falls back to `'anonymous'` (global
-	 * pool) when no auth is set. Strongly recommended for `search` endpoints.
-	 */
-	rateLimit?: FetchOptimizedRateLimit;
 	/**
 	 * Sort direction along the chosen index (or `_creationTime` when no `where`/`search`).
 	 * Ignored in search mode (relevance order). Defaults to `'desc'`.
@@ -274,13 +247,11 @@ function applyIndexBounds(
  *   })
  * });
  *
- * // 4) Full-text search — always pair with `rateLimit` and `auth` so the bucket key is
- * //    per-user. Search queries are the most expensive list endpoints; never ship them
- * //    unbounded.
- * export const searchApartments = fetchOptimized({
+ * // 4) Full-text search — pass the function name for advisory rate limiting and pair
+ * //    with `auth: 'user'` so the bucket key is per-user.
+ * export const searchApartments = fetchOptimized('searchApartments', {
  *   table: 'apartments',
  *   auth: 'user',
- *   rateLimit: 'search',
  *   args: { q: v.string() },
  *   search: (_ctx, args) => ({
  *     index: 'search_title',
@@ -334,13 +305,11 @@ function applyIndexBounds(
  *
  * Three layers, composable:
  *
- *   - `auth` (this option) — endpoint-level gate. `'user'` requires any session, `'admin'`
+ *   - `auth` — endpoint-level gate. `'user'` requires any session, `'admin'`
  *     requires `role === 'admin'`. Cheapest and earliest check.
- *   - `rateLimit` (this option) — advisory rate-limit via `rateLimiter.check`. Always pair
- *     with `auth: 'user'` (or `'admin'`) so the bucket key is per-user; otherwise the
- *     bucket falls back to the global `'anonymous'` pool. **Strongly recommended for
- *     `search` endpoints** — they're the most expensive list path. See
- *     {@link FetchOptimizedRateLimit} for the advisory-vs-enforcing caveat.
+ *   - Function name (rate-limited overload) — advisory rate-limit via `convexRateLimiter.check`.
+ *     Always pair with `auth: 'user'` (or `'admin'`) so the bucket key is per-user.
+ *     **Strongly recommended for `search` endpoints.**
  *   - `where` builder — row-level rules. Read auth/userId/roles inside the builder and use
  *     them to compute `eq`/`range`. This is how you express "only my files" without making
  *     the endpoint admin-only.
@@ -350,22 +319,49 @@ function applyIndexBounds(
 export function fetchOptimized<
 	T extends TableNames,
 	Extra extends PropertyValidators = Record<string, never>
->(options: FetchOptimizedOptions<T, Extra>) {
+>(
+	name: ConvexRateLimitName,
+	options: FetchOptimizedOptions<T, Extra>
+): ReturnType<typeof query>;
+export function fetchOptimized<
+	T extends TableNames,
+	Extra extends PropertyValidators = Record<string, never>
+>(
+	options: FetchOptimizedOptions<T, Extra>
+): ReturnType<typeof query>;
+export function fetchOptimized<
+	T extends TableNames,
+	Extra extends PropertyValidators = Record<string, never>
+>(
+	nameOrOptions: ConvexRateLimitName | FetchOptimizedOptions<T, Extra>,
+	maybeOptions?: FetchOptimizedOptions<T, Extra>
+) {
+	const rateLimitName =
+		typeof nameOrOptions === 'string' ? nameOrOptions : null;
+	const options =
+		typeof nameOrOptions === 'string'
+			? (maybeOptions as FetchOptimizedOptions<T, Extra>)
+			: nameOrOptions;
+
+	return buildFetchOptimizedQuery(options, rateLimitName);
+}
+
+function buildFetchOptimizedQuery<
+	T extends TableNames,
+	Extra extends PropertyValidators = Record<string, never>
+>(
+	options: FetchOptimizedOptions<T, Extra>,
+	rateLimitName: ConvexRateLimitName | null
+) {
 	const {
 		table,
 		strategy = 'cursor',
 		order = 'desc',
 		auth,
-		rateLimit,
 		args: extraArgs,
 		where,
 		search
 	} = options;
-
-	const rateLimitName: RateLimitName | null =
-		typeof rateLimit === 'string' ? rateLimit : (rateLimit?.name ?? null);
-	const rateLimitCount: number | undefined =
-		typeof rateLimit === 'string' ? undefined : rateLimit?.count;
 
 	if (search && strategy === 'offset') {
 		// Convex search indexes don't support `.collect()` — only `.paginate()`. Fail fast at
@@ -408,14 +404,12 @@ export function fetchOptimized<
 				authedUserId = await getAuthUserId(ctx);
 			}
 
-			// 0b. Advisory rate-limit. Convex queries can only `check` (no token consumption);
-			//     see {@link FetchOptimizedRateLimit} for the realistic threat model. Throws a
-			//     ConvexError shaped to be recognized by `isRateLimitError` so existing client
-			//     handlers (toast + retry) work unchanged.
+			// 0b. Advisory rate-limit. Convex queries can only `check` (no token consumption).
+			//     Throws a ConvexError shaped to be recognized by `isRateLimitError` so existing
+			//     client handlers (toast + retry) work unchanged.
 			if (rateLimitName) {
-				const result = await rateLimiter.check(ctx, rateLimitName, {
-					key: authedUserId ?? 'anonymous',
-					count: rateLimitCount
+				const result = await convexRateLimiter.check(ctx, rateLimitName, {
+					key: authedUserId ?? 'anonymous'
 				});
 				if (!result.ok) {
 					throw new ConvexError({
@@ -439,10 +433,9 @@ export function fetchOptimized<
 				);
 			}
 
+			const resolvedOrder = typeof order === 'function' ? order(rawArgs) : order;
+
 			// 2. Build the base query. Three branches: search > where > full-table.
-			//    Typed loosely here — Convex's chained-builder types don't compose cleanly
-			//    across an abstraction boundary, but every path through Convex itself is
-			//    fully type-checked.
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let q: OrderedQuery<NamedTableInfo<DataModel, T>> | any;
 
@@ -459,9 +452,7 @@ export function fetchOptimized<
 					}
 					return chain;
 				});
-				// Search results: relevance-ordered, .order() is unsupported and would throw.
 			} else if (whereSpec) {
-				const resolvedOrder = typeof order === 'function' ? order(rawArgs) : order;
 				q = ctx.db
 					.query(table)
 					.withIndex(whereSpec.index, (idx) =>
@@ -469,7 +460,6 @@ export function fetchOptimized<
 					)
 					.order(resolvedOrder);
 			} else {
-				const resolvedOrder = typeof order === 'function' ? order(rawArgs) : order;
 				q = ctx.db.query(table).order(resolvedOrder);
 			}
 
@@ -484,7 +474,6 @@ export function fetchOptimized<
 				};
 			}
 
-			// offset — full collect + slice. O(rows). Use only on small, bounded tables.
 			const page1Based = normalizeOneBasedPage(rawArgs.page);
 			const all = (await q.collect()) as Doc<T>[];
 			const totalCount = all.length;
