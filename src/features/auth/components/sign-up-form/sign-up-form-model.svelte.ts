@@ -4,7 +4,6 @@ import { resolve } from '$app/paths';
 
 // LIBRARIES
 import { m } from '@/shared/lib/paraglide/messages';
-import { safeParse } from 'valibot';
 import { toast } from 'svelte-sonner';
 
 // CONFIG
@@ -13,7 +12,7 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 // UTILS
 import { authClient } from '@/features/auth/lib/auth-client';
 import { signUpFormSchema } from './sign-up-form-schema.js';
-import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 // TYPES
@@ -41,7 +40,7 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 		const form = event.currentTarget as HTMLFormElement;
 		const formData = new FormData(form);
 
-		const p = safeParse(signUpFormSchema, {
+		const p = signUpFormSchema.safeParse({
 			name: String(formData.get('name') ?? ''),
 			email: String(formData.get('email') ?? ''),
 			password: String(formData.get('password') ?? ''),
@@ -50,12 +49,12 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotIssuesToFieldErrors<SignUpField>(p.issues);
+			fieldErrors = zodIssuesToFieldErrors<SignUpField>(p.error.issues);
 			errorMessage = null;
 			return;
 		}
 
-		if (p.output.password !== p.output.confirmPassword) {
+		if (p.data.password !== p.data.confirmPassword) {
 			fieldErrors = { confirmPassword: m['ValidationMessages.SignUpForm.passwordsMustMatch']() };
 			errorMessage = null;
 			return;
@@ -67,9 +66,9 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 
 		try {
 			const { error } = await authClient.signUp.email({
-				name: p.output.name,
-				email: p.output.email,
-				password: p.output.password
+				name: p.data.name,
+				email: p.data.email,
+				password: p.data.password
 			});
 
 			if (error) {
@@ -82,14 +81,14 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 				return;
 			}
 
-			nameDraft = p.output.name;
-			emailDraft = p.output.email;
+			nameDraft = p.data.name;
+			emailDraft = p.data.email;
 			verifyContext = {
-				name: p.output.name,
-				email: p.output.email,
-				password: p.output.password
+				name: p.data.name,
+				email: p.data.email,
+				password: p.data.password
 			};
-			step = { email: p.output.email };
+			step = { email: p.data.email };
 		} catch (error) {
 			console.error('Sign up failed:', error);
 			errorMessage = copy.signUpFailed();

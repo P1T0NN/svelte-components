@@ -48,15 +48,17 @@
 
 	let hasQuery = $derived(value.trim().length >= minQueryLength);
 	let hasResults = $derived(items.length > 0);
-	let visibleActiveIndex = $derived(hasResults ? Math.min(activeIndex, items.length - 1) : 0);
-	let activeItem = $derived(items[visibleActiveIndex]);
 	let hasDropdownContent = $derived(hasResults || loading || Boolean(error) || showEmpty);
 	let shouldShowDropdown = $derived(isOpen && !disabled && hasQuery && hasDropdownContent);
-	let activeDescendant = $derived(
-		shouldShowDropdown && hasResults && activeItem
-			? `${inputId}-option-${activeItem.id}`
-			: undefined
-	);
+	let dropdown = $derived.by(() => {
+		const visibleActiveIndex = hasResults ? Math.min(activeIndex, items.length - 1) : 0;
+		const activeItem = items[visibleActiveIndex];
+		const activeDescendant =
+			shouldShowDropdown && hasResults && activeItem
+				? `${inputId}-option-${activeItem.id}`
+				: undefined;
+		return { visibleActiveIndex, activeItem, activeDescendant };
+	});
 
 	function openDropdown() {
 		if (disabled) return;
@@ -110,9 +112,9 @@
 			return;
 		}
 
-		if (event.key === 'Enter' && isOpen && hasResults && activeItem) {
+		if (event.key === 'Enter' && isOpen && hasResults && dropdown.activeItem) {
 			event.preventDefault();
-			selectItem(activeItem);
+			selectItem(dropdown.activeItem);
 			return;
 		}
 
@@ -138,7 +140,7 @@
 >
 	<div class="relative">
 		<SearchIcon
-			class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+			class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
 			aria-hidden="true"
 		/>
 
@@ -153,7 +155,7 @@
 			aria-controls={listboxId}
 			aria-expanded={shouldShowDropdown}
 			aria-autocomplete="list"
-			aria-activedescendant={activeDescendant}
+			aria-activedescendant={dropdown.activeDescendant}
 			data-slot="search-input-field"
 			class="pl-9"
 			{placeholder}
@@ -169,7 +171,7 @@
 			{listboxId}
 			{inputId}
 			{items}
-			activeIndex={visibleActiveIndex}
+			activeIndex={dropdown.visibleActiveIndex}
 			{dropdownClass}
 			{loading}
 			{error}

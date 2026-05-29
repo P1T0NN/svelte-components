@@ -1,17 +1,6 @@
 <script lang="ts">
-	// SVELTEKIT IMPORTS
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { safeParse } from 'valibot';
-	import { toast } from 'svelte-sonner';
-	import { authClient } from '@/features/auth/lib/auth-client';
-	import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
-
-	// CONFIG
-	import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 
 	// COMPONENTS
 	import { Button } from '@/shared/components/ui/button/index.js';
@@ -26,156 +15,33 @@
 		FieldDescription,
 		FieldError
 	} from '@/shared/components/ui/field/index.js';
+	import { FormField } from '@/shared/components/ui/form-field/index.js';
 	import EmailVerificationResend from '@/features/auth/components/email-verification-form/email-verification-resend.svelte';
 
-	// UTILS
-	import {
-		passwordResetRequestFormSchema,
-		passwordResetVerifyFormSchema
-	} from './password-reset-form-schema.js';
-	import {
-		valibotIssuesToFieldErrors,
-	} from '@/shared/utils/validationUtils.js';
-
-	// TYPES
-	import type { PasswordResetFormStep, PasswordResetField } from './passwordResetFormTypes.js';
-	import type { FieldErrors } from '@/shared/types/types';
+	import { createPasswordResetForm } from './password-reset-form-model.svelte.js';
 
 	/** Matches `convexGenerateVerificationToken` and `passwordResetVerifyFormSchema`. */
 	const OTP_MAX_LENGTH = 8;
 
 	const id = $props.id();
 
-	let step = $state<PasswordResetFormStep>('forgot');
-	let busy = $state(false);
-	let errorMessage = $state<string | null>(null);
-	let fieldErrors = $state<FieldErrors<PasswordResetField>>({});
-	/** Email on the request step; same binding when returning from the verify step. */
-	let emailDraft = $state('');
-	let newPassword = $state('');
-	let confirmPassword = $state('');
-
-	async function onForgotSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		if (busy) return;
-
-		const form = event.currentTarget as HTMLFormElement;
-		const formData = new FormData(form);
-
-		const p = safeParse(passwordResetRequestFormSchema, {
-			email: String(formData.get('email') ?? ''),
-			flow: String(formData.get('flow') ?? '')
-		});
-
-		if (!p.success) {
-			fieldErrors = valibotIssuesToFieldErrors<PasswordResetField>(p.issues);
-			errorMessage = null;
-			return;
-		}
-
-		fieldErrors = {};
-		busy = true;
-		errorMessage = null;
-
-		const normalizedEmail = p.output.email;
-		try {
-			// Anti-enumeration: ignore the result. The UI always advances to the reset
-			// step regardless of whether this email is registered.
-			await authClient.emailOtp.requestPasswordReset({ email: normalizedEmail });
-		} catch (error) {
-			console.error('Password reset: send code (outcome hidden from user):', error);
-		} finally {
-			emailDraft = normalizedEmail;
-			step = { email: normalizedEmail };
-			busy = false;
-		}
-	}
-
-	async function onResetSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		if (busy) return;
-		if (step === 'forgot') return;
-
-		const form = event.currentTarget as HTMLFormElement;
-		const formData = new FormData(form);
-		const submittedNewPassword = String(formData.get('newPassword') ?? '');
-
-		const p = safeParse(passwordResetVerifyFormSchema, {
-			code: String(formData.get('code') ?? '').trim(),
-			newPassword: submittedNewPassword,
-			email: step.email,
-			flow: String(formData.get('flow') ?? '')
-		});
-
-		if (!p.success) {
-			fieldErrors = valibotIssuesToFieldErrors<PasswordResetField>(p.issues);
-			errorMessage = null;
-			return;
-		}
-
-		if (submittedNewPassword !== confirmPassword) {
-			fieldErrors = {
-				confirmPassword: m['ValidationMessages.PasswordResetVerifyForm.passwordsMustMatch']()
-			};
-			errorMessage = null;
-			return;
-		}
-
-		fieldErrors = {};
-		busy = true;
-		errorMessage = null;
-
-		try {
-			const { error } = await authClient.emailOtp.resetPassword({
-				email: p.output.email,
-				otp: p.output.code,
-				password: p.output.newPassword,
-			});
-			if (error) {
-				console.error('Password reset: verification failed:', error);
-				if (/password/i.test(error.message ?? '')) {
-					fieldErrors = { newPassword: error.message ?? m['EmailVerificationForm.verificationFailed']() };
-				} else {
-					errorMessage = rateLimitMessage(
-						error.message,
-						m['EmailVerificationForm.verificationFailed']()
-					);
-				}
-				busy = false;
-				return;
-			}
-		} catch (error) {
-			console.error('Password reset: verification failed:', error);
-			errorMessage = m['EmailVerificationForm.verificationFailed']();
-			busy = false;
-			return;
-		}
-
-		toast.success(m['PasswordResetForm.passwordResetToast']());
-		await goto(resolve(PROTECTED_PAGE_ENDPOINTS.HOME));
-		busy = false;
-	}
-
-	function backToForgot() {
-		step = 'forgot';
-		newPassword = '';
-		confirmPassword = '';
-		errorMessage = null;
-		fieldErrors = {};
-	}
+	const form = createPasswordResetForm();
 </script>
 
-{#if step === 'forgot'}
+{#if form.step === 'forgot'}
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
 			<Card.Title class="text-2xl">{m['PasswordResetForm.titleRequest']()}</Card.Title>
 			<Card.Description>{m['PasswordResetForm.descriptionRequest']()}</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form onsubmit={onForgotSubmit}>
+			<form onsubmit={form.onForgotSubmit}>
 				<FieldGroup>
-					<Field>
-						<FieldLabel for="pr-email-{id}">{m['PasswordResetForm.email']()}</FieldLabel>
+					<FormField
+						id="pr-email-{id}"
+						label={m['PasswordResetForm.email']()}
+						error={form.fieldErrors.email}
+					>
 						<Input
 							id="pr-email-{id}"
 							name="email"
@@ -183,21 +49,18 @@
 							autocomplete="email"
 							placeholder="m@example.com"
 							autofocus
-							bind:value={emailDraft}
-							aria-invalid={fieldErrors.email ? 'true' : undefined}
+							bind:value={form.emailDraft}
+							aria-invalid={form.fieldErrors.email ? 'true' : undefined}
 						/>
-						{#if fieldErrors.email}
-							<FieldError>{fieldErrors.email}</FieldError>
-						{/if}
-					</Field>
+					</FormField>
 
 					<input type="hidden" name="flow" value="reset" />
-					{#if errorMessage}
-						<FieldError>{errorMessage}</FieldError>
+					{#if form.errorMessage}
+						<FieldError>{form.errorMessage}</FieldError>
 					{/if}
 
 					<Field>
-						<Button type="submit" class="w-full" disabled={busy}>
+						<Button type="submit" class="w-full" disabled={form.busy}>
 							{m['PasswordResetForm.sendCode']()}
 						</Button>
 					</Field>
@@ -210,11 +73,11 @@
 		<Card.Header>
 			<Card.Title class="text-2xl">{m['PasswordResetForm.titleReset']()}</Card.Title>
 			<Card.Description class="text-balance">
-				{m['PasswordResetForm.descriptionReset']({ email: step.email })}
+				{m['PasswordResetForm.descriptionReset']({ email: form.step.email })}
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form onsubmit={onResetSubmit}>
+			<form onsubmit={form.onResetSubmit}>
 				<FieldGroup>
 					<Field>
 						<FieldLabel for="pr-code-{id}">{m['PasswordResetForm.code']()}</FieldLabel>
@@ -225,8 +88,8 @@
 							name="code"
 							required
 							autofocus
-							disabled={busy}
-							aria-invalid={fieldErrors.code ? 'true' : undefined}
+							disabled={form.busy}
+							aria-invalid={form.fieldErrors.code ? 'true' : undefined}
 						>
 							{#snippet children({ cells })}
 								<InputOTP.Group
@@ -239,73 +102,69 @@
 							{/snippet}
 						</InputOTP.Root>
 						<FieldDescription>{m['EmailVerificationForm.codeHint']()}</FieldDescription>
-						{#if fieldErrors.code}
-							<FieldError>{fieldErrors.code}</FieldError>
+						{#if form.fieldErrors.code}
+							<FieldError>{form.fieldErrors.code}</FieldError>
 						{/if}
 					</Field>
 
-					<Field>
-						<FieldLabel for="pr-new-pw-{id}">
-							{m['PasswordResetForm.newPassword']()}
-						</FieldLabel>
+					<FormField
+						id="pr-new-pw-{id}"
+						label={m['PasswordResetForm.newPassword']()}
+						error={form.fieldErrors.newPassword}
+					>
 						<PasswordInput
 							id="pr-new-pw-{id}"
 							name="newPassword"
 							autocomplete="new-password"
-							bind:value={newPassword}
-							aria-invalid={fieldErrors.newPassword ? 'true' : undefined}
+							bind:value={form.newPassword}
+							aria-invalid={form.fieldErrors.newPassword ? 'true' : undefined}
 						/>
-						{#if fieldErrors.newPassword}
-							<FieldError>{fieldErrors.newPassword}</FieldError>
-						{/if}
-					</Field>
+					</FormField>
 
-					<Field>
-						<FieldLabel for="pr-confirm-pw-{id}">
-							{m['PasswordResetForm.confirmNewPassword']()}
-						</FieldLabel>
+					<FormField
+						id="pr-confirm-pw-{id}"
+						label={m['PasswordResetForm.confirmNewPassword']()}
+						error={form.fieldErrors.confirmPassword}
+					>
 						<PasswordInput
 							id="pr-confirm-pw-{id}"
 							autocomplete="new-password"
-							bind:value={confirmPassword}
-							aria-invalid={fieldErrors.confirmPassword ? 'true' : undefined}
+							bind:value={form.confirmPassword}
+							aria-invalid={form.fieldErrors.confirmPassword ? 'true' : undefined}
 						/>
-						{#if fieldErrors.confirmPassword}
-							<FieldError>{fieldErrors.confirmPassword}</FieldError>
-						{/if}
-					</Field>
+					</FormField>
 
-					<input type="hidden" name="email" value={step.email} />
+					<input type="hidden" name="email" value={form.step.email} />
 					<input type="hidden" name="flow" value="reset-verification" />
 
-					{#if errorMessage}
-						<FieldError>{errorMessage}</FieldError>
+					{#if form.errorMessage}
+						<FieldError>{form.errorMessage}</FieldError>
 					{/if}
 
 					<Field>
-						<Button type="submit" class="w-full" disabled={busy}>
+						<Button type="submit" class="w-full" disabled={form.busy}>
 							{m['PasswordResetForm.continue']()}
 						</Button>
 						<Button
 							type="button"
 							variant="outline"
 							class="w-full"
-							disabled={busy}
-							onclick={backToForgot}
+							disabled={form.busy}
+							onclick={form.backToForgot}
 						>
 							{m['PasswordResetForm.cancel']()}
 						</Button>
 					</Field>
 
 					<EmailVerificationResend
-						disabled={busy}
-						config={{ email: step.email, type: 'forget-password' }}
+						disabled={form.busy}
+						config={{ email: form.step.email, type: 'forget-password' }}
 						onSendingChange={(inFlight) => {
 							if (inFlight) {
-								busy = true;
-								errorMessage = null;
+								form.busy = true;
+								form.errorMessage = null;
 							} else {
-								busy = false;
+								form.busy = false;
 							}
 						}}
 					/>

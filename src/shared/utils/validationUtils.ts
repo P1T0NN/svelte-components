@@ -1,18 +1,18 @@
 // TYPES
 import type { FieldErrors } from '../types/types';
-import type { BaseIssue } from 'valibot';
+import type { ZodIssue } from 'zod';
 
 /**
- * Maps Valibot `issues` to field keys (top path segment): first issue message wins per field.
+ * Maps Zod `issues` to field keys (top path segment): first issue message wins per field.
  * Pass `includeOnlyKeys` to drop unrelated fields (e.g. scheduling vs contact when using a merged schema).
  */
-export function valibotIssuesToFieldErrors<T extends string>(
-	issues: readonly BaseIssue<unknown>[],
+export function zodIssuesToFieldErrors<T extends string>(
+	issues: readonly ZodIssue[],
 	includeOnlyKeys?: readonly T[]
 ): FieldErrors<T> {
 	const out: FieldErrors<T> = {};
 	for (const issue of issues) {
-		const key = issue.path?.[0]?.key;
+		const key = issue.path[0];
 		if (
 			typeof key !== 'string' ||
 			(includeOnlyKeys !== undefined && !(includeOnlyKeys as readonly string[]).includes(key))
@@ -29,7 +29,7 @@ export function valibotIssuesToFieldErrors<T extends string>(
 /**
  * Clear one field’s validation error (immutable snapshot). Prefer {@link clearFieldErrorOn} for bindings.
  */
-export function clearValibotFieldError<T extends string>(
+export function clearZodFieldError<T extends string>(
 	fieldErrors: FieldErrors<T>,
 	key: T
 ): FieldErrors<T> {
@@ -57,6 +57,6 @@ export function clearFieldErrorOn<T extends string>(
 	key: T
 ): () => void {
 	return () => {
-		context.fieldErrors = clearValibotFieldError(context.fieldErrors, key);
+		context.fieldErrors = clearZodFieldError(context.fieldErrors, key);
 	};
 }

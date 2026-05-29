@@ -2,7 +2,8 @@
 	// LIBRARIES
 	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
-	import type { GenericSchema } from 'valibot';
+	import { m } from '@/shared/lib/paraglide/messages';
+	import type { ZodType } from 'zod';
 
 	// CONFIG
 	import { FEATURES } from '@/convex/projectSettings';
@@ -62,7 +63,7 @@
 		values: T;
 		initialValues?: T;
 		runFunction: ConvexFormMutation;
-		schema: GenericSchema<T>;
+		schema: ZodType<T>;
 		onSuccess?: (values: T) => void;
 		submitLabel?: string;
 		resetOnSuccess?: boolean;
@@ -91,14 +92,20 @@
 			args,
 			progress,
 			uploadOne: (file) =>
-				FEATURES.USE_R2
-					? uploadFileToR2(convex, file)
-					: uploadFileToConvexStorage(convex, file)
+				FEATURES.USE_R2 ? uploadFileToR2(convex, file) : uploadFileToConvexStorage(convex, file)
 		});
 	};
 
 	const submitMutation: MutationFormSubmitHandler<T> = async (args) => {
-		const result = await safeMutation(convex, runFunction, args);
+		let result: Awaited<ReturnType<typeof safeMutation>>;
+		try {
+			result = await safeMutation(convex, runFunction, args);
+		} catch (error) {
+			console.error('[convex-mutation-form] submitMutation failed:', error);
+			toast.error(m['GenericMessages.UNEXPECTED_ERROR']());
+			return false;
+		}
+
 		if (!result) return false;
 		if (!hasMutationEnvelope(result)) return true;
 

@@ -1,6 +1,6 @@
 /**
  * Lowercased passwords from public breach corpora (top entries).
- * Used server-side in Convex Auth and client-side in Valibot forms.
+ * Used server-side in Convex Auth and client-side in Zod forms.
  */
 const DENIED_PASSWORDS: ReadonlySet<string> = new Set([
 	'123456',

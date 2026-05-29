@@ -12,10 +12,10 @@
 	import {
 		FieldGroup,
 		Field,
-		FieldLabel,
 		FieldDescription,
 		FieldError
 	} from '@/shared/components/ui/field/index.js';
+	import { FormField } from '@/shared/components/ui/form-field/index.js';
 	import GoogleLoginButton from '@/features/auth/components/google-login-button/google-login-button.svelte';
 	import { Input } from '@/shared/components/ui/input/index.js';
 	import PasswordInput from '@/features/auth/components/password-input/password-input.svelte';
@@ -46,10 +46,11 @@
 		<Card.Content>
 			<form onsubmit={form.onSignUpSubmit}>
 				<FieldGroup>
-					<Field>
-						<FieldLabel for="name-{id}">
-							{m['SignUpForm.SignUpFormNoImage.fullName']()}
-						</FieldLabel>
+					<FormField
+						id="name-{id}"
+						label={m['SignUpForm.SignUpFormNoImage.fullName']()}
+						error={form.fieldErrors.name}
+					>
 						<Input
 							id="name-{id}"
 							name="name"
@@ -60,15 +61,14 @@
 							bind:value={form.nameDraft}
 							aria-invalid={form.fieldErrors.name ? 'true' : undefined}
 						/>
-						{#if form.fieldErrors.name}
-							<FieldError>{form.fieldErrors.name}</FieldError>
-						{/if}
-					</Field>
+					</FormField>
 
-					<Field>
-						<FieldLabel for="email-{id}">
-							{m['SignUpForm.SignUpFormNoImage.email']()}
-						</FieldLabel>
+					<FormField
+						id="email-{id}"
+						label={m['SignUpForm.SignUpFormNoImage.email']()}
+						error={form.fieldErrors.email}
+						description={m['SignUpForm.SignUpFormNoImage.emailHelp']()}
+					>
 						<Input
 							id="email-{id}"
 							name="email"
@@ -78,52 +78,35 @@
 							bind:value={form.emailDraft}
 							aria-invalid={form.fieldErrors.email ? 'true' : undefined}
 						/>
-						{#if form.fieldErrors.email}
-							<FieldError>{form.fieldErrors.email}</FieldError>
-						{:else}
-							<FieldDescription>
-								{m['SignUpForm.SignUpFormNoImage.emailHelp']()}
-							</FieldDescription>
-						{/if}
-					</Field>
+					</FormField>
 
-					<Field>
-						<FieldLabel for="password-{id}">
-							{m['SignUpForm.SignUpFormNoImage.password']()}
-						</FieldLabel>
+					<FormField
+						id="password-{id}"
+						label={m['SignUpForm.SignUpFormNoImage.password']()}
+						error={form.fieldErrors.password}
+						description={m['SignUpForm.SignUpFormNoImage.passwordHelp']()}
+					>
 						<PasswordInput
 							id="password-{id}"
 							name="password"
 							autocomplete="new-password"
 							aria-invalid={form.fieldErrors.password ? 'true' : undefined}
 						/>
-						{#if form.fieldErrors.password}
-							<FieldError>{form.fieldErrors.password}</FieldError>
-						{:else}
-							<FieldDescription>
-								{m['SignUpForm.SignUpFormNoImage.passwordHelp']()}
-							</FieldDescription>
-						{/if}
-					</Field>
+					</FormField>
 
-					<Field>
-						<FieldLabel for="confirm-password-{id}">
-							{m['SignUpForm.SignUpFormNoImage.confirmPassword']()}
-						</FieldLabel>
+					<FormField
+						id="confirm-password-{id}"
+						label={m['SignUpForm.SignUpFormNoImage.confirmPassword']()}
+						error={form.fieldErrors.confirmPassword}
+						description={m['SignUpForm.SignUpFormNoImage.confirmPasswordHelp']()}
+					>
 						<PasswordInput
 							id="confirm-password-{id}"
 							name="confirmPassword"
 							autocomplete="new-password"
 							aria-invalid={form.fieldErrors.confirmPassword ? 'true' : undefined}
 						/>
-						{#if form.fieldErrors.confirmPassword}
-							<FieldError>{form.fieldErrors.confirmPassword}</FieldError>
-						{:else}
-							<FieldDescription>
-								{m['SignUpForm.SignUpFormNoImage.confirmPasswordHelp']()}
-							</FieldDescription>
-						{/if}
-					</Field>
+					</FormField>
 
 					<input type="hidden" name="flow" value="signUp" />
 

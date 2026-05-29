@@ -12,7 +12,7 @@
 	} from '@/shared/components/ui/select/index.js';
 
 	// UTILS
-	import { capitalize } from '@/shared/utils/stringUtils';
+	import { capitalizeFirst } from '@/shared/utils/stringUtils';
 
 	/**
 	 * Filter bar for `/admin/users`. Lives outside the route file so the page can
@@ -51,7 +51,7 @@
 >
 	<SelectTrigger class="w-36">
 		<span>
-			{m['AdminUsersPage.UsersFilters.searchLabel']({ field: capitalize(searchField) })}
+			{m['AdminUsersPage.UsersFilters.searchLabel']({ field: capitalizeFirst(searchField) })}
 		</span>
 	</SelectTrigger>
 	<SelectContent>
@@ -68,7 +68,7 @@
 	<SelectTrigger class="w-32">
 		<span>
 			{#if role}
-				{m['AdminUsersPage.UsersFilters.roleLabel']({ role: capitalize(role) })}
+				{m['AdminUsersPage.UsersFilters.roleLabel']({ role: capitalizeFirst(role) })}
 			{:else}
 				{m['AdminUsersPage.UsersFilters.anyRole']()}
 			{/if}

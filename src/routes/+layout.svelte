@@ -13,7 +13,6 @@
 	import { useQuery } from '@mmailaender/convex-svelte';
 	import { api } from '@/convex/_generated/api';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
 	// CLASSES
@@ -38,7 +37,6 @@
 		authClient,
 		getServerState: () => data.authState
 	});
-	injectAnalytics({ mode: dev ? 'development' : 'production' });
 	injectSpeedInsights();
 
 	// NOTE: Has to be after the `createSvelteAuthClient` call because it uses the `authClient` instance.
@@ -61,7 +59,17 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon} />
+	{#if dev}
+		<script
+			defer
+			src="https://umami-sable-iota.vercel.app/script.js"
+			data-website-id="b8f657d5-dddc-4c34-bdda-2da1cf55e58f"
+		></script>
+	{/if}
+</svelte:head>
+
 <div class="flex min-h-dvh flex-col">
 	{#if !isLoginPage && !isSidebarShell}
 		<NormalHeader changeBgOnScroll={true} />

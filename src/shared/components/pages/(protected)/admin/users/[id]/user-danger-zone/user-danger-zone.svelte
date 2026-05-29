@@ -13,7 +13,7 @@
 	import DeleteUserDialog from './delete-user-dialog.svelte';
 
 	// UTILS
-	import { capitalize } from '@/shared/utils/stringUtils';
+	import { capitalizeFirst } from '@/shared/utils/stringUtils';
 
 	// TYPES
 	import type { Doc } from '@/convex/auth/component/_generated/dataModel';
@@ -32,7 +32,7 @@
 	</header>
 
 	<UserDangerZoneItem
-		title={m['AdminUserPage.UserDangerZone.role']({ role: capitalize(user.role) })}
+		title={m['AdminUserPage.UserDangerZone.role']({ role: capitalizeFirst(user.role) })}
 		description={user.role === 'admin'
 			? m['AdminUserPage.UserDangerZone.removeAdmin']()
 			: m['AdminUserPage.UserDangerZone.grantAdmin']()}

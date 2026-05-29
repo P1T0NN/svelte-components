@@ -9,7 +9,7 @@ import { m } from '@/shared/lib/paraglide/messages';
 
 // TYPES
 import type { IncomingHttpHeaders } from 'node:http';
-import type { GenericSchema, InferOutput } from 'valibot';
+import { z } from 'zod';
 
 function requestHeadersToNode(headers: Headers): IncomingHttpHeaders {
 	const result: IncomingHttpHeaders = {};
@@ -34,11 +34,12 @@ function requestHeadersToNode(headers: Headers): IncomingHttpHeaders {
  * });
  * ```
  */
-export const safeCommand = <S extends GenericSchema, R>(
+export const safeCommand = <S extends z.ZodType, R>(
 	schema: S,
-	handler: (data: InferOutput<S>) => Promise<R>
+	handler: (data: z.output<S>) => Promise<R>
 ) =>
-	command(schema, async (data: InferOutput<S>) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	command('unchecked', async (raw: any) => {
 		const { request } = getRequestEvent();
 
 		const verification = await checkBotId({
@@ -52,5 +53,6 @@ export const safeCommand = <S extends GenericSchema, R>(
 			throw error(403, m['GenericMessages.FORBIDDEN']());
 		}
 
+		const data = schema.parse(raw) as z.output<S>;
 		return handler(data);
 	});

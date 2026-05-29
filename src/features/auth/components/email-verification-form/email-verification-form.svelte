@@ -1,19 +1,13 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { safeParse } from 'valibot';
 
 	// UTILS
 	import { authClient } from '@/features/auth/lib/auth-client';
 
 	// COMPONENTS
 	import * as Card from '@/shared/components/ui/card/index.js';
-	import {
-		FieldGroup,
-		Field,
-		FieldLabel,
-		FieldError
-	} from '@/shared/components/ui/field/index.js';
+	import { FieldGroup, Field, FieldLabel, FieldError } from '@/shared/components/ui/field/index.js';
 	import { Button } from '@/shared/components/ui/button/index.js';
 	import * as InputOTP from '@/features/auth/components/input-otp/index.js';
 	import EmailVerificationResend from './email-verification-resend.svelte';
@@ -23,14 +17,15 @@
 	// UTILS
 	import { emailVerificationFormSchema } from './email-verification-form-schema.js';
 	import { cn, type WithElementRef } from '@/shared/utils/utils.js';
-	import {
-		valibotIssuesToFieldErrors,
-	} from '@/shared/utils/validationUtils.js';
+	import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 	import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 	// TYPES
 	import type { HTMLFormAttributes } from 'svelte/elements';
-	import type { EmailVerificationField, EmailVerificationResendConfig } from './emailVerificationFormTypes.js';
+	import type {
+		EmailVerificationField,
+		EmailVerificationResendConfig
+	} from './emailVerificationFormTypes.js';
 	import type { FieldErrors } from '@/shared/types/types';
 
 	const id = $props.id();
@@ -69,14 +64,14 @@
 		const form = event.currentTarget as HTMLFormElement;
 		const formData = new FormData(form);
 
-		const p = safeParse(emailVerificationFormSchema, {
+		const p = emailVerificationFormSchema.safeParse({
 			code: String(formData.get('code') ?? ''),
 			email: String(formData.get('email') ?? ''),
 			flow: String(formData.get('flow') ?? '')
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotIssuesToFieldErrors<EmailVerificationField>(p.issues);
+			fieldErrors = zodIssuesToFieldErrors<EmailVerificationField>(p.error.issues);
 			errorMessage = null;
 			return;
 		}
@@ -87,8 +82,8 @@
 
 		try {
 			const { error } = await authClient.emailOtp.verifyEmail({
-				email: p.output.email,
-				otp: p.output.code
+				email: p.data.email,
+				otp: p.data.code
 			});
 			if (error) {
 				console.error('Email verification: verifyEmail failed:', error);

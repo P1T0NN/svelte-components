@@ -1,7 +1,6 @@
 <script lang="ts">
 	// LIBRARIES
 	import { m } from '@/shared/lib/paraglide/messages';
-	import { safeParse } from 'valibot';
 
 	// CLASSES
 	import { contactSectionClass } from './contactSection.svelte.ts';
@@ -18,7 +17,7 @@
 	import { sendContactFormEmailSchema } from '@/features/contact/schemas/contactSchemas';
 
 	// UTILS
-	import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+	import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 
 	let submitting = $state(false);
 
@@ -30,11 +29,11 @@
 			website: contactSectionClass.contactInputs.website
 		};
 
-		const validation = safeParse(sendContactFormEmailSchema, data);
+		const validation = sendContactFormEmailSchema.safeParse(data);
 
 		if (!validation.success) {
-			contactSectionClass.fieldErrors = valibotIssuesToFieldErrors(validation.issues);
-			toast.error(validation.issues[0]?.message);
+			contactSectionClass.fieldErrors = zodIssuesToFieldErrors(validation.error.issues);
+			toast.error(validation.error.issues[0]?.message);
 			return;
 		}
 
@@ -43,7 +42,7 @@
 		submitting = true;
 
 		try {
-			const result = await sendContactFormEmail(validation.output);
+			const result = await sendContactFormEmail(validation.data);
 
 			if (!result.success) {
 				toast.error(result.message);
@@ -58,12 +57,7 @@
 	}
 </script>
 
-<Button
-	type="button"
-	class="mt-4 w-full shadow-none"
-	disabled={submitting}
-	onclick={handleSend}
->
+<Button type="button" class="mt-4 w-full shadow-none" disabled={submitting} onclick={handleSend}>
 	{#if submitting}
 		<Spinner />
 	{/if}

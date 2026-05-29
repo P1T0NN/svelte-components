@@ -1,16 +1,6 @@
 <script lang="ts">
 	// LIBRARIES
-	import {
-		boolean,
-		check,
-		email,
-		minLength,
-		object,
-		picklist,
-		pipe,
-		string,
-		trim
-	} from 'valibot';
+	import { z } from 'zod';
 	import { api } from '@/convex/_generated/api';
 
 	// COMPONENTS
@@ -18,27 +8,18 @@
 	import MutationForm from '@/shared/components/ui/mutation-form/convex-mutation-form.svelte';
 
 	// TYPES
-	import type { InferOutput } from 'valibot';
 	import type { MutationFormSection } from '@/shared/components/ui/mutation-form/types.js';
 
-	const contactFormSchema = object({
-		name: pipe(string(), trim(), minLength(1, 'Name is required.')),
-		email: pipe(
-			string(),
-			trim(),
-			minLength(1, 'Email is required.'),
-			email('Enter a valid email.')
-		),
-		role: picklist(['admin', 'editor', 'viewer'], 'Pick a role.'),
-		plan: picklist(['free', 'pro', 'enterprise'], 'Pick a plan.'),
-		message: pipe(string(), trim(), minLength(10, 'Message must be at least 10 characters.')),
-		acceptsTerms: pipe(
-			boolean(),
-			check((v) => v === true, 'You must accept the terms.')
-		)
+	const contactFormSchema = z.object({
+		name: z.string().trim().min(1, 'Name is required.'),
+		email: z.string().trim().min(1, 'Email is required.').email('Enter a valid email.'),
+		role: z.enum(['admin', 'editor', 'viewer'], { message: 'Pick a role.' }),
+		plan: z.enum(['free', 'pro', 'enterprise'], { message: 'Pick a plan.' }),
+		message: z.string().trim().min(10, 'Message must be at least 10 characters.'),
+		acceptsTerms: z.boolean().refine((v) => v === true, 'You must accept the terms.')
 	});
 
-	type ContactFormValues = InferOutput<typeof contactFormSchema>;
+	type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 	const sections: MutationFormSection[] = [
 		{
@@ -129,9 +110,9 @@
 <Section yPadding="md" containerClass="flex w-full max-w-2xl flex-col gap-6">
 	<header class="flex flex-col gap-1">
 		<h1 class="text-2xl font-semibold tracking-tight">Mutation form</h1>
-		<p class="text-muted-foreground text-sm">
-			Reusable form driven by a <code class="text-foreground text-xs">fields</code> config —
-			input, textarea, and select kinds with shared error / description handling.
+		<p class="text-sm text-muted-foreground">
+			Reusable form driven by a <code class="text-xs text-foreground">fields</code> config — input, textarea,
+			and select kinds with shared error / description handling.
 		</p>
 	</header>
 

@@ -20,6 +20,7 @@
 		FieldDescription,
 		FieldError
 	} from '@/shared/components/ui/field/index.js';
+	import { FormField } from '@/shared/components/ui/form-field/index.js';
 
 	import { createLoginForm } from './login-form-model.svelte.js';
 
@@ -41,8 +42,11 @@
 		<Card.Content>
 			<form onsubmit={form.onSignInSubmit}>
 				<FieldGroup>
-					<Field>
-						<FieldLabel for="email-{id}">{m['LoginForm.LoginFormNoImage.email']()}</FieldLabel>
+					<FormField
+						id="email-{id}"
+						label={m['LoginForm.LoginFormNoImage.email']()}
+						error={form.fieldErrors.email}
+					>
 						<Input
 							id="email-{id}"
 							name="email"
@@ -53,10 +57,7 @@
 							bind:value={form.emailDraft}
 							aria-invalid={form.fieldErrors.email ? 'true' : undefined}
 						/>
-						{#if form.fieldErrors.email}
-							<FieldError>{form.fieldErrors.email}</FieldError>
-						{/if}
-					</Field>
+					</FormField>
 
 					<Field>
 						<div class="flex items-center">

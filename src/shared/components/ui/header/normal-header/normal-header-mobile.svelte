@@ -1,6 +1,5 @@
 <script lang="ts">
 	// SVELTEKIT
-	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 
 	// LIBRARIES
@@ -46,23 +45,12 @@
 	const isAuthenticated = $derived(auth.isAuthenticated);
 
 	const pathnameLogical = $derived(new URL(deLocalizeUrl(page.url.href)).pathname);
-
-	afterNavigate(() => {
-		normalHeader.closeMenu();
-	});
 </script>
 
 <Drawer
 	bind:open={normalHeader.menuOpen}
 	direction="right"
 	shouldScaleBackground={false}
-	onOpenChange={(open) => {
-		if (open) {
-			requestAnimationFrame(() => {
-				document.getElementById('site-mobile-nav-first')?.focus();
-			});
-		}
-	}}
 >
 	<DrawerTrigger>
 		{#snippet child({ props })}
@@ -74,7 +62,6 @@
 					'lg:hidden touch-manipulation',
 					props.class as ClassValue
 				)}
-				aria-controls="site-mobile-nav"
 				aria-label={normalHeader.menuOpen ? 'Close menu' : 'Open menu'}
 			>
 				{#if normalHeader.menuOpen}

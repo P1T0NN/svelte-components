@@ -16,14 +16,14 @@
 		disabled = false,
 		config,
 		/** Optional: lock parent form while a resend request is in flight (e.g. password reset). */
-		onSendingChange
+		onSendingChange,
+		cooldownSeconds = 30
 	}: {
 		disabled?: boolean;
 		config: EmailVerificationResendConfig;
 		onSendingChange?: (inFlight: boolean) => void;
+		cooldownSeconds?: number;
 	} = $props();
-
-	const COOLDOWN_SECONDS = 30;
 
 	let resending = $state(false);
 	let cooldownRemaining = $state(0);
@@ -40,7 +40,7 @@
 
 	function startCooldown() {
 		clearCooldownInterval();
-		cooldownRemaining = COOLDOWN_SECONDS;
+		cooldownRemaining = cooldownSeconds;
 		cooldownIntervalId = setInterval(() => {
 			cooldownRemaining -= 1;
 			if (cooldownRemaining <= 0) {

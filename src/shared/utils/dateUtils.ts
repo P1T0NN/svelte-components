@@ -1,11 +1,4 @@
 /**
- * Get current date/time
- */
-export function getNow(): Date {
-	return new Date();
-}
-
-/**
  * Get a date X days from now
  * @param days - Number of days to add (can be negative for past dates)
  */
@@ -74,14 +67,14 @@ export function addMinutes(date: Date, minutes: number): Date {
  * Check if a date is in the past
  */
 export function isPast(date: Date): boolean {
-	return date < getNow();
+	return date < new Date();
 }
 
 /**
  * Check if a date is in the future
  */
 export function isFuture(date: Date): boolean {
-	return date > getNow();
+	return date > new Date();
 }
 
 /**
@@ -101,4 +94,3 @@ export function formatTs(ts: number | string): string {
 	const d = new Date(ts);
 	return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
 }
-

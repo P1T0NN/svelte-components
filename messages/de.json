@@ -117,6 +117,7 @@
 		"PASSWORD_TOO_SHORT": "Passwort muss mindestens {min} Zeichen lang sein.",
 		"PASSWORD_TOO_LONG": "Passwort ist zu lang.",
 		"PASSWORD_TOO_COMMON": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen.",
-		"TEST_ROW_CREATED": "Testzeile erstellt."
+		"TEST_ROW_CREATED": "Testzeile erstellt.",
+		"UNEXPECTED_ERROR": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
 	}
 }

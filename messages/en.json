@@ -481,6 +481,8 @@
 		"ALL_SESSIONS_REVOKED": "All sessions revoked.",
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
 		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
-		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min."
+		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min.",
+		
+		"UNEXPECTED_ERROR": "An unexpected error occurred. Please try again."
 	}
 }

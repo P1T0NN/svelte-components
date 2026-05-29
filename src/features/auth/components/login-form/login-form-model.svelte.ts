@@ -3,7 +3,6 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 
 // LIBRARIES
-import { safeParse } from 'valibot';
 import { toast } from 'svelte-sonner';
 
 // CONFIG
@@ -12,7 +11,7 @@ import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
 // UTILS
 import { authClient } from '@/features/auth/lib/auth-client';
 import { loginFormSchema } from './login-form-schema.js';
-import { valibotIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
+import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
 import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 // TYPES
@@ -39,14 +38,14 @@ export function createLoginForm(copy: LoginFormCopy) {
 		const form = event.currentTarget as HTMLFormElement;
 		const formData = new FormData(form);
 
-		const p = safeParse(loginFormSchema, {
+		const p = loginFormSchema.safeParse({
 			email: String(formData.get('email') ?? ''),
 			password: String(formData.get('password') ?? ''),
 			flow: String(formData.get('flow') ?? '')
 		});
 
 		if (!p.success) {
-			fieldErrors = valibotIssuesToFieldErrors<LoginField>(p.issues);
+			fieldErrors = zodIssuesToFieldErrors<LoginField>(p.error.issues);
 			errorMessage = null;
 			return;
 		}
@@ -57,19 +56,19 @@ export function createLoginForm(copy: LoginFormCopy) {
 
 		try {
 			const { error } = await authClient.signIn.email({
-				email: p.output.email,
-				password: p.output.password
+				email: p.data.email,
+				password: p.data.password
 			});
 			if (error) {
 				const code = (error as { code?: string }).code ?? '';
 				if (code === 'EMAIL_NOT_VERIFIED') {
 					await authClient.emailOtp.sendVerificationOtp({
-						email: p.output.email,
+						email: p.data.email,
 						type: 'email-verification'
 					});
-					emailDraft = p.output.email;
-					verifyContext = { email: p.output.email, password: p.output.password };
-					step = { email: p.output.email };
+					emailDraft = p.data.email;
+					verifyContext = { email: p.data.email, password: p.data.password };
+					step = { email: p.data.email };
 					return;
 				}
 				console.error('Login: sign in failed:', error);

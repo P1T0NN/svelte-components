@@ -14,10 +14,13 @@
 	import UsersFilters from '@/shared/components/pages/(protected)/admin/users/users-filters.svelte';
 
 	// UTILS
-	import { capitalize } from '@/shared/utils/stringUtils';
+	import { capitalizeFirst } from '@/shared/utils/stringUtils';
 
 	// TYPES
-	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';
+	import type {
+		ColumnDef,
+		DataTableCellSnippetProps
+	} from '@/shared/components/ui/data-table/types.js';
 	import type { Doc } from '@/convex/auth/component/_generated/dataModel';
 
 	// Filter / sort / search state — forwarded to `listUsers` via DataTable's
@@ -37,11 +40,11 @@
 		...(emailVerified !== undefined && { emailVerified })
 	});
 
-	const columns: ColumnDef<Doc<"user">>[] = [
+	const columns: ColumnDef<Doc<'user'>>[] = [
 		{
 			id: 'name',
 			header: m['AdminUsersPage.columnUser'](),
-			accessor: (r) => capitalize(r.name || r.email),
+			accessor: (r) => capitalizeFirst(r.name || r.email),
 			sortable: true
 		},
 		{
@@ -53,7 +56,7 @@
 		{
 			id: 'role',
 			header: m['AdminUsersPage.columnRole'](),
-			accessor: (r) => capitalize(r.role),
+			accessor: (r) => capitalizeFirst(r.role),
 			hideBelow: 'md'
 		},
 		{
@@ -85,7 +88,7 @@
 <section class="flex w-full flex-col gap-4 p-4 md:p-6">
 	<header class="flex flex-col gap-1">
 		<h1 class="text-2xl font-semibold tracking-tight">{m['AdminUsersPage.title']()}</h1>
-		<p class="text-muted-foreground text-sm">{m['AdminUsersPage.description']()}</p>
+		<p class="text-sm text-muted-foreground">{m['AdminUsersPage.description']()}</p>
 	</header>
 
 	<DataTable
@@ -99,7 +102,9 @@
 		bind:sortDirection
 		searchable
 		bind:search
-		searchPlaceholder={m['AdminUsersPage.searchPlaceholder']({ field: capitalize(searchField) })}
+		searchPlaceholder={m['AdminUsersPage.searchPlaceholder']({
+			field: capitalizeFirst(searchField)
+		})}
 		{filters}
 	/>
 </section>
@@ -108,8 +113,11 @@
 	<UsersFilters bind:searchField bind:role bind:banned bind:emailVerified />
 {/snippet}
 
-{#snippet nameCell({ row }: DataTableCellSnippetProps<Doc<"user">>)}
-	<a href={localizeHref(ADMIN_PAGE_ENDPOINTS.USER.replace(":id", row._id))} class="flex items-center gap-2 hover:underline">
+{#snippet nameCell({ row }: DataTableCellSnippetProps<Doc<'user'>>)}
+	<a
+		href={localizeHref(ADMIN_PAGE_ENDPOINTS.USER.replace(':id', row._id))}
+		class="flex items-center gap-2 hover:underline"
+	>
 		<Avatar class="size-7">
 			{#if row.image}
 				<AvatarImage src={row.image} alt={row.name || row.email} />
@@ -119,7 +127,7 @@
 				{(row.name || row.email).slice(0, 2).toUpperCase()}
 			</AvatarFallback>
 		</Avatar>
-		
-		<span class="font-medium">{capitalize(row.name || row.email)}</span>
+
+		<span class="font-medium">{capitalizeFirst(row.name || row.email)}</span>
 	</a>
 {/snippet}

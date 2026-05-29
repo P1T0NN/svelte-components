@@ -14,6 +14,7 @@
 		FieldSeparator,
 		FieldError
 	} from '@/shared/components/ui/field/index.js';
+	import { FormField } from '@/shared/components/ui/form-field/index.js';
 	import { Input } from '@/shared/components/ui/input/index.js';
 	import PasswordInput from '@/features/auth/components/password-input/password-input.svelte';
 	import { Button } from '@/shared/components/ui/button/index.js';
@@ -29,11 +30,7 @@
 
 	import { createLoginForm } from './login-form-model.svelte.js';
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: LoginFormWithImageProps = $props();
+	let { ref = $bindable(null), class: className, ...restProps }: LoginFormWithImageProps = $props();
 
 	const id = $props.id();
 
@@ -58,8 +55,11 @@
 				</p>
 			</div>
 
-			<Field>
-				<FieldLabel for="email-{id}">{m['LoginForm.LoginFormWithImage.email']()}</FieldLabel>
+			<FormField
+				id="email-{id}"
+				label={m['LoginForm.LoginFormWithImage.email']()}
+				error={form.fieldErrors.email}
+			>
 				<Input
 					id="email-{id}"
 					name="email"
@@ -70,10 +70,7 @@
 					bind:value={form.emailDraft}
 					aria-invalid={form.fieldErrors.email ? 'true' : undefined}
 				/>
-				{#if form.fieldErrors.email}
-					<FieldError>{form.fieldErrors.email}</FieldError>
-				{/if}
-			</Field>
+			</FormField>
 
 			<Field>
 				<div class="flex items-center">

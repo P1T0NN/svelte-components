@@ -1,18 +1,16 @@
 // LIBRARIES
-import { email, literal, minLength, object, pipe, string, trim } from 'valibot';
+import { z } from 'zod';
 import { m } from '@/shared/lib/paraglide/messages';
 
-export const loginFormSchema = object({
-	email: pipe(
-		string(),
-		trim(),
-		minLength(1, m['ValidationMessages.LoginForm.emailRequired']()),
-		email(m['ValidationMessages.LoginForm.invalidEmail']())
-	),
-	password: pipe(
-		string(),
-		minLength(1, m['ValidationMessages.LoginForm.passwordRequired']()),
-		minLength(8, m['ValidationMessages.LoginForm.passwordMinLength']())
-	),
-	flow: literal('signIn')
+export const loginFormSchema = z.object({
+	email: z
+		.string()
+		.trim()
+		.min(1, m['ValidationMessages.LoginForm.emailRequired']())
+		.email(m['ValidationMessages.LoginForm.invalidEmail']()),
+	password: z
+		.string()
+		.min(1, m['ValidationMessages.LoginForm.passwordRequired']())
+		.min(8, m['ValidationMessages.LoginForm.passwordMinLength']()),
+	flow: z.literal('signIn')
 });
