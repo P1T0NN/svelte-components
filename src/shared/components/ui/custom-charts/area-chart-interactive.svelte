@@ -1,12 +1,18 @@
 <script lang="ts">
 	import * as Chart from "@/shared/components/ui/chart/index.js"
 	import * as Card from "@/shared/components/ui/card/index.js"
-	import * as Select from "@/shared/components/ui/select/index.js"
 	import { scaleUtc } from 'd3-scale';
 	import { Area, AreaChart, ChartClipPath } from 'layerchart';
 	import { curveNatural } from 'd3-shape';
 	import ChartContainer from "@/shared/components/ui/chart/chart-container.svelte"
 	import { cubicInOut } from 'svelte/easing';
+	import TimeRangeData, {
+		filterTimeRangeData,
+		formatTimeRangeLabel,
+		toCalendarDate,
+		type TimeRangeValue
+	} from './timerange-data.svelte';
+	import type { DateRange } from 'bits-ui';
 
 	const chartData = [
 		{ date: new Date('2024-04-01'), desktop: 222, mobile: 150 },
@@ -102,34 +108,25 @@
 		{ date: new Date('2024-06-30'), desktop: 446, mobile: 400 }
 	];
 
-	let timeRange = $state('90d');
+	const referenceDate = new Date('2024-06-30');
+	const minDate = chartData[0].date;
+	const maxDate = chartData[chartData.length - 1].date;
 
-	const selectedLabel = $derived.by(() => {
-		switch (timeRange) {
-			case '90d':
-				return 'Last 3 months';
-			case '30d':
-				return 'Last 30 days';
-			case '7d':
-				return 'Last 7 days';
-			default:
-				return 'Last 3 months';
-		}
+	let timeRange = $state<TimeRangeValue>('90d');
+	let customRange = $state<DateRange | undefined>({
+		start: toCalendarDate(new Date('2024-06-01')),
+		end: toCalendarDate(referenceDate)
 	});
 
+	const rangeLabel = $derived(formatTimeRangeLabel(timeRange, customRange));
+	const rangeDescription = $derived(timeRange === 'custom' ? rangeLabel : rangeLabel.toLowerCase());
 	const filteredData = $derived(
-		chartData.filter((item) => {
-			// eslint-disable-next-line svelte/prefer-svelte-reactivity
-			const referenceDate = new Date('2024-06-30');
-			let daysToSubtract = 90;
-			if (timeRange === '30d') {
-				daysToSubtract = 30;
-			} else if (timeRange === '7d') {
-				daysToSubtract = 7;
-			}
-
-			referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
-			return item.date >= referenceDate;
+		filterTimeRangeData({
+			data: chartData,
+			dateAccessor: 'date',
+			value: timeRange,
+			customRange,
+			referenceDate
 		})
 	);
 
@@ -143,18 +140,14 @@
 	<Card.Header class="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
 		<div class="grid flex-1 gap-1 text-center sm:text-start">
 			<Card.Title>Area Chart - Interactive</Card.Title>
-			<Card.Description>Showing total visitors for the last 3 months</Card.Description>
+			<Card.Description>Showing total visitors for {rangeDescription}</Card.Description>
 		</div>
-		<Select.Root type="single" bind:value={timeRange}>
-			<Select.Trigger class="w-40 rounded-lg sm:ms-auto" aria-label="Select a value">
-				{selectedLabel}
-			</Select.Trigger>
-			<Select.Content class="rounded-xl">
-				<Select.Item value="90d" class="rounded-lg">Last 3 months</Select.Item>
-				<Select.Item value="30d" class="rounded-lg">Last 30 days</Select.Item>
-				<Select.Item value="7d" class="rounded-lg">Last 7 days</Select.Item>
-			</Select.Content>
-		</Select.Root>
+		<TimeRangeData
+			bind:value={timeRange}
+			bind:customRange
+			minValue={toCalendarDate(minDate)}
+			maxValue={toCalendarDate(maxDate)}
+		/>
 	</Card.Header>
 	<Card.Content>
 		<ChartContainer config={chartConfig} class="-ml-3 aspect-auto h-62.5 w-full">
