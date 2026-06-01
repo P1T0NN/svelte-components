@@ -3,6 +3,10 @@ import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 // TABLES
+import {
+	analyticsDailyMetricTable,
+	analyticsEventTable
+} from './analytics/schemas/analyticsTableSchema';
 import { auditLogTable } from './tables/auditLog/schemas/auditLogSchema';
 
 const schema = defineSchema({
@@ -13,6 +17,10 @@ const schema = defineSchema({
 	// Audit logs — toggle population via FEATURES.AUDIT_LOGS in projectSettings.ts.
 	// The table itself is always declared so flipping the flag needs no migration.
 	auditLogs: auditLogTable,
+
+	// In-app analytics events and daily metric rollups.
+	analyticsEvents: analyticsEventTable,
+	analyticsDailyMetrics: analyticsDailyMetricTable,
 
 	/** Convex file storage reference + resolved download URL. Owner-stamped at upload. */
 	uploadedFiles: defineTable({
@@ -38,14 +46,17 @@ const schema = defineSchema({
 		email: v.string(),
 		role: v.union(v.literal('admin'), v.literal('editor'), v.literal('viewer')),
 		plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
+		source: v.optional(
+			v.union(v.literal('organic'), v.literal('referral'), v.literal('paid'), v.literal('support'))
+		),
 		message: v.string(),
 		acceptsTerms: v.boolean()
 	})
 		// Full-text search on `name`. `filterFields` lets the search builder narrow by
-		// `role` / `plan` later (eq-while-searching) without needing a second index.
+		// `role` / `plan` / `source` later (eq-while-searching) without needing a second index.
 		.searchIndex('search_name', {
 			searchField: 'name',
-			filterFields: ['role', 'plan']
+			filterFields: ['role', 'plan', 'source']
 		})
 		// Indexed sort by `name` (used when the user clicks the Name column header in
 		// non-search mode). Convex pairs each named index with `_creationTime` implicitly

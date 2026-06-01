@@ -44,6 +44,12 @@
 			hideBelow: 'lg'
 		},
 		{
+			id: 'source',
+			header: 'Source',
+			accessor: (r) => r.source ?? 'Legacy',
+			hideBelow: 'lg'
+		},
+		{
 			id: 'created',
 			header: 'Created',
 			accessor: (r) => new Date(r._creationTime).toLocaleString(),

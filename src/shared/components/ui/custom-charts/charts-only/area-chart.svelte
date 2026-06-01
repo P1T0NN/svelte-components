@@ -2,14 +2,14 @@
     // LIBRARIES
 	import { Area, AreaChart } from 'layerchart';
 	import { scaleUtc } from 'd3-scale';
-	import { curveNatural, curveLinear, curveStep } from 'd3-shape';
+	import { curveLinear, curveMonotoneX, curveNatural, curveStep } from 'd3-shape';
 
 	// COMPONENTS
 	import * as Card from '@/shared/components/ui/card/index.js';
 	import * as Chart from '@/shared/components/ui/chart/index.js';
 
 	// UTILS
-	import { defaultXAxisFormat, defaultLabelFormatter } from '../chartUtils';
+	import { defaultXAxisFormat, defaultLabelFormatter } from '../utils/chartUtils';
 	
 	// TYPES
 	import type { Snippet, Component, ComponentProps } from 'svelte';
@@ -21,6 +21,7 @@
 	// ─── Curve map ───────────────────────────────────────────────────────────────
 
 	const CURVES = {
+		monotone: curveMonotoneX,
 		natural: curveNatural,
 		linear: curveLinear,
 		step: curveStep
@@ -59,7 +60,7 @@
 
 	const PRESETS: Record<AreaPreset, PresetConfig> = {
 		default: {
-			curve: 'natural',
+			curve: 'monotone',
 			layout: 'single',
 			showLegend: false,
 			tooltipHideLabel: false,
@@ -78,21 +79,21 @@
 			tooltipHideLabel: true
 		},
 		legend: {
-			curve: 'natural',
+			curve: 'monotone',
 			layout: 'stack',
 			showLegend: true,
 			tooltipHideLabel: false,
 			tooltipIndicator: 'line'
 		},
 		stacked: {
-			curve: 'natural',
+			curve: 'monotone',
 			layout: 'stack',
 			showLegend: false,
 			tooltipHideLabel: false,
 			tooltipIndicator: 'dot'
 		},
 		'stacked-expanded': {
-			curve: 'natural',
+			curve: 'monotone',
 			layout: 'stackExpand',
 			showLegend: false,
 			tooltipHideLabel: false,

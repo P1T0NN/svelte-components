@@ -15,6 +15,7 @@
 		email: z.string().trim().min(1, 'Email is required.').email('Enter a valid email.'),
 		role: z.enum(['admin', 'editor', 'viewer'], { message: 'Pick a role.' }),
 		plan: z.enum(['free', 'pro', 'enterprise'], { message: 'Pick a plan.' }),
+		source: z.enum(['organic', 'referral', 'paid', 'support'], { message: 'Pick a source.' }),
 		message: z.string().trim().min(10, 'Message must be at least 10 characters.'),
 		acceptsTerms: z.boolean().refine((v) => v === true, 'You must accept the terms.')
 	});
@@ -75,6 +76,20 @@
 					],
 					description: 'You can change this later in settings.',
 					colSpan: 1
+				},
+				{
+					id: 'source',
+					kind: 'select',
+					label: 'Source',
+					selectPlaceholder: 'Pick a source',
+					options: [
+						{ value: 'organic', label: 'Organic' },
+						{ value: 'referral', label: 'Referral' },
+						{ value: 'paid', label: 'Paid' },
+						{ value: 'support', label: 'Support' }
+					],
+					description: 'Used to test analytics breakdowns.',
+					colSpan: 1
 				}
 			]
 		},
@@ -102,6 +117,7 @@
 		email: '',
 		role: '' as ContactFormValues['role'],
 		plan: '' as ContactFormValues['plan'],
+		source: '' as ContactFormValues['source'],
 		message: '',
 		acceptsTerms: false
 	});

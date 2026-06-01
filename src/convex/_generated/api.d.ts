@@ -8,6 +8,21 @@
  * @module
  */
 
+import type * as analytics_analyticsConfigs from "../analytics/analyticsConfigs.js";
+import type * as analytics_analyticsSettings from "../analytics/analyticsSettings.js";
+import type * as analytics_crons_analyticsCron from "../analytics/crons/analyticsCron.js";
+import type * as analytics_helpers_aggregateEvent from "../analytics/helpers/aggregateEvent.js";
+import type * as analytics_helpers_analyticsAccess from "../analytics/helpers/analyticsAccess.js";
+import type * as analytics_helpers_analyticsInternal from "../analytics/helpers/analyticsInternal.js";
+import type * as analytics_helpers_backfillMetric from "../analytics/helpers/backfillMetric.js";
+import type * as analytics_helpers_trackEvent from "../analytics/helpers/trackEvent.js";
+import type * as analytics_index from "../analytics/index.js";
+import type * as analytics_queries_analyticsQueries from "../analytics/queries/analyticsQueries.js";
+import type * as analytics_schemas_analyticsTableSchema from "../analytics/schemas/analyticsTableSchema.js";
+import type * as analytics_types_analyticsTypes from "../analytics/types/analyticsTypes.js";
+import type * as analytics_utils_analyticsDateUtils from "../analytics/utils/analyticsDateUtils.js";
+import type * as analytics_utils_analyticsFormatUtils from "../analytics/utils/analyticsFormatUtils.js";
+import type * as analytics_utils_analyticsValidation from "../analytics/utils/analyticsValidation.js";
 import type * as auth_auth from "../auth/auth.js";
 import type * as auth_authRoutes from "../auth/authRoutes.js";
 import type * as auth_convexCreateAuthRateLimitHook from "../auth/convexCreateAuthRateLimitHook.js";
@@ -56,6 +71,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "analytics/analyticsConfigs": typeof analytics_analyticsConfigs;
+  "analytics/analyticsSettings": typeof analytics_analyticsSettings;
+  "analytics/crons/analyticsCron": typeof analytics_crons_analyticsCron;
+  "analytics/helpers/aggregateEvent": typeof analytics_helpers_aggregateEvent;
+  "analytics/helpers/analyticsAccess": typeof analytics_helpers_analyticsAccess;
+  "analytics/helpers/analyticsInternal": typeof analytics_helpers_analyticsInternal;
+  "analytics/helpers/backfillMetric": typeof analytics_helpers_backfillMetric;
+  "analytics/helpers/trackEvent": typeof analytics_helpers_trackEvent;
+  "analytics/index": typeof analytics_index;
+  "analytics/queries/analyticsQueries": typeof analytics_queries_analyticsQueries;
+  "analytics/schemas/analyticsTableSchema": typeof analytics_schemas_analyticsTableSchema;
+  "analytics/types/analyticsTypes": typeof analytics_types_analyticsTypes;
+  "analytics/utils/analyticsDateUtils": typeof analytics_utils_analyticsDateUtils;
+  "analytics/utils/analyticsFormatUtils": typeof analytics_utils_analyticsFormatUtils;
+  "analytics/utils/analyticsValidation": typeof analytics_utils_analyticsValidation;
   "auth/auth": typeof auth_auth;
   "auth/authRoutes": typeof auth_authRoutes;
   "auth/convexCreateAuthRateLimitHook": typeof auth_convexCreateAuthRateLimitHook;

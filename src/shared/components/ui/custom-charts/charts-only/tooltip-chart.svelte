@@ -6,6 +6,7 @@
 	import * as Chart from '@/shared/components/ui/chart/index.js';
 	import type { Snippet, ComponentProps } from 'svelte';
 	import type { ChartConfig, TooltipPayload } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { TicksConfig } from 'layerchart';
 	// ─── Types ───────────────────────────────────────────────────────────────────
 
 	type LayerBarChartProps = ComponentProps<typeof BarChart>;
@@ -66,6 +67,8 @@
 		// Chart
 		seriesLayout = 'stack',
 		xAxisFormat,
+		xAxisTicks,
+		xAxisTickCount = 6,
 		// Tooltip preset
 		tooltipPreset = 'default' as TooltipPreset,
 		// Tooltip individual overrides
@@ -96,6 +99,8 @@
 		// Chart
 		seriesLayout?: 'stack' | 'group';
 		xAxisFormat?: (d: unknown) => string;
+		xAxisTicks?: TicksConfig;
+		xAxisTickCount?: number;
 		// Tooltip preset
 		tooltipPreset?: TooltipPreset;
 		// Tooltip individual overrides
@@ -124,6 +129,9 @@
 	const resolvedClass = $derived(
 		tooltipClass ?? (tooltipPreset === 'advanced' ? 'w-[180px]' : undefined)
 	);
+	const resolvedXAxisTicks = $derived(
+		xAxisTicks ?? _createDefaultXAxisTicks(data, x, xAxisTickCount)
+	);
 
 	/** Whether we need the built-in formatter (valueSuffix / showTotal without a custom snippet). */
 	const needsBuiltInFormatter = $derived(
@@ -139,6 +147,27 @@
 			return String(d);
 		}
 	};
+
+	function _createDefaultXAxisTicks(
+		rows: Record<string, unknown>[],
+		key: string,
+		maxTickCount: number
+	) {
+		if (maxTickCount <= 0 || rows.length <= maxTickCount) return undefined;
+
+		const step = Math.ceil((rows.length - 1) / (maxTickCount - 1));
+		const ticks = rows
+			.filter((_, index) => index % step === 0)
+			.map((row) => row[key])
+			.filter((value) => value !== undefined);
+		const lastValue = rows.at(-1)?.[key];
+
+		if (lastValue !== undefined && ticks.at(-1) !== lastValue) {
+			ticks.push(lastValue);
+		}
+
+		return ticks;
+	}
 </script>
 
 <Card.Root class={cardClass}>
@@ -172,6 +201,7 @@
 					},
 					xAxis: {
 						format: xAxisFormat ?? defaultXAxisFormat,
+						ticks: resolvedXAxisTicks,
 						tickLabelProps: {
 							svgProps: { y: 13 }
 						}

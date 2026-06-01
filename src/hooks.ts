@@ -1,4 +1,4 @@
-import type { Reroute } from '@sveltejs/kit';
+import type { Reroute, Transport } from '@sveltejs/kit';
 import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
 
 /**
@@ -13,3 +13,5 @@ export const reroute: Reroute = ({ url }) => {
 	}
 	return deLocalizeUrl(url).pathname;
 };
+
+export const transport = {} satisfies Transport;

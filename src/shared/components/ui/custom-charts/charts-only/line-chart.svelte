@@ -2,14 +2,14 @@
     // LIBRARIES
 	import { LineChart, Points } from 'layerchart';
 	import { scaleUtc, scaleBand } from 'd3-scale';
-	import { curveNatural, curveLinear, curveStep } from 'd3-shape';
+	import { curveLinear, curveMonotoneX, curveNatural, curveStep } from 'd3-shape';
 
 	// COMPONENTS
 	import * as Card from '@/shared/components/ui/card/index.js';
 	import * as Chart from '@/shared/components/ui/chart/index.js';
 
 	// UTILS
-	import { defaultXAxisFormat } from '../chartUtils';
+	import { defaultXAxisFormat } from '../utils/chartUtils';
 
 	// TYPES
 	import type { Snippet, Component, ComponentProps } from 'svelte';
@@ -21,6 +21,7 @@
 	// ─── Curve map ───────────────────────────────────────────────────────────────
 
 	const CURVES = {
+		monotone: curveMonotoneX,
 		natural: curveNatural,
 		linear: curveLinear,
 		step: curveStep
@@ -57,7 +58,7 @@
 
 	const PRESETS: Record<LinePreset, PresetConfig> = {
 		default: {
-			curve: 'natural',
+			curve: 'monotone',
 			showPoints: false,
 			pointRadius: 0,
 			highlightPointRadius: 4
@@ -75,7 +76,7 @@
 			highlightPointRadius: 4
 		},
 		dots: {
-			curve: 'natural',
+			curve: 'monotone',
 			showPoints: true,
 			pointRadius: 4,
 			highlightPointRadius: 6

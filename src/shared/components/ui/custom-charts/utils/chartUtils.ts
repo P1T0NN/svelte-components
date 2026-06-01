@@ -1,9 +1,9 @@
 // LIBRARIES
-import { getLocale } from "@/shared/lib/paraglide/runtime";
+import { getLocale } from '@/shared/lib/paraglide/runtime';
 
 export const defaultXAxisFormat = (v: unknown) => {
 	const locale = getLocale();
-    
+
 	if (v instanceof Date) {
 		return v.toLocaleDateString(locale, { month: 'short' });
 	}
@@ -12,7 +12,7 @@ export const defaultXAxisFormat = (v: unknown) => {
 
 export const defaultLabelFormatter = (v: unknown) => {
 	const locale = getLocale();
-    
+
 	if (v instanceof Date) {
 		return v.toLocaleDateString(locale, { month: 'long' });
 	}
