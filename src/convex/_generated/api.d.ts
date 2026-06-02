@@ -18,6 +18,7 @@ import type * as analytics_helpers_backfillMetric from "../analytics/helpers/bac
 import type * as analytics_helpers_trackEvent from "../analytics/helpers/trackEvent.js";
 import type * as analytics_index from "../analytics/index.js";
 import type * as analytics_queries_analyticsQueries from "../analytics/queries/analyticsQueries.js";
+import type * as analytics_registerAnalyticsCrons from "../analytics/registerAnalyticsCrons.js";
 import type * as analytics_schemas_analyticsTableSchema from "../analytics/schemas/analyticsTableSchema.js";
 import type * as analytics_types_analyticsTypes from "../analytics/types/analyticsTypes.js";
 import type * as analytics_utils_analyticsDateUtils from "../analytics/utils/analyticsDateUtils.js";
@@ -50,12 +51,14 @@ import type * as storage_crons_cleanupOrphanDataConvexStorage from "../storage/c
 import type * as storage_crons_cleanupOrphanDataR2 from "../storage/crons/cleanupOrphanDataR2.js";
 import type * as storage_r2_r2 from "../storage/r2/r2.js";
 import type * as storage_r2_uploadedFilesR2 from "../storage/r2/uploadedFilesR2.js";
+import type * as storage_registerStorageCrons from "../storage/registerStorageCrons.js";
 import type * as tables_auditLog_auditLogConfigs from "../tables/auditLog/auditLogConfigs.js";
 import type * as tables_auditLog_crons_auditLogCron from "../tables/auditLog/crons/auditLogCron.js";
 import type * as tables_auditLog_helpers_auditLogInternal from "../tables/auditLog/helpers/auditLogInternal.js";
 import type * as tables_auditLog_helpers_logAudit from "../tables/auditLog/helpers/logAudit.js";
 import type * as tables_auditLog_index from "../tables/auditLog/index.js";
 import type * as tables_auditLog_queries_auditLogQueries from "../tables/auditLog/queries/auditLogQueries.js";
+import type * as tables_auditLog_registerAuditLogCrons from "../tables/auditLog/registerAuditLogCrons.js";
 import type * as tables_auditLog_schemas_auditLogSchema from "../tables/auditLog/schemas/auditLogSchema.js";
 import type * as tables_auditLog_utils_auditLogUtils from "../tables/auditLog/utils/auditLogUtils.js";
 import type * as tables_test_testMutations from "../tables/test/testMutations.js";
@@ -81,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   "analytics/helpers/trackEvent": typeof analytics_helpers_trackEvent;
   "analytics/index": typeof analytics_index;
   "analytics/queries/analyticsQueries": typeof analytics_queries_analyticsQueries;
+  "analytics/registerAnalyticsCrons": typeof analytics_registerAnalyticsCrons;
   "analytics/schemas/analyticsTableSchema": typeof analytics_schemas_analyticsTableSchema;
   "analytics/types/analyticsTypes": typeof analytics_types_analyticsTypes;
   "analytics/utils/analyticsDateUtils": typeof analytics_utils_analyticsDateUtils;
@@ -113,12 +117,14 @@ declare const fullApi: ApiFromModules<{
   "storage/crons/cleanupOrphanDataR2": typeof storage_crons_cleanupOrphanDataR2;
   "storage/r2/r2": typeof storage_r2_r2;
   "storage/r2/uploadedFilesR2": typeof storage_r2_uploadedFilesR2;
+  "storage/registerStorageCrons": typeof storage_registerStorageCrons;
   "tables/auditLog/auditLogConfigs": typeof tables_auditLog_auditLogConfigs;
   "tables/auditLog/crons/auditLogCron": typeof tables_auditLog_crons_auditLogCron;
   "tables/auditLog/helpers/auditLogInternal": typeof tables_auditLog_helpers_auditLogInternal;
   "tables/auditLog/helpers/logAudit": typeof tables_auditLog_helpers_logAudit;
   "tables/auditLog/index": typeof tables_auditLog_index;
   "tables/auditLog/queries/auditLogQueries": typeof tables_auditLog_queries_auditLogQueries;
+  "tables/auditLog/registerAuditLogCrons": typeof tables_auditLog_registerAuditLogCrons;
   "tables/auditLog/schemas/auditLogSchema": typeof tables_auditLog_schemas_auditLogSchema;
   "tables/auditLog/utils/auditLogUtils": typeof tables_auditLog_utils_auditLogUtils;
   "tables/test/testMutations": typeof tables_test_testMutations;
