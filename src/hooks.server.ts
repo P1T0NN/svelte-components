@@ -4,6 +4,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 // LIBRARIES
 import { paraglideMiddleware } from '@/shared/lib/paraglide/server';
 import { getToken } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+import { getTextDirection } from '@/shared/lib/paraglide/runtime';
 import { withServerConvexToken } from '@mmailaender/convex-svelte/sveltekit/server';
 
 // UTILS
@@ -35,14 +36,15 @@ const securityHeadersHandle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-// Paraglide middleware handle
+// Paraglide SSR middleware — locale detection, redirects, URL de-localization.
+// https://inlang.com/m/gerre34r/library-inlang-paraglideJs/sveltekit
+// https://inlang.com/m/gerre34r/library-inlang-paraglideJs/middleware
 const paraglideHandle: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
 		event.request = localizedRequest;
 		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
-			}
+			transformPageChunk: ({ html }) =>
+				html.replace('%lang%', locale).replace('%dir%', getTextDirection(locale))
 		});
 	});
 

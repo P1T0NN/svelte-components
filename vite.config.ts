@@ -32,18 +32,27 @@ export default defineConfig({
 		noExternal: ['layerchart', '@dagrejs/dagre']
 	},
     plugins: [
-        paraglideVitePlugin({ 
-			project: './project.inlang', 
+        paraglideVitePlugin({
+			project: './project.inlang',
 			outdir: './src/shared/lib/paraglide',
-            strategy: ['url', 'baseLocale'],
-            disableAsyncLocalStorage: true,
-			// Every locale is prefixed (including base): /en/..., /de/... — no unprefixed URLs
+			strategy: ['url', 'cookie', 'baseLocale'],
+			routeStrategies: [
+				{ match: '/admin/:path(.*)?', strategy: ['cookie', 'baseLocale'] },
+				{ match: '/api/:path(.*)?', exclude: true }
+			],
 			urlPatterns: [
+				{
+					pattern: ':protocol://:domain(.*)::port?/admin/:path(.*)?',
+					localized: [
+						['de', ':protocol://:domain(.*)::port?/admin/:path(.*)?'],
+						['en', ':protocol://:domain(.*)::port?/admin/:path(.*)?']
+					]
+				},
 				{
 					pattern: ':protocol://:domain(.*)::port?/:path(.*)?',
 					localized: [
-						['en', ':protocol://:domain(.*)::port?/en/:path(.*)?'],
-						['de', ':protocol://:domain(.*)::port?/de/:path(.*)?']
+						['de', ':protocol://:domain(.*)::port?/de/:path(.*)?'],
+						['en', ':protocol://:domain(.*)::port?/:path(.*)?']
 					]
 				}
 			]
