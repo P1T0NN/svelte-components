@@ -11,6 +11,7 @@
         "@mmailaender/convex-better-auth-svelte": "^0.7.3",
         "@mmailaender/convex-svelte": "^0.18.0",
         "@oslojs/crypto": "^1.0.1",
+        "@piton-/analytics-convex": "^1.0.1",
         "@types/d3-scale": "^4.0.9",
         "@types/d3-shape": "^3.1.8",
         "@vercel/analytics": "^2.0.1",
@@ -373,6 +374,8 @@
     "@oslojs/encoding": ["@oslojs/encoding@1.1.0", "", {}, "sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ=="],
 
     "@panva/hkdf": ["@panva/hkdf@1.2.1", "", {}, "sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw=="],
+
+    "@piton-/analytics-convex": ["@piton-/analytics-convex@1.0.1", "", { "peerDependencies": { "convex": "^1.36.1", "convex-test": "^0.0.49" }, "optionalPeers": ["convex-test"] }, "sha512-9oN6lHOP1sIqvf1pWClMOWeTb207z6iieKE9hbKccHseh8LbpHAk+9EwciGwDXvNrwI9aasNz3Vm/DSd5wKcbw=="],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
 

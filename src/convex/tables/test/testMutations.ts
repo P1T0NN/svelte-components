@@ -4,8 +4,8 @@ import { v } from 'convex/values';
 // CONFIG
 import { mutation } from '../../_generated/server';
 
-// HELPERS
-import { ANALYTICS_EVENT, trackEvent } from '@/convex/analytics';
+// ANALYTICS
+import { analytics, ANALYTICS_EVENT } from '@/convex/analytics';
 
 /**
  * Throwaway insert used to exercise the `<MutationForm>` component end-to-end.
@@ -25,8 +25,7 @@ export const createTestRow = mutation({
 	handler: async (ctx, args) => {
 		const rowId = await ctx.db.insert('testRows', args);
 
-		await trackEvent(ctx, {
-			name: ANALYTICS_EVENT.FEATURE_USED,
+		await analytics.track(ctx, ANALYTICS_EVENT.FEATURE_USED, {
 			subject: {
 				type: 'testRows',
 				id: rowId

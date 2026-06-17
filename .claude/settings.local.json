@@ -52,7 +52,12 @@
       "Bash(rm src/convex/storage/convexStorage/aggregate/uploadedFilesAggregate.ts src/convex/storage/r2/aggregate/uploadedFilesR2Aggregate.ts)",
       "Bash(rmdir src/convex/storage/convexStorage/aggregate src/convex/storage/r2/aggregate)",
       "Bash(Remove-Item -Path \"D:\\\\Stvari\\\\Programiranje\\\\Svelte Components\\\\svelte-components-convex\\\\src\\\\convex\\\\tables\\\\auditLog\\\\mutations\\\\auditLogMutations.ts\" -Force)",
-      "Bash(Remove-Item -Path \"D:\\\\Stvari\\\\Programiranje\\\\Svelte Components\\\\svelte-components-convex\\\\src\\\\convex\\\\tables\\\\auditLog\\\\mutations\" -Force)"
+      "Bash(Remove-Item -Path \"D:\\\\Stvari\\\\Programiranje\\\\Svelte Components\\\\svelte-components-convex\\\\src\\\\convex\\\\tables\\\\auditLog\\\\mutations\" -Force)",
+      "Bash(ls src/convex)",
+      "Bash(find . -maxdepth 3 -name \"convex.config.ts\" -not -path \"*/node_modules/*\")",
+      "Bash(rm -f analyticsConfigs.ts analyticsSettings.ts registerAnalyticsCrons.ts helpers/aggregateEvent.ts helpers/analyticsAccess.ts helpers/analyticsInternal.ts helpers/backfillMetric.ts helpers/trackEvent.ts crons/analyticsCron.ts schemas/analyticsTableSchema.ts types/analyticsTypes.ts utils/analyticsDateUtils.ts utils/analyticsFormatUtils.ts utils/analyticsValidation.ts)",
+      "Bash(rmdir helpers *)",
+      "Bash(bunx convex *)"
     ]
   }
 }

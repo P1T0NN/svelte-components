@@ -3,10 +3,6 @@ import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 // TABLES
-import {
-	analyticsDailyMetricTable,
-	analyticsEventTable
-} from './analytics/schemas/analyticsTableSchema';
 import { auditLogTable } from './tables/auditLog/schemas/auditLogSchema';
 
 const schema = defineSchema({
@@ -18,9 +14,8 @@ const schema = defineSchema({
 	// The table itself is always declared so flipping the flag needs no migration.
 	auditLogs: auditLogTable,
 
-	// In-app analytics events and daily metric rollups.
-	analyticsEvents: analyticsEventTable,
-	analyticsDailyMetrics: analyticsDailyMetricTable,
+	// In-app analytics (events + rollups) live inside the `@piton-/analytics-convex`
+	// component now — it owns its own tables. See `./analytics/analytics.ts`.
 
 	/** Convex file storage reference + resolved download URL. Owner-stamped at upload. */
 	uploadedFiles: defineTable({
