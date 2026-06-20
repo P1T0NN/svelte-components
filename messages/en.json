@@ -237,6 +237,10 @@
 		"sortDefault": "Default order"
 	},
 
+	"GoogleMap": {
+		"failedToLoad": "Failed to load Google Maps."
+	},
+
 	"AlertDialogButton": {
 		"title": "Action cannot be reversed",
 		"description": "Are you sure you want to do this? This action cannot be undone.",

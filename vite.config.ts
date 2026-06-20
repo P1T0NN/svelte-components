@@ -29,7 +29,7 @@ export default defineConfig({
 	// layerchart → @dagrejs/dagre ships ESM-only; if left external, Node SSR loads
 	// dagre.esm.js as CJS and throws "Unexpected token 'export'".
 	ssr: {
-		noExternal: ['layerchart', '@dagrejs/dagre']
+		noExternal: ['layerchart', '@dagrejs/dagre', '@googlemaps/markerclusterer']
 	},
     plugins: [
         paraglideVitePlugin({

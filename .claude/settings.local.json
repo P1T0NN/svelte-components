@@ -57,7 +57,12 @@
       "Bash(find . -maxdepth 3 -name \"convex.config.ts\" -not -path \"*/node_modules/*\")",
       "Bash(rm -f analyticsConfigs.ts analyticsSettings.ts registerAnalyticsCrons.ts helpers/aggregateEvent.ts helpers/analyticsAccess.ts helpers/analyticsInternal.ts helpers/backfillMetric.ts helpers/trackEvent.ts crons/analyticsCron.ts schemas/analyticsTableSchema.ts types/analyticsTypes.ts utils/analyticsDateUtils.ts utils/analyticsFormatUtils.ts utils/analyticsValidation.ts)",
       "Bash(rmdir helpers *)",
-      "Bash(bunx convex *)"
+      "Bash(bunx convex *)",
+      "PowerShell(bun run *)",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:5174/google-map\" -UseBasicParsing; \"STATUS: $\\($r.StatusCode\\)\"; if \\($r.Content -match 'Google Map'\\) { \"PAGE OK: heading present\" } else { \"PAGE: heading not found\" })",
+      "PowerShell($conns = Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue; if \\($conns\\) { $conns.OwningProcess | Select-Object -Unique | ForEach-Object { try { Stop-Process -Id $_ -Force -ErrorAction Stop; \"Stopped PID $_\" } catch {} } } else { \"Nothing listening on 5174\" }; Start-Sleep -Milliseconds 500; if \\(Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue\\) { \"5174 STILL IN USE\" } else { \"5174 free\" })",
+      "PowerShell(bunx eslint \"src/shared/components/ui/google-map\" \"src/routes/\\(unprotected\\)/google-map\"; if \\($?\\) { \"ESLINT OK\" })",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

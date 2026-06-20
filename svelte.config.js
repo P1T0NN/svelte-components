@@ -34,18 +34,30 @@ const config = {
 				'script-src': [
 					'self',
 					'blob:',
+					// Google Maps JavaScript API
+					'https://*.googleapis.com',
+					'https://*.gstatic.com',
+					'https://*.google.com',
+					'https://*.ggpht.com',
+					'https://*.googleusercontent.com',
 					'https://va.vercel-scripts.com',
 					'https://umami-sable-iota.vercel.app'
 				],
 				'worker-src': ['self', 'blob:'],
-				'style-src': ['self', 'unsafe-inline'],
+				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
 				'img-src': ['self', 'data:', 'https:', 'blob:'],
-				'font-src': ['self', 'data:'],
+				'font-src': ['self', 'data:', 'https://fonts.gstatic.com'],
 				'connect-src': [
 					'self',
+					'data:',
+					'blob:',
 					'https://accounts.google.com',
 					'https://oauth2.googleapis.com',
 					'https://www.googleapis.com',
+					// Google Maps JavaScript API
+					'https://*.googleapis.com',
+					'https://*.google.com',
+					'https://*.gstatic.com',
 					'https://*.convex.cloud',
 					'wss://*.convex.cloud',
 					// Vercel Analytics + Speed Insights telemetry endpoint
@@ -56,7 +68,7 @@ const config = {
 					// Umami analytics
 					'https://umami-sable-iota.vercel.app'
 				],
-				'frame-src': ['self', 'https://accounts.google.com'],
+				'frame-src': ['self', 'https://accounts.google.com', 'https://*.google.com'],
 				'object-src': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self'],
