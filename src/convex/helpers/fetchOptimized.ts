@@ -44,8 +44,8 @@ export type FetchOptimizedStrategy = 'cursor' | 'offset';
  * callers don't branch on `strategy` to render a list. `totalCount` is `null` in cursor and
  * search modes — computing it would defeat the optimization.
  */
-export type FetchOptimizedResult<T extends TableNames> = {
-	page: Doc<T>[];
+export type FetchOptimizedResult<T extends TableNames, Row = Doc<T>> = {
+	page: Row[];
 	isDone: boolean;
 	continueCursor: string;
 	totalCount: number | null;
@@ -112,6 +112,27 @@ type AccessBuilder<Extra, R> = (
 ) => Promise<R | null | undefined> | R | null | undefined;
 
 /**
+ * Post-pagination row mapper — the join hook. Runs on the *already-paginated page*
+ * (≤ `numItems` rows), so it adds at most O(perPage) cross-table reads, bounded by page size
+ * and never by table size. Use it to enrich each row with data from other tables.
+ *
+ * Contract:
+ *
+ *  - **1:1, same order.** Return exactly one output row per input row. Dropping or adding rows
+ *    here produces thin pages and corrupts `isDone`/cursor accounting — filter with `where`
+ *    (index-bounded) instead, the same reason `.filter()` isn't supported.
+ *  - **Dedupe + batch.** Collect the unique foreign ids, `Promise.all` the `ctx.db.get`s once,
+ *    then map back — not one serial read per row (N+1).
+ *  - **Reactivity widens.** Each `ctx.db.get` joins the page's reactive read set, so the page
+ *    also re-runs when an enriched doc changes (correct: a joined name edit refreshes the row).
+ */
+type EnrichFn<T extends TableNames, Extra extends PropertyValidators, Row> = (
+	ctx: QueryCtx,
+	page: Doc<T>[],
+	args: BuiltinArgs & ObjectType<Extra>
+) => Promise<Row[]> | Row[];
+
+/**
  * Endpoint-level access gate. Runs before any db work, so unauthorized callers pay the
  * minimum possible cost.
  *
@@ -137,7 +158,8 @@ export type FetchOptimizedAuth = 'user' | 'admin';
 
 export type FetchOptimizedOptions<
 	T extends TableNames,
-	Extra extends PropertyValidators
+	Extra extends PropertyValidators,
+	Row = Doc<T>
 > = {
 	/** Target table. The validator + return type are derived from this. */
 	table: T;
@@ -178,6 +200,12 @@ export type FetchOptimizedOptions<
 	 * (search results come back relevance-ordered).
 	 */
 	search?: AccessBuilder<ObjectType<Extra>, FetchOptimizedSearch<T>>;
+	/**
+	 * Enrich each row of the resolved page with data from other tables. See {@link EnrichFn}.
+	 * Runs after pagination/offset slicing, so its cost scales with page size, not table size.
+	 * When supplied, the query's `page` type becomes `Row[]` instead of `Doc<T>[]`.
+	 */
+	enrich?: EnrichFn<T, Extra, Row>;
 };
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
@@ -265,6 +293,21 @@ function applyIndexBounds(
  *   table: 'auditLog',
  *   auth: 'admin'
  * });
+ *
+ * // 6) Enrich each row with data from another table (join). `enrich` runs on the resolved
+ * //    page only, so it adds O(perPage) reads — dedupe ids + Promise.all to avoid N+1.
+ * export const fetchFilesWithOwner = fetchOptimized({
+ *   table: 'uploadedFiles',
+ *   enrich: async (ctx, page) => {
+ *     const ownerIds = [...new Set(page.map((f) => f.ownerId))];
+ *     const owners = new Map(
+ *       await Promise.all(ownerIds.map(async (id) => [id, await ctx.db.get(id)] as const))
+ *     );
+ *     return page.map((f) => ({ ...f, ownerName: owners.get(f.ownerId)?.name ?? null }));
+ *   }
+ * });
+ * // The query's `page` is now `(Doc<'uploadedFiles'> & { ownerName: string | null })[]`;
+ * // the data-table renders it unchanged (it's generic over the row shape).
  * ```
  *
  * ## Why this is "optimized"
@@ -318,29 +361,32 @@ function applyIndexBounds(
  */
 export function fetchOptimized<
 	T extends TableNames,
-	Extra extends PropertyValidators = Record<string, never>
+	Extra extends PropertyValidators = Record<string, never>,
+	Row = Doc<T>
 >(
 	name: ConvexRateLimitName,
-	options: FetchOptimizedOptions<T, Extra>
+	options: FetchOptimizedOptions<T, Extra, Row>
 ): ReturnType<typeof query>;
 export function fetchOptimized<
 	T extends TableNames,
-	Extra extends PropertyValidators = Record<string, never>
+	Extra extends PropertyValidators = Record<string, never>,
+	Row = Doc<T>
 >(
-	options: FetchOptimizedOptions<T, Extra>
+	options: FetchOptimizedOptions<T, Extra, Row>
 ): ReturnType<typeof query>;
 export function fetchOptimized<
 	T extends TableNames,
-	Extra extends PropertyValidators = Record<string, never>
+	Extra extends PropertyValidators = Record<string, never>,
+	Row = Doc<T>
 >(
-	nameOrOptions: ConvexRateLimitName | FetchOptimizedOptions<T, Extra>,
-	maybeOptions?: FetchOptimizedOptions<T, Extra>
+	nameOrOptions: ConvexRateLimitName | FetchOptimizedOptions<T, Extra, Row>,
+	maybeOptions?: FetchOptimizedOptions<T, Extra, Row>
 ) {
 	const rateLimitName =
 		typeof nameOrOptions === 'string' ? nameOrOptions : null;
 	const options =
 		typeof nameOrOptions === 'string'
-			? (maybeOptions as FetchOptimizedOptions<T, Extra>)
+			? (maybeOptions as FetchOptimizedOptions<T, Extra, Row>)
 			: nameOrOptions;
 
 	return buildFetchOptimizedQuery(options, rateLimitName);
@@ -348,9 +394,10 @@ export function fetchOptimized<
 
 function buildFetchOptimizedQuery<
 	T extends TableNames,
-	Extra extends PropertyValidators = Record<string, never>
+	Extra extends PropertyValidators = Record<string, never>,
+	Row = Doc<T>
 >(
-	options: FetchOptimizedOptions<T, Extra>,
+	options: FetchOptimizedOptions<T, Extra, Row>,
 	rateLimitName: ConvexRateLimitName | null
 ) {
 	const {
@@ -360,7 +407,8 @@ function buildFetchOptimizedQuery<
 		auth,
 		args: extraArgs,
 		where,
-		search
+		search,
+		enrich
 	} = options;
 
 	if (search && strategy === 'offset') {
@@ -381,7 +429,7 @@ function buildFetchOptimizedQuery<
 
 	return query({
 		args: validators,
-		handler: async (ctx: QueryCtx, rawArgsRaw): Promise<FetchOptimizedResult<T>> => {
+		handler: async (ctx: QueryCtx, rawArgsRaw): Promise<FetchOptimizedResult<T, Row>> => {
 			const rawArgs = rawArgsRaw as BuiltinArgs & ObjectType<Extra>;
 			const opts = rawArgs.paginationOpts ?? defaultPaginationOpts;
 
@@ -466,8 +514,12 @@ function buildFetchOptimizedQuery<
 			// 3. Paginate per strategy. Cursor uses native paginate; offset still slices.
 			if (strategy === 'cursor') {
 				const result = await q.paginate(opts);
+				// 4. Enrich the resolved page only (≤ numItems rows) — join cost stays O(perPage).
+				const page = enrich
+					? await enrich(ctx, result.page as Doc<T>[], rawArgs)
+					: (result.page as unknown as Row[]);
 				return {
-					page: result.page as Doc<T>[],
+					page,
 					isDone: result.isDone,
 					continueCursor: result.continueCursor,
 					totalCount: null
@@ -480,9 +532,11 @@ function buildFetchOptimizedQuery<
 			const start = Math.max(0, (page1Based - 1) * opts.numItems);
 			const slice = all.slice(start, start + opts.numItems);
 			const isDone = start + slice.length >= totalCount;
+			// Enrich the sliced page only, same bounded cost as the cursor branch.
+			const page = enrich ? await enrich(ctx, slice, rawArgs) : (slice as unknown as Row[]);
 
 			return {
-				page: slice,
+				page,
 				isDone,
 				continueCursor: '',
 				totalCount
