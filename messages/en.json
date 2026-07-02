@@ -237,6 +237,13 @@
 		"sortDefault": "Default order"
 	},
 
+	"ToggleColorTheme": {
+		"toggleTheme": "Toggle theme",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System"
+	},
+
 	"GoogleMap": {
 		"failedToLoad": "Failed to load Google Maps."
 	},

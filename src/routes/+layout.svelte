@@ -14,6 +14,7 @@
 	import { api } from '@/convex/_generated/api';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { ModeWatcher } from "mode-watcher";
 
 	// CLASSES
 	import { authClass, type CurrentUser } from '@/features/auth/classes/authClass.svelte';
@@ -70,6 +71,7 @@
 	{/if}
 </svelte:head>
 
+<ModeWatcher />
 <div class="flex min-h-dvh flex-col">
 	{#if !isLoginPage && !isSidebarShell}
 		<NormalHeader changeBgOnScroll={true} />

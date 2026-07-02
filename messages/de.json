@@ -81,8 +81,15 @@
 		"delete": "Löschen"
 	},
 
+	"ToggleColorTheme": {
+		"toggleTheme": "Design umschalten",
+		"light": "Hell",
+		"dark": "Dunkel",
+		"system": "System"
+	},
+
 	"ValidationMessages": {
-		"PasswordResetVerifyForm": {
+ 		"PasswordResetVerifyForm": {
 			"passwordTooCommon": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."
 		},
 		"SignUpForm": {

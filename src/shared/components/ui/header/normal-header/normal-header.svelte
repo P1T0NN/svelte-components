@@ -1,5 +1,5 @@
 <script lang="ts">
-	// SVELTEKIT
+	// SVELTEKIT IMPORTS
 	import { page } from '$app/state';
 
 	// LIBRARIES
@@ -21,6 +21,7 @@
 	import Link from '@/shared/components/ui/link/link.svelte';
 	import Logo from '@/shared/components/ui/logo/logo.svelte';
 	import LanguageSelector from '@/shared/components/ui/language-selector/language-selector.svelte';
+	import ToggleColorTheme from '@/shared/components/ui/toggle-color-theme/toggle-color-theme.svelte';
 	import LogoutButton from '@/features/auth/components/logout-button/logout-button.svelte';
 	import NormalHeaderMobile from './normal-header-mobile.svelte';
 	import LoginButton from '@/features/auth/components/login-button/login-button.svelte';
@@ -134,6 +135,8 @@
 			</div>
 
 			<LanguageSelector variant="default" />
+
+			<ToggleColorTheme variant="dropdown" />
 
 			<NormalHeaderMobile {hasLogo} />
 		</div>
