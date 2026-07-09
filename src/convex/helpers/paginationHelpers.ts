@@ -45,6 +45,29 @@ export function resolvePaginationOpts(
 }
 
 /**
+ * Offset-mode accounting over an already-materialized (bounded!) row set: 1-based page
+ * clamp, slice, exact `totalCount`, `isDone`. The single source of truth used by
+ * `fetchOptimized`'s offset/resolve modes — also exported for fully bespoke endpoints so
+ * hand-rolled queries can't drift from the `DataTable` payload contract.
+ */
+export function offsetPayload<Row>(
+	all: Row[],
+	page: number | undefined,
+	numItems: number
+): { page: Row[]; isDone: boolean; continueCursor: string; totalCount: number } {
+	const oneBasedPage = normalizeOneBasedPage(page);
+	const totalCount = all.length;
+	const start = Math.max(0, (oneBasedPage - 1) * numItems);
+	const slice = all.slice(start, start + numItems);
+	return {
+		page: slice,
+		isDone: start + slice.length >= totalCount,
+		continueCursor: '',
+		totalCount
+	};
+}
+
+/**
  * Shape returned by any offset/limit data source (BA admin API, REST upstreams,
  * `.collect().slice()`, etc.). Decoupled from any specific library so a query
  * built around an unknown source can plug straight into {@link toPaginatedListPayload}.

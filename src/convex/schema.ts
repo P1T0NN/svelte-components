@@ -57,6 +57,10 @@ const schema = defineSchema({
 		// non-search mode). Convex pairs each named index with `_creationTime` implicitly
 		// for tiebreakers; that's fine here.
 		.index('by_name', ['name'])
+		// Two single-field indexes exercising `fetchOptimized` union mode (OR across
+		// index ranges). See `fetchTestRowsUnion` in testQueries.ts.
+		.index('by_role', ['role'])
+		.index('by_plan', ['plan'])
 });
 
 export default schema;

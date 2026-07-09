@@ -2,8 +2,7 @@
 import { v } from 'convex/values';
 
 // HELPERS
-import { createSearchQuery } from '../../helpers/createSearchQuery.js';
-import { fetchOptimized } from '../../helpers/fetchOptimized.js';
+import { createSearchQuery, fetchOptimized } from '../../helpers/fetchOptimized/index.js';
 
 const TABLE = 'testRows' as const;
 
@@ -39,6 +38,56 @@ export const fetchTestRows = fetchOptimized('fetchTestRows', {
 			return { index: 'by_name' };
 		}
 		return null;
+	}
+});
+
+/**
+ * Union-mode example: one list assembled from two index ranges on the same table —
+ * "rows whose role is admin OR whose plan is enterprise". This is the shape to reach for
+ * when rows are visible through multiple access paths (own entity A OR entity B) and no
+ * single denormalized key covers the set: one spec per path, merged server-side into a
+ * single cursor. Rows matching both specs appear once (first spec wins). Cursor mode
+ * stays O(perPage · specs) no matter how large the table grows.
+ */
+export const fetchTestRowsUnion = fetchOptimized({
+	table: TABLE,
+	auth: 'user',
+	union: () => ({
+		specs: [
+			{ index: 'by_role', eq: { role: 'admin' as const } },
+			{ index: 'by_plan', eq: { plan: 'enterprise' as const } }
+		]
+	})
+});
+
+/**
+ * Resolve-mode example (offset flavor): a fully custom data source the factory still
+ * paginates. Rows sorted by message length — something no index can express. The factory
+ * keeps owning auth, validators, slicing, `totalCount`, `isDone` and the payload shape,
+ * so the accounting can't drift however the data changes; `rowValidator` additionally
+ * makes Convex prove at runtime that exactly this row shape reaches the client.
+ */
+export const fetchTestRowsByMessageLength = fetchOptimized({
+	table: TABLE,
+	auth: 'user',
+	strategy: 'offset',
+	rowValidator: v.object({
+		_id: v.id(TABLE),
+		_creationTime: v.number(),
+		name: v.string(),
+		email: v.string(),
+		role: v.union(v.literal('admin'), v.literal('editor'), v.literal('viewer')),
+		plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
+		source: v.optional(
+			v.union(v.literal('organic'), v.literal('referral'), v.literal('paid'), v.literal('support'))
+		),
+		message: v.string(),
+		acceptsTerms: v.boolean()
+	}),
+	resolve: async (ctx) => {
+		// Bounded: testRows is a small demo table — the only situation offset+collect is OK.
+		const all = await ctx.db.query(TABLE).collect();
+		return all.sort((a, b) => b.message.length - a.message.length);
 	}
 });
 
