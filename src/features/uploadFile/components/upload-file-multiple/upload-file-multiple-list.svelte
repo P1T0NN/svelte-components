@@ -17,6 +17,7 @@
 		selectedFile?: File | null;
 		onDragOver?: (e: DragEvent) => void;
 		onDrop?: (e: DragEvent) => void;
+		hasCoverImage?: boolean;
 		class?: string;
 	};
 
@@ -26,6 +27,7 @@
 		selectedFile = $bindable<File | null>(null),
 		onDragOver,
 		onDrop,
+		hasCoverImage = false,
 		class: className
 	}: Props = $props();
 </script>
@@ -46,6 +48,7 @@
 			bind:files
 			bind:selectedFile
 			previewUrl={row.previewUrl}
+			{hasCoverImage}
 		/>
 	{/each}
 </div>

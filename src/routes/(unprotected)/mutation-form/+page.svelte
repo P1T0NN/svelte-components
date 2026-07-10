@@ -17,7 +17,8 @@
 		plan: z.enum(['free', 'pro', 'enterprise'], { message: 'Pick a plan.' }),
 		source: z.enum(['organic', 'referral', 'paid', 'support'], { message: 'Pick a source.' }),
 		message: z.string().trim().min(10, 'Message must be at least 10 characters.'),
-		acceptsTerms: z.boolean().refine((v) => v === true, 'You must accept the terms.')
+		acceptsTerms: z.boolean().refine((v) => v === true, 'You must accept the terms.'),
+		images: z.array(z.instanceof(File))
 	});
 
 	type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -104,6 +105,14 @@
 					rows: 5
 				},
 				{
+					id: 'images',
+					kind: 'upload-multiple',
+					label: 'Images',
+					accept: 'image/*',
+					hasCoverImage: true,
+					description: 'The starred image is stored first and used as the cover.'
+				},
+				{
 					id: 'acceptsTerms',
 					kind: 'checkbox',
 					label: 'I accept the terms and conditions'
@@ -119,7 +128,8 @@
 		plan: '' as ContactFormValues['plan'],
 		source: '' as ContactFormValues['source'],
 		message: '',
-		acceptsTerms: false
+		acceptsTerms: false,
+		images: []
 	});
 </script>
 

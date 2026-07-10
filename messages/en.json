@@ -189,7 +189,9 @@
 			"instruction": "control on the top-right of each preview card",
 			"placeholder": "Uploaded files. Drop more files here to add.",
 			"unknown": "Unknown",
-			"remove": "Remove {name}"
+			"remove": "Remove {name}",
+			"cover": "Cover",
+			"setCover": "Set {name} as cover image"
 		},
 		"UploadFileSingle": {
 			"dropzoneDescription": "Choose or drop a file, preview it, then save. Use",

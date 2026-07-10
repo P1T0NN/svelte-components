@@ -45,7 +45,14 @@ const schema = defineSchema({
 			v.union(v.literal('organic'), v.literal('referral'), v.literal('paid'), v.literal('support'))
 		),
 		message: v.string(),
-		acceptsTerms: v.boolean()
+		acceptsTerms: v.boolean(),
+		/**
+		 * Ordered upload refs + cached download URLs, embedded at write time so reads
+		 * never touch storage. Order is meaningful: `images[0]` is the cover image.
+		 * `key` is the R2 object key or the `uploadedFiles` row id, depending on
+		 * FEATURES.USE_R2 at upload time.
+		 */
+		images: v.optional(v.array(v.object({ key: v.string(), url: v.string() })))
 	})
 		// Full-text search on `name`. `filterFields` lets the search builder narrow by
 		// `role` / `plan` / `source` later (eq-while-searching) without needing a second index.

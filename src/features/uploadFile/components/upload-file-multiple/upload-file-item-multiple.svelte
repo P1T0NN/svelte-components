@@ -10,6 +10,7 @@
 
 	// LUCIDE ICONS
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
+	import StarIcon from '@lucide/svelte/icons/star';
 	import XIcon from '@lucide/svelte/icons/x';
 
 	type Props = {
@@ -19,6 +20,7 @@
 		files?: File[];
 		selectedFile?: File | null;
 		previewUrl?: string | null;
+		hasCoverImage?: boolean;
 	};
 
 	let {
@@ -27,8 +29,17 @@
 		index,
 		files = $bindable<File[]>([]),
 		selectedFile = $bindable<File | null>(null),
-		previewUrl = null
+		previewUrl = null,
+		hasCoverImage = false
 	}: Props = $props();
+
+	// ponytail: cover image is always files[0] — starring moves the file to the front,
+	// so removal/reorder needs no separate cover state.
+	const isCover = $derived(hasCoverImage && index === 0);
+
+	function setAsCover() {
+		files = [file, ...files.filter((_, j) => j !== index)];
+	}
 
 	function formatBytes(bytes: number): string {
 		if (bytes === 0) return '0 B';
@@ -58,6 +69,30 @@
 			</div>
 		{/if}
 		
+		{#if hasCoverImage}
+			<div class="absolute start-1.5 top-1.5">
+				{#if isCover}
+					<span
+						class="bg-primary text-primary-foreground flex items-center gap-1 rounded-md px-1.5 py-1 text-[0.65rem] font-medium shadow-md"
+					>
+						<StarIcon class="size-3.5 fill-current" aria-hidden="true" />
+						{m['UploadFile.UploadFileMultiple.cover']()}
+					</span>
+				{:else}
+					<Button
+						type="button"
+						variant="secondary"
+						size="icon-sm"
+						class="shadow-md"
+						onclick={setAsCover}
+						aria-label={m['UploadFile.UploadFileMultiple.setCover']({ name: file.name })}
+					>
+						<StarIcon class="size-3.5" aria-hidden="true" />
+					</Button>
+				{/if}
+			</div>
+		{/if}
+
 		<div class="absolute end-1.5 top-1.5">
 			<Button
 				type="button"

@@ -15,6 +15,8 @@
 		accept?: string;
 		disabled?: boolean;
 		id?: string;
+		/** Show a star control on each preview; the starred image becomes `files[0]` (the cover). */
+		hasCoverImage?: boolean;
 	};
 
 	let {
@@ -23,7 +25,8 @@
 		files = $bindable<File[]>([]),
 		accept,
 		disabled = false,
-		id: inputId
+		id: inputId,
+		hasCoverImage = false
 	}: Props = $props();
 
 	const pickerInputId = $derived(inputId ?? 'upload-file-input-multiple');
@@ -76,6 +79,7 @@
 				bind:selectedFile={file}
 				onDragOver={upload.handleDragOver}
 				onDrop={upload.handleDrop}
+				{hasCoverImage}
 			/>
 		{/if}
 	</div>

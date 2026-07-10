@@ -28,6 +28,7 @@
 		id={inputId}
 		accept={field.accept}
 		disabled={field.disabled}
+		hasCoverImage={field.hasCoverImage}
 		bind:files={() => (value as File[]) ?? [], (v) => setValue(v)}
 	/>
 {/if}

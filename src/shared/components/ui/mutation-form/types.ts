@@ -48,6 +48,13 @@ export type MutationFormFieldDef = {
 	/** kind: 'upload-single' | 'upload-multiple' */
 	accept?: string;
 
+	/**
+	 * kind: 'upload-multiple'. Shows a star control on each preview; the starred
+	 * image is moved to index 0 of the files array, so after upload the first
+	 * storage id in the submitted array is the cover image.
+	 */
+	hasCoverImage?: boolean;
+
 	/** Grid columns the field occupies inside a section. Defaults to 2 (full width). */
 	colSpan?: 1 | 2;
 };

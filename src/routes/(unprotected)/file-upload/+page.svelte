@@ -26,7 +26,7 @@
 
 		<div class="flex w-full flex-col gap-6">
 			{#if multipleFiles}
-				<UploadFileMultiple bind:file bind:files id="upload-main" />
+				<UploadFileMultiple bind:file bind:files id="upload-main" hasCoverImage />
 			{:else}
 				<UploadFileSingle bind:file bind:files id="upload-main" />
 			{/if}

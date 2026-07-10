@@ -29,6 +29,7 @@ import type * as helpers_fetchOptimized_index from "../helpers/fetchOptimized/in
 import type * as helpers_fetchOptimized_kit from "../helpers/fetchOptimized/kit.js";
 import type * as helpers_fetchOptimized_types from "../helpers/fetchOptimized/types.js";
 import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js";
+import type * as helpers_resolveUploadedImages from "../helpers/resolveUploadedImages.js";
 import type * as http from "../http.js";
 import type * as projectSettings from "../projectSettings.js";
 import type * as rateLimits_convexCreateRateLimit from "../rateLimits/convexCreateRateLimit.js";
@@ -85,6 +86,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/fetchOptimized/kit": typeof helpers_fetchOptimized_kit;
   "helpers/fetchOptimized/types": typeof helpers_fetchOptimized_types;
   "helpers/paginationHelpers": typeof helpers_paginationHelpers;
+  "helpers/resolveUploadedImages": typeof helpers_resolveUploadedImages;
   http: typeof http;
   projectSettings: typeof projectSettings;
   "rateLimits/convexCreateRateLimit": typeof rateLimits_convexCreateRateLimit;
