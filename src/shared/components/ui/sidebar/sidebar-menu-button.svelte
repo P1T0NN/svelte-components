@@ -28,10 +28,10 @@
 </script>
 
 <script lang="ts">
-	import * as Tooltip from "@/shared/components/ui/tooltip/index.js";
-	import { cn, type WithElementRef, type WithoutChildrenOrChild } from "@/shared/utils/utils.js";
+	import { NativeTooltip } from "@/shared/components/ui/native-tooltip/index.js";
+	import { cn, type WithElementRef } from "@/shared/utils/utils.js";
 	import { mergeProps } from "bits-ui";
-	import type { ComponentProps, Snippet } from "svelte";
+	import type { Snippet } from "svelte";
 	import type { HTMLAttributes } from "svelte/elements";
 	import { useSidebar } from "./context.svelte.js";
 
@@ -51,7 +51,11 @@
 		variant?: SidebarMenuButtonVariant;
 		size?: SidebarMenuButtonSize;
 		tooltipContent?: Snippet | string;
-		tooltipContentProps?: WithoutChildrenOrChild<ComponentProps<typeof Tooltip.Content>>;
+		tooltipContentProps?: {
+			side?: "top" | "bottom" | "left" | "right";
+			class?: string;
+			contentClass?: string;
+		};
 		child?: Snippet<[{ props: Record<string, unknown> }]>;
 	} = $props();
 
@@ -78,26 +82,15 @@
 	{/if}
 {/snippet}
 
-{#if !tooltipContent}
-	{@render Button({})}
+{#if tooltipContent && sidebar.state === "collapsed" && !sidebar.isMobile}
+	<NativeTooltip
+		content={tooltipContent}
+		side={tooltipContentProps?.side ?? "right"}
+		class={tooltipContentProps?.class}
+		contentClass={tooltipContentProps?.contentClass}
+	>
+		{@render Button({})}
+	</NativeTooltip>
 {:else}
-	<Tooltip.Root>
-		<Tooltip.Trigger>
-			{#snippet child({ props })}
-				{@render Button({ props })}
-			{/snippet}
-		</Tooltip.Trigger>
-		<Tooltip.Content
-			side="right"
-			align="center"
-			hidden={sidebar.state !== "collapsed" || sidebar.isMobile}
-			{...tooltipContentProps}
-		>
-			{#if typeof tooltipContent === "string"}
-				{tooltipContent}
-			{:else if tooltipContent}
-				{@render tooltipContent()}
-			{/if}
-		</Tooltip.Content>
-	</Tooltip.Root>
+	{@render Button({})}
 {/if}

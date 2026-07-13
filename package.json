@@ -61,8 +61,6 @@
 		"@piton-/analytics-convex": "^1.0.1",
 		"@types/d3-scale": "^4.0.9",
 		"@types/d3-shape": "^3.1.8",
-		"@vercel/analytics": "^2.0.1",
-		"@vercel/speed-insights": "^2.0.0",
 		"better-auth": "1.5.3",
 		"botid": "^1.5.11",
 		"browser-image-compression": "^2.0.2",

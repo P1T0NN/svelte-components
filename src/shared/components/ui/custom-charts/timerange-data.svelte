@@ -138,7 +138,7 @@
 
 <script lang="ts">
     // COMPONENTS
-	import * as Select from '@/shared/components/ui/select/index.js';
+	import { NativeSelect } from '@/shared/components/ui/select/index.js';
 	import * as Popover from '@/shared/components/ui/popover/index.js';
 	import { Button } from '@/shared/components/ui/button/index.js';
 	import RangeCalendar from '@/shared/components/ui/range-calendar/range-calendar.svelte';
@@ -196,8 +196,12 @@
 	let calendarOpen = $state(false);
 
 	const isCustom = $derived(value === 'custom');
-	const selectedLabel = $derived(formatTimeRangeLabel(value, customRange, options, locale, timeZone));
 	const customRangeLabel = $derived(formatDateRange(customRange, locale, undefined, timeZone));
+
+	const selectOptions = $derived([
+		...options.map((o) => ({ value: o.value, label: o.label })),
+		{ value: 'custom', label: customLabel }
+	]);
 
 	function handleValueChange(nextValue: string) {
 		if (nextValue === 'custom') {
@@ -207,17 +211,16 @@
 </script>
 
 <div class={cn('flex flex-wrap items-center justify-end gap-2', className)}>
-	<Select.Root type="single" bind:value onValueChange={handleValueChange}>
-		<Select.Trigger class={selectTriggerClass} aria-label={selectAriaLabel}>
-			{selectedLabel}
-		</Select.Trigger>
-		<Select.Content align="end" class={selectContentClass}>
-			{#each options as option (option.value)}
-				<Select.Item value={option.value} class="rounded-lg">{option.label}</Select.Item>
-			{/each}
-			<Select.Item value="custom" class="rounded-lg">{customLabel}</Select.Item>
-		</Select.Content>
-	</Select.Root>
+	<NativeSelect
+		class={selectTriggerClass}
+		ariaLabel={selectAriaLabel}
+		value={value}
+		onChange={(v) => {
+			value = v as TimeRangeValue;
+			handleValueChange(v);
+		}}
+		options={selectOptions}
+	/>
 
 	{#if isCustom}
 		<Popover.Root bind:open={calendarOpen}>

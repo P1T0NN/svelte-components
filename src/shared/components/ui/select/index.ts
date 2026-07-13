@@ -1,3 +1,4 @@
+import NativeSelect from "./native-select.svelte";
 import Root from "./select.svelte";
 import Group from "./select-group.svelte";
 import Label from "./select-label.svelte";
@@ -34,4 +35,7 @@ export {
 	ScrollUpButton as SelectScrollUpButton,
 	GroupHeading as SelectGroupHeading,
 	Portal as SelectPortal,
+	//
+	NativeSelect,
 };
+export type { SelectOption } from "./native-select.svelte";

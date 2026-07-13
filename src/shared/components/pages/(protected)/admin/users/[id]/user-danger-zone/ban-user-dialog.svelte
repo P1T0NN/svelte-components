@@ -7,12 +7,7 @@
 	// COMPONENTS
 	import ActionButton from '@/shared/components/ui/action-button/action-button.svelte';
 	import { Input } from '@/shared/components/ui/input/index.js';
-	import {
-		Select,
-		SelectContent,
-		SelectItem,
-		SelectTrigger
-	} from '@/shared/components/ui/select/index.js';
+	import { NativeSelect } from '@/shared/components/ui/select/index.js';
 
 	// UTILS
 	import { safeMutation } from '@/shared/utils/convexHelpers';
@@ -73,32 +68,16 @@
 
 		<label class="flex flex-col gap-1 text-sm">
 			<span>{m['AdminUserPage.BanUserDialog.expires']()}</span>
-			<Select
-				type="single"
-				value={expiresIn}
-				onValueChange={(v) => (expiresIn = v)}
+			<NativeSelect
+				bind:value={expiresIn}
 				disabled={isPending}
-			>
-				<SelectTrigger>
-					<span>
-						{#if expiresIn === ''}
-							{m['AdminUserPage.BanUserDialog.permanent']()}
-						{:else if expiresIn === '86400'}
-							{m['AdminUserPage.BanUserDialog.oneDay']()}
-						{:else if expiresIn === '604800'}
-							{m['AdminUserPage.BanUserDialog.sevenDays']()}
-						{:else if expiresIn === '2592000'}
-							{m['AdminUserPage.BanUserDialog.thirtyDays']()}
-						{/if}
-					</span>
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="">{m['AdminUserPage.BanUserDialog.permanent']()}</SelectItem>
-					<SelectItem value="86400">{m['AdminUserPage.BanUserDialog.oneDay']()}</SelectItem>
-					<SelectItem value="604800">{m['AdminUserPage.BanUserDialog.sevenDays']()}</SelectItem>
-					<SelectItem value="2592000">{m['AdminUserPage.BanUserDialog.thirtyDays']()}</SelectItem>
-				</SelectContent>
-			</Select>
+				options={[
+					{ value: '', label: m['AdminUserPage.BanUserDialog.permanent']() },
+					{ value: '86400', label: m['AdminUserPage.BanUserDialog.oneDay']() },
+					{ value: '604800', label: m['AdminUserPage.BanUserDialog.sevenDays']() },
+					{ value: '2592000', label: m['AdminUserPage.BanUserDialog.thirtyDays']() }
+				]}
+			/>
 		</label>
 	</div>
 {/snippet}

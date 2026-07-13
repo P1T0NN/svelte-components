@@ -26,6 +26,9 @@ export default defineConfig({
 			}
 		}
 	},
+	preview: {
+		port: 5173
+	},
 	// layerchart → @dagrejs/dagre ships ESM-only; if left external, Node SSR loads
 	// dagre.esm.js as CJS and throws "Unexpected token 'export'".
 	ssr: {

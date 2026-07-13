@@ -3,48 +3,24 @@
 	import { m } from '@/shared/lib/paraglide/messages';
 
 	// COMPONENTS
-	import {
-		AlertDialog,
-		AlertDialogAction,
-		AlertDialogCancel,
-		AlertDialogContent,
-		AlertDialogDescription,
-		AlertDialogFooter,
-		AlertDialogHeader,
-		AlertDialogTitle,
-		AlertDialogTrigger
-	} from '@/shared/components/ui/alert-dialog';
+	import AlertDialog from '@/shared/components/ui/alert-dialog/alert-dialog.svelte';
+	import { Button } from '@/shared/components/ui/button/index.js';
 
 	// LUCIDE ICONS
 	import { Loader } from '@lucide/svelte';
 
 	interface Props {
-		// Function to call when action is confirmed
 		function: () => Promise<void> | void;
-
-		// State props
 		isPending?: boolean;
-		/** When true the confirm action is rendered disabled. Use for typed-confirm or form-validity gates. */
 		actionDisabled?: boolean;
-
-		// Style props
 		triggerClass?: string;
 		actionClass?: string;
-		/** When true, the dialog gets destructive styling (red-tinted title, destructive action button). */
 		isDestructive?: boolean;
-		/** When true, the proceed/action button is hidden — only the cancel button remains. */
 		hideProceed?: boolean;
-
-		// Children
 		triggerChildren?: import('svelte').Snippet;
-		/** Form fields or any extra UI rendered between the description and the footer. */
 		body?: import('svelte').Snippet;
-
-		// Open state control
 		open?: boolean;
 		onOpenChange?: (open: boolean) => void;
-
-		// Custom text
 		title?: string;
 		description?: string;
 	}
@@ -68,23 +44,27 @@
 	async function handleAction() {
 		await actionFunction();
 		open = false;
+		onOpenChange?.(false);
 	}
 </script>
 
-<AlertDialog bind:open {onOpenChange}>
-	<AlertDialogTrigger class={triggerClass}>
+<AlertDialog
+	bind:open
+	{onOpenChange}
+	class={isDestructive ? 'ring-destructive/30' : ''}
+	triggerClass={triggerClass}
+>
+	{#snippet triggerChildren()}
 		{@render triggerChildren?.()}
-	</AlertDialogTrigger>
+	{/snippet}
 
-	<AlertDialogContent class={isDestructive ? 'ring-destructive/30' : ''}>
-		<AlertDialogHeader>
-			<AlertDialogTitle class={isDestructive ? 'text-destructive' : ''}>
+	{#snippet children({ dialogId })}
+		<header class="alert-dialog__header">
+			<h2 class={isDestructive ? 'text-destructive' : ''}>
 				{title ?? m['AlertDialogButton.title']()}
-			</AlertDialogTitle>
-			<AlertDialogDescription>
-				{description ?? m['AlertDialogButton.description']()}
-			</AlertDialogDescription>
-		</AlertDialogHeader>
+			</h2>
+			<p>{description ?? m['AlertDialogButton.description']()}</p>
+		</header>
 
 		{#if body}
 			<div class="py-2">
@@ -92,17 +72,19 @@
 			</div>
 		{/if}
 
-		<AlertDialogFooter>
-			<AlertDialogCancel
+		<footer class="alert-dialog__footer">
+			<Button
 				type="button"
-				onclick={() => (onOpenChange ? onOpenChange(false) : (open = false))}
+				variant="outline"
+				command="close"
+				commandfor={dialogId}
 				disabled={isPending}
 			>
 				{m['AlertDialogButton.cancel']()}
-			</AlertDialogCancel>
+			</Button>
 
 			{#if !hideProceed}
-				<AlertDialogAction
+				<Button
 					type="button"
 					onclick={handleAction}
 					class={actionClass}
@@ -113,8 +95,8 @@
 						<Loader class="h-3 w-3 animate-spin" />
 					{/if}
 					{m['AlertDialogButton.proceed']()}
-				</AlertDialogAction>
+				</Button>
 			{/if}
-		</AlertDialogFooter>
-	</AlertDialogContent>
+		</footer>
+	{/snippet}
 </AlertDialog>

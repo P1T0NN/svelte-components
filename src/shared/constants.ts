@@ -23,7 +23,7 @@ export const UNPROTECTED_PAGE_ENDPOINTS = {
     SIDEBAR: "/sidebar",
     CALENDAR: "/calendar",
     UPLOAD_FILE: "/file-upload",
-    TABLE: "/table",
+    CUSTOM_COMPONENTS: "/custom-components",
     UPLOADED_FILES: "/uploaded-files/:id",
     SIGNUP: "/signup",
     FORGOT_PASSWORD: "/forgot-password",

@@ -19,13 +19,3 @@ export function isNavItemActive(pathname: string, href: string): boolean {
 	if (href === '/' || href === '') return pathname === '/' || pathname === '';
 	return pathname === href || pathname.startsWith(`${href}/`);
 }
-
-class NormalHeader {
-	menuOpen = $state(false);
-
-	closeMenu() {
-		this.menuOpen = false;
-	}
-}
-
-export const normalHeader = new NormalHeader();

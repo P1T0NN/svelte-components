@@ -1,18 +1,27 @@
 <script lang="ts">
-	import { Separator as SeparatorPrimitive } from "bits-ui";
 	import { cn } from "@/shared/utils/utils.js";
+	import type { HTMLAttributes } from "svelte/elements";
 
 	let {
 		ref = $bindable(null),
 		class: className,
+		orientation = "horizontal",
+		decorative = true,
 		"data-slot": dataSlot = "separator",
 		...restProps
-	}: SeparatorPrimitive.RootProps = $props();
+	}: HTMLAttributes<HTMLDivElement> & {
+		ref?: HTMLDivElement | null;
+		orientation?: "horizontal" | "vertical";
+		decorative?: boolean;
+	} = $props();
 </script>
 
-<SeparatorPrimitive.Root
-	bind:ref
+<div
+	bind:this={ref}
+	role={decorative ? "none" : "separator"}
+	aria-orientation={decorative ? undefined : orientation}
 	data-slot={dataSlot}
+	data-orientation={orientation}
 	class={cn(
 		"bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px",
 		// this is different in shadcn/ui but self-stretch breaks things for us
@@ -20,4 +29,4 @@
 		className
 	)}
 	{...restProps}
-/>
+></div>

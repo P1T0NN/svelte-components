@@ -6,7 +6,7 @@
 
     // COMPONENTS
 	import * as Card from '@/shared/components/ui/card/index.js';
-	import * as Select from '@/shared/components/ui/select/index.js';
+	import { NativeSelect } from '@/shared/components/ui/select/index.js';
 	import RangeCalendar from '@/shared/components/ui/range-calendar/range-calendar.svelte';
 
 	// TYPES
@@ -31,9 +31,6 @@
 		}
 	];
 
-	const selectedLanguage = $derived(
-		languageOptions.find((option) => option.value === locale)?.label ?? 'Language'
-	);
 </script>
 
 <Card.Root>
@@ -43,17 +40,13 @@
 		<Card.Description>{m['LocalizedCalendar.description']()}</Card.Description>
 
 		<Card.Action>
-			<Select.Root type="single" bind:value={locale}>
-				<Select.Trigger class="w-[100px]" aria-label="Select language">
-					{selectedLanguage}
-				</Select.Trigger>
-
-				<Select.Content align="end">
-					{#each languageOptions as option (option.value)}
-						<Select.Item value={option.value}>{option.label}</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
+			<NativeSelect
+				class="w-[100px]"
+				ariaLabel="Select language"
+				value={locale}
+				onChange={(v) => (locale = v as typeof locale)}
+				options={languageOptions}
+			/>
 		</Card.Action>
 	</Card.Header>
 

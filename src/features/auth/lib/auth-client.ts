@@ -18,6 +18,10 @@ import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
 
 export const authClient = createAuthClient({
 	plugins: [convexClient(), emailOTPClient()],
+	// Stop `/get-session` from refetching every time the tab regains focus (default is
+	// on, rate-limited to 5s). That refetch churns the session atom → re-runs
+	// `convexClient.setAuth` → can flash auth state. See FixAuth.md §1.
+	sessionOptions: { refetchOnWindowFocus: false },
 	fetchOptions: {
 		onError: async (context) => {
 			if (context.response.status !== 429) return;

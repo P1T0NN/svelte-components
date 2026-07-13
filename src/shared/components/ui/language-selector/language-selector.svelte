@@ -3,7 +3,7 @@
 	import { setLocale, getLocale } from '@/shared/lib/paraglide/runtime';
 
 	// COMPONENTS
-	import { Select, SelectTrigger, SelectContent, SelectItem } from '@/shared/components/ui/select';
+	import { NativeSelect } from '@/shared/components/ui/select';
 
 	// SVGS
 	import UnitedKingdomFlag from '@/shared/svgs/united-kingdom-flag.svelte';
@@ -31,51 +31,23 @@
 	}
 </script>
 
-<Select type="single" bind:value={selectedLanguage} onValueChange={handleLanguageChange}>
-	<SelectTrigger
-		class={cn(
-			'flex items-center space-x-2 w-auto',
-			variant === 'header' &&
-				'border-hero-overlay-foreground/20 bg-hero-overlay-foreground/10 hover:bg-hero-overlay-foreground/20'
-		)}
-	>
-		{#if selectedLanguage === 'en'}
+<NativeSelect
+	value={selectedLanguage}
+	onChange={handleLanguageChange}
+	ariaLabel="Select language"
+	class={cn(
+		'w-auto',
+		variant === 'header' &&
+			'border-hero-overlay-foreground/20 bg-hero-overlay-foreground/10 hover:bg-hero-overlay-foreground/20 text-hero-overlay-foreground'
+	)}
+	options={languages.map((language) => ({ value: language.locale, label: language.name }))}
+>
+	{#snippet option(opt)}
+		{#if opt.value === 'en'}
 			<UnitedKingdomFlag />
 		{:else}
 			<GermanyFlag />
 		{/if}
-
-		<span
-			class={cn(
-				'font-dm-sans text-sm font-medium',
-				variant === 'header' ? 'text-hero-overlay-foreground' : 'text-foreground'
-			)}
-		>
-			{selectedLanguage === 'en' ? 'EN' : 'DE'}
-		</span>
-	</SelectTrigger>
-
-	<SelectContent>
-		{#each languages as language}
-			<SelectItem value={language.locale}>
-				<div class="flex items-center space-x-3">
-					{#if language.locale === 'en'}
-						<UnitedKingdomFlag />
-					{:else}
-						<GermanyFlag />
-					{/if}
-
-					<div class="flex flex-col">
-						<span class="font-dm-sans text-sm font-medium">
-							{language.name}
-						</span>
-
-						<span class="font-dm-sans text-xs text-muted-foreground">
-							{language.locale === 'en' ? 'EN' : 'DE'}
-						</span>
-					</div>
-				</div>
-			</SelectItem>
-		{/each}
-	</SelectContent>
-</Select>
+		<span class="font-dm-sans text-sm font-medium">{opt.label}</span>
+	{/snippet}
+</NativeSelect>

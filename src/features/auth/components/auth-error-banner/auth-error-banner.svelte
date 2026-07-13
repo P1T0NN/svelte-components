@@ -4,22 +4,12 @@
 	import { goto } from '$app/navigation';
 
 	// COMPONENTS
-	import * as AlertDialog from '@/shared/components/ui/alert-dialog/index.js';
+	import AlertDialog from '@/shared/components/ui/alert-dialog/alert-dialog.svelte';
+	import { Button } from '@/shared/components/ui/button/index.js';
 
 	// LUCIDE ICONS
 	import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
 
-	/**
-	 * Surfaces auth-related redirect errors that BA appends as query params
-	 * (e.g. `?error=banned&error_description=…` after a banned user is bounced
-	 * out of a sign-in callback). Mounted once in the root layout so it catches
-	 * the redirect regardless of which path it landed on.
-	 *
-	 * Dismiss writes a clean URL via `goto(replaceState: true)` so a refresh
-	 * doesn't re-open the dialog.
-	 */
-
-	/** Map of known BA error codes → human-readable titles. Unknown codes fall back to a generic title. */
 	const TITLES: Record<string, string> = {
 		banned: 'Account banned',
 		access_denied: 'Access denied',
@@ -39,31 +29,24 @@
 	}
 </script>
 
-<AlertDialog.Root
-	{open}
-	onOpenChange={(o) => {
-		if (!o) dismiss();
-	}}
->
-	<AlertDialog.Content>
-		<AlertDialog.Header>
+<AlertDialog {open} hideTrigger>
+	{#snippet children({ dialogId })}
+		<header class="alert-dialog__header">
 			<div class="flex items-center gap-3">
 				<div
 					class="bg-destructive/10 text-destructive flex size-10 shrink-0 items-center justify-center rounded-full"
 				>
 					<ShieldAlertIcon class="size-5" />
 				</div>
-				<AlertDialog.Title>{title}</AlertDialog.Title>
+				<h2>{title}</h2>
 			</div>
 			{#if description}
-				<AlertDialog.Description class="pt-2">
-					{description}
-				</AlertDialog.Description>
+				<p class="pt-2">{description}</p>
 			{/if}
-		</AlertDialog.Header>
+		</header>
 
-		<AlertDialog.Footer>
-			<AlertDialog.Action onclick={dismiss}>Got it</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+		<footer class="alert-dialog__footer">
+			<Button type="button" command="close" commandfor={dialogId} onclick={dismiss}>Got it</Button>
+		</footer>
+	{/snippet}
+</AlertDialog>

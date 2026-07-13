@@ -3,7 +3,7 @@
 	import { Arc, PieChart, Text } from 'layerchart';
 	import * as Chart from "@/shared/components/ui/chart/index.js"
 	import * as Card from "@/shared/components/ui/card/index.js"
-	import * as Select from "@/shared/components/ui/select/index.js"
+	import { NativeSelect } from "@/shared/components/ui/select/index.js"
 	import ChartStyle from "@/shared/components/ui/chart/chart-style.svelte"
 
 	// LUCIDE ICONS
@@ -42,31 +42,23 @@
 			<Card.Title>Pie Chart - Interactive</Card.Title>
 			<Card.Description>January - June 2024</Card.Description>
 		</div>
-		<Select.Root type="single" bind:value={activeMonth}>
-			<Select.Trigger
-				class="ms-auto h-7 w-32.5 rounded-lg ps-2.5 text-sm"
-				aria-label="Select a value"
-			>
+		<NativeSelect
+			class="ms-auto h-7 w-32.5 rounded-lg ps-2.5 text-sm"
+			ariaLabel="Select a value"
+			bind:value={activeMonth}
+			options={months.map((month) => ({
+				value: month,
+				label: chartConfig[month as keyof typeof chartConfig].label ?? month
+			}))}
+		>
+			{#snippet option(opt)}
 				<span
 					class="flex h-3 w-3 shrink-0 rounded-sm"
-					style:background-color={`var(--color-${activeMonth})`}
+					style:background-color={`var(--color-${opt.value})`}
 				></span>
-				{activeMonth ? chartConfig[activeMonth as keyof typeof chartConfig].label : 'Select month'}
-			</Select.Trigger>
-			<Select.Content align="end" class="rounded-xl">
-				{#each months as month (month)}
-					{@const config = chartConfig[month as keyof typeof chartConfig]}
-
-					{#if config}
-						<Select.Item value={month} label={config.label} class="rounded-lg [&_span]:flex">
-							<div class="flex items-center gap-2 text-xs">
-								{config?.label}
-							</div>
-						</Select.Item>
-					{/if}
-				{/each}
-			</Select.Content>
-		</Select.Root>
+				<span class="text-xs">{opt.label}</span>
+			{/snippet}
+		</NativeSelect>
 	</Card.Header>
 	<Card.Content class="flex-1">
 		<Chart.Container {id} config={chartConfig} class="mx-auto aspect-square max-h-62.5">

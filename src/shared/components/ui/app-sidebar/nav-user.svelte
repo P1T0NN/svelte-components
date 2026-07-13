@@ -7,9 +7,13 @@
 
 	// COMPONENTS
 	import * as Avatar from '@/shared/components/ui/avatar/index.js';
-	import * as DropdownMenu from '@/shared/components/ui/dropdown-menu/index.js';
+	import DropdownMenu from '@/shared/components/ui/dropdown-menu/dropdown-menu.svelte';
+	import { sidebarMenuButtonVariants } from '@/shared/components/ui/sidebar/sidebar-menu-button.svelte';
 	import * as Sidebar from '@/shared/components/ui/sidebar/index.js';
 	import { Spinner } from '@/shared/components/ui/spinner/index.js';
+
+	// UTILS
+	import { cn } from '@/shared/utils/utils.js';
 
 	// LUCIDE ICONS
 	import BadgeCheckIcon from '@lucide/svelte/icons/badge-check';
@@ -20,104 +24,145 @@
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 
 	const sidebar = Sidebar.useSidebar();
-
 	const auth = useAuth();
-
 	const user = $derived(authClass.currentUser);
+
 	const userLoading = $derived(authClass.userLoading);
-	/** Avoid “Account” flash before auth + Convex have settled. */
-	const showUserLoading = $derived(auth.isLoading || userLoading || (auth.isAuthenticated && user === undefined));
+
+	const showUserLoading = $derived(
+		auth.isLoading || userLoading || (auth.isAuthenticated && user === undefined)
+	);
+
+	const triggerClass = cn(
+		sidebarMenuButtonVariants({ size: 'lg' }),
+
+		'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+	);
 </script>
 
 <Sidebar.Menu>
 	<Sidebar.MenuItem>
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger disabled={showUserLoading}>
-				{#snippet child({ props })}
-					<Sidebar.MenuButton
-						size="lg"
-						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-						{...props}
+		<DropdownMenu
+			triggerVariant="ghost"
+			triggerDisabled={showUserLoading}
+			{triggerClass}
+			side={sidebar.isMobile ? 'bottom' : 'right'}
+			align="end"
+			sideOffset={4}
+			contentClass="min-w-56 rounded-lg"
+		>
+			{#snippet triggerChildren()}
+				{#if showUserLoading}
+					<div
+						class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/30"
+						aria-hidden="true"
 					>
-						{#if showUserLoading}
-							<div
-								class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/30"
-								aria-hidden="true"
-							>
-								<Spinner class="size-4 text-sidebar-foreground" />
-							</div>
-						{:else}
-							<Avatar.Root class="size-8 rounded-lg">
-								<Avatar.Image src={user?.image} alt={user?.name ?? ''} />
-								<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
-							</Avatar.Root>
+						<Spinner class="size-4 text-sidebar-foreground" />
+					</div>
+				{:else}
+					<Avatar.Root class="size-8 rounded-lg">
+						<Avatar.Image src={user?.image} alt={user?.name ?? ''} />
 
-							<div class="grid flex-1 text-start text-sm leading-tight">
-								<span class="truncate font-medium">{user?.name ?? 'Account'}</span>
-								<span class="text-muted-foreground truncate text-xs">{user?.email ?? ''}</span>
-							</div>
-						{/if}
+						<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
+					</Avatar.Root>
 
-						<ChevronsUpDownIcon class="ms-auto size-4 shrink-0" />
-					</Sidebar.MenuButton>
-				{/snippet}
-			</DropdownMenu.Trigger>
+					<div class="grid flex-1 text-start text-sm leading-tight">
+						<span class="truncate font-medium">{user?.name ?? 'Account'}</span>
 
-			<DropdownMenu.Content
-				class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
-				side={sidebar.isMobile ? 'bottom' : 'right'}
-				align="end"
-				sideOffset={4}
-			>
-				<DropdownMenu.Label class="p-0 font-normal">
+						<span class="truncate text-xs text-muted-foreground">{user?.email ?? ''}</span>
+					</div>
+				{/if}
+
+				<ChevronsUpDownIcon class="ms-auto size-4 shrink-0" />
+			{/snippet}
+
+			{#snippet content({ popoverId })}
+				<div class="dropdown-menu__label">
 					<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
 						<Avatar.Root class="size-8 rounded-lg">
 							<Avatar.Image src={user?.image} alt={user?.name ?? ''} />
+
 							<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
 						</Avatar.Root>
 
 						<div class="grid flex-1 text-start text-sm leading-tight">
 							<span class="truncate font-medium">{user?.name ?? 'Account'}</span>
-							<span class="text-muted-foreground truncate text-xs">{user?.email ?? ''}</span>
+
+							<span class="truncate text-xs text-muted-foreground">{user?.email ?? ''}</span>
 						</div>
 					</div>
-				</DropdownMenu.Label>
+				</div>
 
-				<DropdownMenu.Separator />
+				<hr class="dropdown-menu__separator" />
 
-				<DropdownMenu.Group>
-					<DropdownMenu.Item>
+				<div role="group">
+					<button
+						type="button"
+						role="menuitem"
+						popovertarget={popoverId}
+						popovertargetaction="hide"
+						class="dropdown-menu__item"
+					>
 						<SparklesIcon />
+
 						Upgrade to Pro
-					</DropdownMenu.Item>
-				</DropdownMenu.Group>
+					</button>
+				</div>
 
-				<DropdownMenu.Separator />
+				<hr class="dropdown-menu__separator" />
 
-				<DropdownMenu.Group>
-					<DropdownMenu.Item>
+				<div role="group">
+					<button
+						type="button"
+						role="menuitem"
+						popovertarget={popoverId}
+						popovertargetaction="hide"
+						class="dropdown-menu__item"
+					>
 						<BadgeCheckIcon />
+
 						Account
-					</DropdownMenu.Item>
+					</button>
 
-					<DropdownMenu.Item>
+					<button
+						type="button"
+						role="menuitem"
+						popovertarget={popoverId}
+						popovertargetaction="hide"
+						class="dropdown-menu__item"
+					>
 						<CreditCardIcon />
+
 						Billing
-					</DropdownMenu.Item>
+					</button>
 
-					<DropdownMenu.Item>
+					<button
+						type="button"
+						role="menuitem"
+						popovertarget={popoverId}
+						popovertargetaction="hide"
+						class="dropdown-menu__item"
+					>
 						<BellIcon />
+
 						Notifications
-					</DropdownMenu.Item>
-				</DropdownMenu.Group>
+					</button>
+				</div>
 
-				<DropdownMenu.Separator />
+				<hr class="dropdown-menu__separator" />
 
-				<DropdownMenu.Item>
+				<button
+					type="button"
+					role="menuitem"
+					popovertarget={popoverId}
+					popovertargetaction="hide"
+					class="dropdown-menu__item"
+				>
 					<LogOutIcon />
+
 					Log out
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+				</button>
+			{/snippet}
+		</DropdownMenu>
 	</Sidebar.MenuItem>
 </Sidebar.Menu>

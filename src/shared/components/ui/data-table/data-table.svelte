@@ -7,14 +7,8 @@
 	import DataTableSelectedItemsStatus from './data-table-selected-items-status.svelte';
 	import { PaginatedData } from '@/shared/components/ui/paginated-data/index.js';
 	import { Input } from '@/shared/components/ui/input/index.js';
-	import {
-		Select,
-		SelectContent,
-		SelectItem,
-		SelectTrigger
-	} from '@/shared/components/ui/select/index.js';
+	import { NativeSelect } from '@/shared/components/ui/select/index.js';
 	import SearchIcon from '@lucide/svelte/icons/search';
-	import ArrowUpDownIcon from '@lucide/svelte/icons/arrow-up-down';
 
 	// UTILS
 	import { defaultRowKey } from './dataTableUtils.js';
@@ -134,6 +128,14 @@
 		sortColumn && sortDirection ? `${sortColumn}:${sortDirection}` : ''
 	);
 
+	const mobileSortOptions = $derived([
+		{ value: '', label: m['DataTable.sortDefault']() },
+		...sortableColumns.flatMap((col) => [
+			{ value: `${col.id}:desc`, label: `${col.header} ↓` },
+			{ value: `${col.id}:asc`, label: `${col.header} ↑` }
+		])
+	]);
+
 	function onMobileSortChange(next: string) {
 		if (!next) {
 			sortColumn = undefined;
@@ -147,13 +149,6 @@
 		sortDirection = dir;
 		page = 1;
 	}
-
-	const activeSortLabel = $derived.by(() => {
-		if (!sortColumn || !sortDirection) return null;
-		const col = sortableColumns.find((c) => c.id === sortColumn);
-		if (!col) return null;
-		return { header: col.header, direction: sortDirection };
-	});
 
 	const selectedSet = $derived(new Set(selectedIds));
 
@@ -239,31 +234,14 @@
 
 			{#if sortableColumns.length > 0}
 				<div class="md:hidden">
-					<Select
-						type="single"
+					<NativeSelect
+						class="w-full"
+						ariaLabel={m['DataTable.sortBy']()}
 						value={mobileSortValue}
-						onValueChange={onMobileSortChange}
+						onChange={onMobileSortChange}
 						disabled={isSearching}
-					>
-						<SelectTrigger class="w-full" aria-label={m['DataTable.sortBy']()}>
-							<ArrowUpDownIcon class="size-4 opacity-70" aria-hidden="true" />
-							<span class="truncate">
-								{#if activeSortLabel}
-									{m['DataTable.sortBy']()}: {activeSortLabel.header}
-									{activeSortLabel.direction === 'asc' ? '↑' : '↓'}
-								{:else}
-									{m['DataTable.sortBy']()}
-								{/if}
-							</span>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="">{m['DataTable.sortDefault']()}</SelectItem>
-							{#each sortableColumns as col (col.id)}
-								<SelectItem value={`${col.id}:desc`}>{col.header} ↓</SelectItem>
-								<SelectItem value={`${col.id}:asc`}>{col.header} ↑</SelectItem>
-							{/each}
-						</SelectContent>
-					</Select>
+						options={mobileSortOptions}
+					/>
 				</div>
 			{/if}
 		</div>
