@@ -1,20 +1,18 @@
 <script lang="ts">
-	// LIBRARIES
-	import { m } from "@/shared/lib/paraglide/messages";
-
 	// COMPONENTS
 	import UploadFileItemMultiple from './upload-file-item-multiple.svelte';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
 
 	// TYPES
-	import type { UploadFileRow } from '@/features/uploadFile/types/uploadFileTypes';
+	import type { UploadFileRow, UploadImage } from '@/features/uploadFile/types/uploadFileTypes';
+	import { uploadImageKey } from '@/features/uploadFile/utils/uploadImageUtils';
 
 	type Props = {
 		rows: UploadFileRow[];
-		files?: File[];
-		selectedFile?: File | null;
+		files?: UploadImage[];
+		selectedFile?: UploadImage | null;
 		onDragOver?: (e: DragEvent) => void;
 		onDrop?: (e: DragEvent) => void;
 		hasCoverImage?: boolean;
@@ -23,8 +21,8 @@
 
 	let {
 		rows,
-		files = $bindable<File[]>([]),
-		selectedFile = $bindable<File | null>(null),
+		files = $bindable<UploadImage[]>([]),
+		selectedFile = $bindable<UploadImage | null>(null),
 		onDragOver,
 		onDrop,
 		hasCoverImage = false,
@@ -36,12 +34,12 @@
 <div
 	class={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', className)}
 	role="region"
-	aria-label={m['UploadFile.UploadFileMultiple.placeholder']()}
+	aria-label="Uploaded files. Drop more files here to add."
 	aria-live="polite"
 	ondragover={onDragOver}
 	ondrop={onDrop}
 >
-	{#each rows as row (`${row.file.name}-${row.file.size}-${row.file.lastModified}-${row.index}`)}
+	{#each rows as row (`${uploadImageKey(row.file)}#${row.index}`)}
 		<UploadFileItemMultiple
 			file={row.file}
 			index={row.index}

@@ -1,23 +1,23 @@
 <script lang="ts">
 	// LIBRARIES
 	import { api } from '@/convex/_generated/api';
-	import { useQuery } from 'convex-svelte';
+	import { useQuery } from '@mmailaender/convex-svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { authClient } from '@/features/auth/lib/auth-client';
-	import { localizeHref } from '@/shared/lib/paraglide/runtime';
+	import { localizeHref } from '@/lib/paraglide/runtime';
 
 	// CLASSES
 	import { authClass } from '@/features/auth/classes/authClass.svelte';
 
 	// CONFIG
-	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 	// COMPONENTS
-	import UserTabs from '@/shared/components/pages/(protected)/admin/users/[id]/user-tabs.svelte';
-	import UserPageLoading from '@/shared/components/pages/(protected)/admin/users/[id]/loading/user-page-loading.svelte';
-	import UserPageEmpty from '@/shared/components/pages/(protected)/admin/users/[id]/empty/user-page-empty.svelte';
-	import UserPageError from '@/shared/components/pages/(protected)/admin/users/[id]/error/user-page-error.svelte';
+	import AdminUserTabs from '@/components/pages/(protected)/admin/users/[id]/admin-user-tabs.svelte';
+	import AdminUserPageLoading from '@/components/pages/(protected)/admin/users/[id]/loading/admin-user-page-loading.svelte';
+	import AdminUserPageEmpty from '@/components/pages/(protected)/admin/users/[id]/empty/admin-user-page-empty.svelte';
+	import { ErrorComponent } from '@/components/ui/error-component/index.js';
 
 	// TYPES
 	import type { Doc } from '@/convex/auth/component/_generated/dataModel';
@@ -31,7 +31,7 @@
 	const userQuery = useQuery(api.tables.users.userQueries.getUserById, () =>
 		userId ? { userId } : 'skip'
 	);
-	const user = $derived(userQuery.data as Doc<"user"> | null | undefined);
+	const user = $derived(userQuery.data as Doc<'user'> | null | undefined);
 
 	/**
 	 * If the admin revokes their own current session — directly, or via "Revoke
@@ -58,12 +58,17 @@
 
 <section class="flex w-full flex-col gap-4 p-4 md:p-6">
 	{#if userQuery.error}
-		<UserPageError />
+		<ErrorComponent
+			variant="alert"
+			title="Failed to load user"
+			description="Something went wrong while fetching this user. Please try again."
+			retryLabel="Retry"
+		/>
 	{:else if user === null}
-		<UserPageEmpty />
+		<AdminUserPageEmpty />
 	{:else if user === undefined}
-		<UserPageLoading />
+		<AdminUserPageLoading />
 	{:else}
-		<UserTabs {user} />
+		<AdminUserTabs {user} />
 	{/if}
 </section>

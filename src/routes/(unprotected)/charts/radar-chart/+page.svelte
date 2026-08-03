@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import RadarChart from '@/shared/components/ui/custom-charts/charts-only/radar-chart.svelte';
+	import Section from '@/components/ui/section/section.svelte';
+	import RadarChart from '@/components/ui/custom-charts/charts-only/radar-chart.svelte';
 	import { Axis, Text, Grid } from 'layerchart';
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	const singleData = [
 		{ month: 'January', desktop: 186 },

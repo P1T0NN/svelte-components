@@ -1,14 +1,14 @@
 <script lang="ts">
 	// CONFIG
-	import { ADMIN_PAGE_ENDPOINTS } from '@/shared/constants.js';
+	import { ADMIN_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 	// COMPONENTS
-	import * as Sidebar from '@/shared/components/ui/sidebar/index.js';
-	import AppSidebar from '@/shared/components/ui/app-sidebar/app-sidebar.svelte';
-	import SiteHeader from '@/shared/components/ui/app-sidebar/site-header.svelte';
+	import * as Sidebar from '@/components/ui/sidebar/index.js';
+	import AppSidebar from '@/components/ui/app-sidebar/app-sidebar.svelte';
+	import SiteHeader from '@/components/ui/app-sidebar/site-header.svelte';
 
 	// TYPES
-	import type { AppSidebarNavItems } from '@/shared/components/ui/app-sidebar/types.js';
+	import type { AppSidebarNavItems } from '@/components/ui/app-sidebar/types.js';
 
 	// LUCIDE ICONS
 	import FrameIcon from '@lucide/svelte/icons/frame';
@@ -27,7 +27,7 @@
 				name: 'Users',
 				url: ADMIN_PAGE_ENDPOINTS.USERS,
 				icon: PieChartIcon
-			},
+			}
 		]
 	};
 </script>

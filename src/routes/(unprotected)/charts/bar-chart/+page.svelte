@@ -1,10 +1,10 @@
 <script lang="ts">
-    // COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import BarChart from '@/shared/components/ui/custom-charts/charts-only/bar-chart.svelte';
+	// COMPONENTS
+	import Section from '@/components/ui/section/section.svelte';
+	import BarChart from '@/components/ui/custom-charts/charts-only/bar-chart.svelte';
 
 	// TYPES
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	const singleData = [
 		{ month: 'January', desktop: 186 },

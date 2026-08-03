@@ -2,15 +2,14 @@
 import { api } from '@/convex/_generated/api';
 
 // UTILS
-import { safeCommand } from '@/shared/utils/remoteFunctionsUtils.js';
+import { safeCommand } from '@/utils/remoteFunctionsUtils.js';
 import {
 	createSearchInputRemoteHandler,
 	defineSearchInputRemoteSource
-} from '@/shared/components/ui/search-input/createSearchInputRemote.server.js';
-
+} from '@/components/ui/search-input/createSearchInputRemote.server.js';
 
 // SCHEMAS
-import { searchInputRemoteSchema } from '@/shared/components/ui/search-input/searchInputSchemas.js';
+import { searchInputRemoteSchema } from '@/components/ui/search-input/searchInputSchemas.js';
 
 // TYPES
 import type { Doc } from '@/convex/_generated/dataModel';

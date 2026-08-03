@@ -10,7 +10,7 @@ const schema = defineSchema({
 	// access via `authComponent.getAuthUser(ctx)`. Foreign-key columns below store the
 	// better-auth user id as a plain string.
 
-	// Audit logs — toggle population via FEATURES.AUDIT_LOGS in projectSettings.ts.
+	// Audit logs — toggle population via FEATURES.AUDIT_LOGS in `@/shared/config.ts`.
 	// The table itself is always declared so flipping the flag needs no migration.
 	auditLogs: auditLogTable,
 
@@ -66,8 +66,18 @@ const schema = defineSchema({
 		.index('by_name', ['name'])
 		// Two single-field indexes exercising `fetchOptimized` union mode (OR across
 		// index ranges). See `fetchTestRowsUnion` in testQueries.ts.
+		//
+		// `by_role` overlaps the `by_role_plan` prefix and would normally be redundant, but
+		// union mode's k-way cursor merge requires every spec to `eq` all of its index's
+		// fields — a `by_role_plan` spec with only `role` bound doesn't qualify. Kept
+		// deliberately, not by accident.
 		.index('by_role', ['role'])
 		.index('by_plan', ['plan'])
+		// Composite for the catalog demo: filtering by role AND plan needs one index that
+		// covers both. Without it a two-filter request would have to apply one filter in the
+		// index and the other in memory — which changes what the page returns, not just what
+		// it costs.
+		.index('by_role_plan', ['role', 'plan'])
 });
 
 export default schema;

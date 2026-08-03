@@ -7,3 +7,13 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Generated output — codegen owns the formatting; re-generated on every convex deploy,
+# so letting prettier touch it guarantees a permanently red `lint` script.
+src/convex/_generated
+src/convex/auth/component/_generated
+src/lib/paraglide
+
+# Notes containing intentional pseudo-code in fenced blocks (e.g. `api.<your>.getCurrentUser`).
+# Prettier formats embedded snippets and mangles placeholders it cannot parse.
+FixAuth.md

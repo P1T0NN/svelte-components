@@ -4,8 +4,8 @@
 	import { goto } from '$app/navigation';
 
 	// COMPONENTS
-	import AlertDialog from '@/shared/components/ui/alert-dialog/alert-dialog.svelte';
-	import { Button } from '@/shared/components/ui/button/index.js';
+	import AlertDialog from '@/components/ui/alert-dialog/alert-dialog.svelte';
+	import { Button } from '@/components/ui/button/index.js';
 
 	// LUCIDE ICONS
 	import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
@@ -34,7 +34,7 @@
 		<header class="alert-dialog__header">
 			<div class="flex items-center gap-3">
 				<div
-					class="bg-destructive/10 text-destructive flex size-10 shrink-0 items-center justify-center rounded-full"
+					class="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive"
 				>
 					<ShieldAlertIcon class="size-5" />
 				</div>

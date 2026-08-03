@@ -9,7 +9,7 @@ import { requireAdmin } from '@/convex/auth/middleware/authMiddleware';
 
 // TYPES
 import type { QueryCtx } from '@/convex/_generated/server';
-import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
+import type { ConvexErrorPayload } from '@/shared/types/types';
 
 /**
  * Stable event-name constants for product code. The library is the analytics
@@ -163,10 +163,7 @@ export const analytics = defineAnalytics(components.analytics, {
 			.from('storage.usage_recorded', 'file.uploaded')
 			.value('bytes')
 			.by('provider', 'mimeType'),
-		featureUsage: count('Feature usage')
-			.from('feature.used')
-			.by('feature', 'surface')
-			.adminOnly()
+		featureUsage: count('Feature usage').from('feature.used').by('feature', 'surface').adminOnly()
 	}),
 	settings: {
 		trafficMode: 'mediumVolume',
@@ -192,8 +189,7 @@ export const analytics = defineAnalytics(components.analytics, {
 		const authCtx = ctx as unknown as QueryCtx;
 
 		if (operation.type === 'read') {
-			const requested =
-				operation.metrics ?? (operation.metric ? [operation.metric] : []);
+			const requested = operation.metrics ?? (operation.metric ? [operation.metric] : []);
 
 			if (requested.some((metric) => ADMIN_ONLY_METRICS.has(metric))) {
 				await requireAdmin(authCtx);

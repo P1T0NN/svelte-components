@@ -3,21 +3,20 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 
 // LIBRARIES
-import { m } from '@/shared/lib/paraglide/messages';
 import { toast } from 'svelte-sonner';
 
 // CONFIG
-import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
+import { PROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 // UTILS
 import { authClient } from '@/features/auth/lib/auth-client';
-import { signUpFormSchema } from './sign-up-form-schema.js';
-import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
-import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
+import { signUpSchema } from '@/shared/features/auth/schemas/signUpSchema.js';
+import { zodIssuesToFieldErrors } from '@/features/validations/utils/fieldErrors.js';
+import { rateLimitMessage } from '@/features/validations/utils/translateFromBackend';
 
 // TYPES
 import type { SignUpFormStep, SignUpField } from './signUpFormTypes.js';
-import type { FieldErrors } from '@/shared/types/types';
+import type { FieldErrors } from '@/shared/features/validations/types/validationsTypes';
 
 export type SignUpFormCopy = {
 	signUpFailed: () => string;
@@ -40,7 +39,8 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 		const form = event.currentTarget as HTMLFormElement;
 		const formData = new FormData(form);
 
-		const p = signUpFormSchema.safeParse({
+		// The password-match rule lives in the schema, so one parse validates everything.
+		const p = signUpSchema.safeParse({
 			name: String(formData.get('name') ?? ''),
 			email: String(formData.get('email') ?? ''),
 			password: String(formData.get('password') ?? ''),
@@ -50,12 +50,6 @@ export function createSignUpForm(copy: SignUpFormCopy) {
 
 		if (!p.success) {
 			fieldErrors = zodIssuesToFieldErrors<SignUpField>(p.error.issues);
-			errorMessage = null;
-			return;
-		}
-
-		if (p.data.password !== p.data.confirmPassword) {
-			fieldErrors = { confirmPassword: m['ValidationMessages.SignUpForm.passwordsMustMatch']() };
 			errorMessage = null;
 			return;
 		}

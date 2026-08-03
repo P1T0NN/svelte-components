@@ -191,7 +191,8 @@
 			"unknown": "Unknown",
 			"remove": "Remove {name}",
 			"cover": "Cover",
-			"setCover": "Set {name} as cover image"
+			"setCover": "Set {name} as cover image",
+			"alreadyUploaded": "Already uploaded"
 		},
 		"UploadFileSingle": {
 			"dropzoneDescription": "Choose or drop a file, preview it, then save. Use",
@@ -200,7 +201,8 @@
 			"replace": "Replace",
 			"ifYouChangeYourMind": "on the file card if you change your mind.",
 			"placeholder": "File preview. Drop a file here to replace.",
-			"unknownType": "Unknown type"
+			"unknownType": "Unknown type",
+			"alreadyUploaded": "Already uploaded"
 		},
 		"UploadFileEmpty": {
 			"choose": "Choose",
@@ -230,6 +232,9 @@
 		"ariaDataRows": "Data rows",
 		"emptyTitle": "No results",
 		"emptyDescription": "Nothing to show yet. Try adjusting filters or add new data.",
+		"errorTitle": "Couldn't load data",
+		"errorDescription": "Something went wrong while loading this list. Please try again.",
+		"errorRetry": "Retry",
 		"delete": "Delete",
 		"searchPlaceholder": "Search…",
 		"sortAscending": "Sort ascending",
@@ -340,7 +345,10 @@
 			"description": "Devices currently signed in. Revoking signs the device out immediately.",
 			"revokeAll": "Revoke all",
 			"failedLoad": "Failed to load sessions.",
+			"failedLoadDescription": "Something went wrong while loading sessions. Please try again.",
+			"retry": "Retry",
 			"noSessions": "No active sessions.",
+			"noSessionsDescription": "This user isn't signed in on any device right now.",
 			"unknownDevice": "Unknown device",
 			"ip": "IP",
 			"created": "Created",
@@ -351,7 +359,10 @@
 			"title": "Linked accounts",
 			"description": "Sign-in providers connected to this user.",
 			"failedLoad": "Failed to load accounts.",
+			"failedLoadDescription": "Something went wrong while loading accounts. Please try again.",
+			"retry": "Retry",
 			"noAccounts": "No linked accounts.",
+			"noAccountsDescription": "This user has no sign-in provider connected yet.",
 			"passwordSet": "Password set",
 			"noPassword": "No password",
 			"id": "ID",
@@ -424,40 +435,26 @@
 	},
 
 	"ValidationMessages": {
-		"LoginForm": {
-			"emailRequired": "Enter your email.",
-			"invalidEmail": "Invalid email.",
-			"passwordRequired": "Enter your password.",
-			"passwordMinLength": "At least 8 characters."
+		"Default": {
+			"required": "This field is required.",
+			"invalidValue": "Please enter a valid value.",
+			"notANumber": "Please enter a number.",
+			"invalidDate": "Please enter a valid date.",
+			"invalidEmail": "Please enter a valid email address.",
+			"invalidUrl": "Please enter a valid link.",
+			"invalidChoice": "Please pick one of the available options.",
+			"textTooShort": "Please enter at least {min} characters.",
+			"textTooLong": "Please keep it under {max} characters.",
+			"tooFewItems": "Please add at least {min}.",
+			"tooManyItems": "Please add no more than {max}.",
+			"numberNotNegative": "This can't be a negative number.",
+			"numberTooSmall": "Please enter {min} or more.",
+			"numberTooBig": "Please enter {max} or less."
 		},
-		"PasswordResetRequestForm": {
-			"emailRequired": "Enter your email.",
-			"invalidEmail": "Invalid email."
-		},
-		"PasswordResetVerifyForm": {
-			"codeRequired": "Enter the code.",
+		"Auth": {
 			"codeFormat": "Use the 8-digit code from your email.",
-			"newPasswordRequired": "Enter a new password.",
-			"newPasswordMinLength": "At least 8 characters.",
 			"passwordTooCommon": "That password is too common. Please choose a stronger one.",
-			"confirmPasswordRequired": "Confirm your new password.",
-			"passwordsMustMatch": "Passwords must match.",
-			"invalidEmail": "Invalid email."
-		},
-		"SignUpForm": {
-			"nameRequired": "Enter your full name.",
-			"emailRequired": "Enter your email.",
-			"invalidEmail": "Invalid email.",
-			"passwordRequired": "Enter your password.",
-			"passwordMinLength": "At least 8 characters.",
-			"passwordTooCommon": "That password is too common. Please choose a stronger one.",
-			"confirmPasswordRequired": "Confirm your password.",
 			"passwordsMustMatch": "Passwords must match."
-		},
-		"EmailVerificationForm": {
-			"codeRequired": "Enter the code.",
-			"codeFormat": "Use the 8-digit code from your email.",
-			"invalidEmail": "Invalid email."
 		}
 	},
 
@@ -495,7 +492,7 @@
 		"TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
 		"TOO_MANY_REQUESTS_SECONDS": "Too many requests. Try again in {seconds}s.",
 		"TOO_MANY_REQUESTS_MINUTES": "Too many requests. Try again in {minutes} min.",
-		
+
 		"UNEXPECTED_ERROR": "An unexpected error occurred. Please try again."
 	}
 }

@@ -1,4 +1,4 @@
-import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 export type VisitorTimeSeriesDatum = {
 	date: Date;

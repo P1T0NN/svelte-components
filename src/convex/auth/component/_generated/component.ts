@@ -1087,7 +1087,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
             maximumRowsRead?: number;
             numItems: number;
           };
-          role?: "user" | "admin";
+          role?: string;
           search?: string;
           searchField?: "email" | "name";
           sortColumn?: "name" | "email" | "createdAt";

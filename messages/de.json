@@ -89,7 +89,7 @@
 	},
 
 	"ValidationMessages": {
- 		"PasswordResetVerifyForm": {
+		"PasswordResetVerifyForm": {
 			"passwordTooCommon": "Dieses Passwort ist zu verbreitet. Bitte ein stärkeres wählen."
 		},
 		"SignUpForm": {

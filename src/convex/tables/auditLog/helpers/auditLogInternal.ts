@@ -2,8 +2,9 @@
 import { v } from 'convex/values';
 
 // UTILS
-import { internalMutation } from '@/convex/_generated/server';
+import { internalMutation } from '@/convex/functions';
 import { components } from '@/convex/_generated/api';
+import { auditExpiresAt } from '../auditLogConfigs';
 
 /**
  * The actual audit-log writer. Always called via the scheduler from
@@ -74,7 +75,15 @@ export const writeAuditLog = internalMutation({
 				}
 			}
 
-			await ctx.db.insert('auditLogs', { ...args, ip, userAgent });
+			// Retention is resolved here, once, instead of being re-derived by a scan on every
+			// sweep. `Date.now()` is fixed for the transaction and is within a tick of the
+			// row's `_creationTime`.
+			await ctx.db.insert('auditLogs', {
+				...args,
+				ip,
+				userAgent,
+				expiresAt: auditExpiresAt(args.action, Date.now())
+			});
 		} catch (err) {
 			// Audit must never cascade into user-visible failure. Log and move on.
 			console.error('[auditLog] write failed', { action: args.action, err });

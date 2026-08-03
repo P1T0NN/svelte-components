@@ -8,7 +8,7 @@ import { requireAdmin } from '@/convex/auth/middleware/authMiddleware';
 
 // TYPES
 import type { Doc } from '@/convex/_generated/dataModel';
-import type { PaginatedListPayload } from '@/shared/components/ui/data-table/types';
+import type { PaginatedListPayload } from '@/shared/features/pagination/types/paginationTypes';
 
 /**
  * Paginated list for the admin audit-log viewer. Admin-only — audit data is
@@ -42,15 +42,11 @@ export const listAuditLogs = query({
 				? base.withIndex('by_action', (q) => q.eq('action', args.action!))
 				: args.resource
 					? base.withIndex('by_resource', (q) =>
-							q
-								.eq('resource.table', args.resource!.table)
-								.eq('resource.id', args.resource!.id)
+							q.eq('resource.table', args.resource!.table).eq('resource.id', args.resource!.id)
 						)
 					: base;
 
-		const result = await filtered
-			.order(args.sortDirection ?? 'desc')
-			.paginate(args.paginationOpts);
+		const result = await filtered.order(args.sortDirection ?? 'desc').paginate(args.paginationOpts);
 
 		return {
 			page: result.page,

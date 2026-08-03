@@ -1,21 +1,18 @@
 // LIBRARIES
 import { ConvexError } from 'convex/values';
-import {
-	customAction,
-	customCtx,
-	customMutation
-} from 'convex-helpers/server/customFunctions';
+import { customAction, customCtx, customMutation } from 'convex-helpers/server/customFunctions';
 
 // UTILS
-import { action, mutation } from '@/convex/_generated/server';
+import { action } from '@/convex/_generated/server';
+import { mutation } from '@/convex/functions';
 import { authComponent } from '@/convex/auth/auth';
 import { convexGetRateLimitedUserId } from '@/convex/helpers/convexGetRateLimitedUserId';
 import { logAudit } from '@/convex/tables/auditLog/helpers/logAudit';
 
 // TYPES
 import type { ActionCtx, MutationCtx, QueryCtx } from '@/convex/_generated/server';
-import type { ConvexRateLimitName } from '@/convex/rateLimits/registry';
-import type { ConvexErrorPayload } from '@/convex/types/convexTypes';
+import type { ConvexRateLimitName } from '@/shared/features/rateLimits/types/rateLimitsTypes';
+import type { ConvexErrorPayload } from '@/shared/types/types';
 import type { Id } from '@/convex/auth/component/_generated/dataModel';
 import type { AuditAction } from '@/convex/tables/auditLog/auditLogConfigs';
 import type { AuditOptions } from '@/convex/tables/auditLog/helpers/logAudit';
@@ -40,9 +37,7 @@ import type { AuditOptions } from '@/convex/tables/auditLog/helpers/logAudit';
  * gating) and called directly from flows where the admin check is conditional or branches
  * with other modes (e.g. `createDeleteMutation`, `resolveUploadAuth`).
  */
-export const requireAdmin = async (
-	ctx: MutationCtx | QueryCtx | ActionCtx
-): Promise<string> => {
+export const requireAdmin = async (ctx: MutationCtx | QueryCtx | ActionCtx): Promise<string> => {
 	const user = await authComponent.getAuthUser(ctx);
 
 	if (!user) {
@@ -69,7 +64,8 @@ export const requireAdmin = async (
  * `_creationTime` window: it stamps `ipAddress` / `userAgent` server-side at
  * sign-in, which is more trustworthy than anything we could re-derive per call.
  */
-const buildAudit = (ctx: MutationCtx | ActionCtx, userId: string) =>
+const buildAudit =
+	(ctx: MutationCtx | ActionCtx, userId: string) =>
 	(action: AuditAction, auditOpts: Omit<AuditOptions, 'userId'> & { userId?: string } = {}) =>
 		logAudit(ctx, action, { userId, ...auditOpts });
 

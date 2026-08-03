@@ -3,24 +3,21 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 
 // LIBRARIES
-import { m } from '@/shared/lib/paraglide/messages';
 import { toast } from 'svelte-sonner';
 
 // CONFIG
-import { PROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
+import { PROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 // UTILS
 import { authClient } from '@/features/auth/lib/auth-client';
-import {
-	passwordResetRequestFormSchema,
-	passwordResetVerifyFormSchema
-} from './password-reset-form-schema.js';
-import { zodIssuesToFieldErrors } from '@/shared/utils/validationUtils.js';
-import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
+import { passwordResetRequestSchema } from '@/shared/features/auth/schemas/passwordResetRequestSchema.js';
+import { passwordResetVerifySchema } from '@/shared/features/auth/schemas/passwordResetVerifySchema.js';
+import { zodIssuesToFieldErrors } from '@/features/validations/utils/fieldErrors.js';
+import { rateLimitMessage } from '@/features/validations/utils/translateFromBackend';
 
 // TYPES
 import type { PasswordResetFormStep, PasswordResetField } from './passwordResetFormTypes.js';
-import type { FieldErrors } from '@/shared/types/types';
+import type { FieldErrors } from '@/shared/features/validations/types/validationsTypes';
 
 export function createPasswordResetForm() {
 	let step = $state<PasswordResetFormStep>('forgot');
@@ -38,7 +35,7 @@ export function createPasswordResetForm() {
 		const form = event.currentTarget as HTMLFormElement;
 		const formData = new FormData(form);
 
-		const p = passwordResetRequestFormSchema.safeParse({
+		const p = passwordResetRequestSchema.safeParse({
 			email: String(formData.get('email') ?? ''),
 			flow: String(formData.get('flow') ?? '')
 		});
@@ -76,23 +73,18 @@ export function createPasswordResetForm() {
 		const formData = new FormData(form);
 		const submittedNewPassword = String(formData.get('newPassword') ?? '');
 
-		const p = passwordResetVerifyFormSchema.safeParse({
+		// `confirmPassword` (bound component state) goes through the schema too — the match
+		// rule lives there now, so one parse validates the whole contract.
+		const p = passwordResetVerifySchema.safeParse({
 			code: String(formData.get('code') ?? '').trim(),
 			newPassword: submittedNewPassword,
+			confirmPassword,
 			email: step.email,
 			flow: String(formData.get('flow') ?? '')
 		});
 
 		if (!p.success) {
 			fieldErrors = zodIssuesToFieldErrors<PasswordResetField>(p.error.issues);
-			errorMessage = null;
-			return;
-		}
-
-		if (submittedNewPassword !== confirmPassword) {
-			fieldErrors = {
-				confirmPassword: m['ValidationMessages.PasswordResetVerifyForm.passwordsMustMatch']()
-			};
 			errorMessage = null;
 			return;
 		}
@@ -111,12 +103,12 @@ export function createPasswordResetForm() {
 				console.error('Password reset: verification failed:', error);
 				if (/password/i.test(error.message ?? '')) {
 					fieldErrors = {
-						newPassword: error.message ?? m['EmailVerificationForm.verificationFailed']()
+						newPassword: error.message ?? 'Invalid or expired code. Please try again.'
 					};
 				} else {
 					errorMessage = rateLimitMessage(
 						error.message,
-						m['EmailVerificationForm.verificationFailed']()
+						'Invalid or expired code. Please try again.'
 					);
 				}
 				busy = false;
@@ -124,12 +116,12 @@ export function createPasswordResetForm() {
 			}
 		} catch (error) {
 			console.error('Password reset: verification failed:', error);
-			errorMessage = m['EmailVerificationForm.verificationFailed']();
+			errorMessage = 'Invalid or expired code. Please try again.';
 			busy = false;
 			return;
 		}
 
-		toast.success(m['PasswordResetForm.passwordResetToast']());
+		toast.success('Password reset successfully.');
 		await goto(resolve(PROTECTED_PAGE_ENDPOINTS.HOME));
 		busy = false;
 	}

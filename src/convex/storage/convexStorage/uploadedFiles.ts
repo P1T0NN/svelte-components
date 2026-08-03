@@ -3,7 +3,7 @@ import { v } from 'convex/values';
 
 // HELPERS
 import { createDeleteMutation } from '../../helpers/createDeleteMutation.js';
-import { fetchOptimized } from '../../helpers/fetchOptimized/index.js';
+import { fetchOptimized } from '../../pagination/fetchOptimized/index.js';
 
 // TYPES
 import type { MutationCtx } from '../../_generated/server';
@@ -18,10 +18,7 @@ const TABLE = 'uploadedFiles' as const;
  * then issues parallel `ctx.storage.delete` calls. Wire this into any
  * {@link createDeleteMutation} for tables whose rows reference Convex `_storage`.
  */
-export const deleteFilesFromConvexStorage = async (
-	ctx: MutationCtx,
-	docs: Doc<typeof TABLE>[]
-) => {
+export const deleteFilesFromConvexStorage = async (ctx: MutationCtx, docs: Doc<typeof TABLE>[]) => {
 	const blobs = [...new Set(docs.map((d) => d.storageId))];
 	await Promise.all(blobs.map((sid) => ctx.storage.delete(sid)));
 };

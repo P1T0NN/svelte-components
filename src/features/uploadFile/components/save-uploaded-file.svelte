@@ -1,22 +1,22 @@
 <script lang="ts">
 	// LIBRARIES
-	import { useConvexClient } from 'convex-svelte';
+	import { useConvexClient } from '@mmailaender/convex-svelte';
 	import { toast } from 'svelte-sonner';
 
 	// COMPONENTS
-	import { Button } from '@/shared/components/ui/button/index.js';
-	import { Progress } from '@/shared/components/ui/progress/index.js';
-	import Spinner from '@/shared/components/ui/spinner/spinner.svelte';
+	import { Button } from '@/components/ui/button/index.js';
+	import { Progress } from '@/components/ui/progress/index.js';
+	import Spinner from '@/components/ui/spinner/spinner.svelte';
 
 	// HOOKS
 	import { useProgress } from '@/features/uploadFile/utils/useProgress.svelte';
 
 	// UTILS
 	import { optimizeImages } from '@/features/uploadFile/utils/optimizeImages';
-	import { uploadFileToR2, uploadFileToConvexStorage } from '@/shared/utils/convexHelpers';
+	import { uploadFileToR2, uploadFileToConvexStorage } from '@/utils/convexHelpers';
 
 	// CONFIG
-	import { FEATURES } from '@/convex/projectSettings';
+	import { FEATURES } from '@/shared/config';
 
 	type Props = {
 		file: File | null;
@@ -42,7 +42,11 @@
 		try {
 			const n = selected.length;
 
-			const optimizedImages = await optimizeImages(selected, undefined, progress.setOptimizeProgress);
+			const optimizedImages = await optimizeImages(
+				selected,
+				undefined,
+				progress.setOptimizeProgress
+			);
 
 			const uploadOne = FEATURES.USE_R2 ? uploadFileToR2 : uploadFileToConvexStorage;
 			const uploaded: string[] = [];
@@ -75,7 +79,7 @@
 {#if saving}
 	<div class="flex w-full flex-col gap-2">
 		<Progress value={progress.percent} class="h-2" />
-		<p class="text-muted-foreground text-xs tabular-nums">{progress.label}</p>
+		<p class="text-xs text-muted-foreground tabular-nums">{progress.label}</p>
 	</div>
 {/if}
 

@@ -27,10 +27,21 @@ import { v } from 'convex/values';
  *                       Optional because pre-auth or system-actor logs have
  *                       no session.
  * - `status`     — 'success' | 'failure'. `errorMessage` is only set on failure.
+ * - `expiresAt`  — absolute ms timestamp after which the retention sweep may delete this
+ *                  row, resolved from the action's retention at write time (see
+ *                  `auditExpiresAt`). `AUDIT_NEVER_EXPIRES` for keep-forever actions.
  *
  * Indexes: `_creationTime` is implicit on every Convex index, so we don't store
  * a separate `timestamp` field. Indexes are kept minimal — every extra index
  * costs write throughput, and audit writes are the hottest thing in this table.
+ * `by_expires_at` earns its keep: it turns the daily retention sweep from a scan
+ * proportional to the whole table into an index range read proportional to the rows
+ * actually being deleted.
+ *
+ * `expiresAt` is **optional** so this schema deploys against tables that already have rows.
+ * Un-stamped rows index as `undefined`, which sorts before every number — the sweep's
+ * two-sided range therefore skips them entirely rather than treating them as expired. Run
+ * `backfillAuditExpiry` once after deploying to bring them into the sweep.
  */
 export const auditLogTable = defineTable({
 	userId: v.optional(v.string()),
@@ -47,8 +58,10 @@ export const auditLogTable = defineTable({
 	ip: v.optional(v.string()),
 	userAgent: v.optional(v.string()),
 	status: v.union(v.literal('success'), v.literal('failure')),
-	errorMessage: v.optional(v.string())
+	errorMessage: v.optional(v.string()),
+	expiresAt: v.optional(v.number())
 })
 	.index('by_user', ['userId'])
 	.index('by_action', ['action'])
-	.index('by_resource', ['resource.table', 'resource.id']);
+	.index('by_resource', ['resource.table', 'resource.id'])
+	.index('by_expires_at', ['expiresAt']);

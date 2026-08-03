@@ -1,19 +1,19 @@
 <script lang="ts">
-    // LIBRARIES
-    import { Area, LinearGradient } from 'layerchart';
+	// LIBRARIES
+	import { Area, LinearGradient } from 'layerchart';
 	import { curveNatural } from 'd3-shape';
 
 	// COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import AreaChart from '@/shared/components/ui/custom-charts/charts-only/area-chart.svelte';
+	import Section from '@/components/ui/section/section.svelte';
+	import AreaChart from '@/components/ui/custom-charts/charts-only/area-chart.svelte';
 
 	// TYPES
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	// LUCIDE ICONS
 	import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
 	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-	
+
 	// ─── Data ───────────────────────────────────────────────────────────────────
 
 	const timeData = [

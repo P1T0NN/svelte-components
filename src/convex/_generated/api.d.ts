@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as aggregates from "../aggregates.js";
 import type * as analytics_analytics from "../analytics/analytics.js";
 import type * as analytics_index from "../analytics/index.js";
 import type * as analytics_queries_analyticsQueries from "../analytics/queries/analyticsQueries.js";
@@ -21,20 +22,19 @@ import type * as auth_queries_authQueries from "../auth/queries/authQueries.js";
 import type * as auth_utils_getEmailFromAuthBody from "../auth/utils/getEmailFromAuthBody.js";
 import type * as convexRateLimiter from "../convexRateLimiter.js";
 import type * as crons from "../crons.js";
+import type * as functions from "../functions.js";
 import type * as helpers_convexGetRateLimitedUserId from "../helpers/convexGetRateLimitedUserId.js";
 import type * as helpers_createDeleteMutation from "../helpers/createDeleteMutation.js";
-import type * as helpers_fetchOptimized_createSearchQuery from "../helpers/fetchOptimized/createSearchQuery.js";
-import type * as helpers_fetchOptimized_fetchOptimized from "../helpers/fetchOptimized/fetchOptimized.js";
-import type * as helpers_fetchOptimized_index from "../helpers/fetchOptimized/index.js";
-import type * as helpers_fetchOptimized_kit from "../helpers/fetchOptimized/kit.js";
-import type * as helpers_fetchOptimized_types from "../helpers/fetchOptimized/types.js";
-import type * as helpers_paginationHelpers from "../helpers/paginationHelpers.js";
 import type * as helpers_resolveUploadedImages from "../helpers/resolveUploadedImages.js";
 import type * as http from "../http.js";
-import type * as projectSettings from "../projectSettings.js";
+import type * as pagination_fetchOptimized_createSearchQuery from "../pagination/fetchOptimized/createSearchQuery.js";
+import type * as pagination_fetchOptimized_fetchOptimized from "../pagination/fetchOptimized/fetchOptimized.js";
+import type * as pagination_fetchOptimized_index from "../pagination/fetchOptimized/index.js";
+import type * as pagination_fetchOptimized_kit from "../pagination/fetchOptimized/kit.js";
+import type * as pagination_fetchOptimized_types from "../pagination/fetchOptimized/types.js";
+import type * as pagination_paginationHelpers from "../pagination/paginationHelpers.js";
 import type * as rateLimits_convexCreateRateLimit from "../rateLimits/convexCreateRateLimit.js";
 import type * as rateLimits_convexCreateRateLimitInternal from "../rateLimits/convexCreateRateLimitInternal.js";
-import type * as rateLimits_registry from "../rateLimits/registry.js";
 import type * as rateLimits_searchRateLimitMutations from "../rateLimits/searchRateLimitMutations.js";
 import type * as storage_convexStorage_storageMutations from "../storage/convexStorage/storageMutations.js";
 import type * as storage_convexStorage_uploadedFiles from "../storage/convexStorage/uploadedFiles.js";
@@ -54,9 +54,9 @@ import type * as tables_auditLog_schemas_auditLogSchema from "../tables/auditLog
 import type * as tables_auditLog_utils_auditLogUtils from "../tables/auditLog/utils/auditLogUtils.js";
 import type * as tables_test_testMutations from "../tables/test/testMutations.js";
 import type * as tables_test_testQueries from "../tables/test/testQueries.js";
+import type * as tables_test_testSeed from "../tables/test/testSeed.js";
 import type * as tables_users_userMutations from "../tables/users/userMutations.js";
 import type * as tables_users_userQueries from "../tables/users/userQueries.js";
-import type * as types_convexTypes from "../types/convexTypes.js";
 
 import type {
   ApiFromModules,
@@ -65,6 +65,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  aggregates: typeof aggregates;
   "analytics/analytics": typeof analytics_analytics;
   "analytics/index": typeof analytics_index;
   "analytics/queries/analyticsQueries": typeof analytics_queries_analyticsQueries;
@@ -78,20 +79,19 @@ declare const fullApi: ApiFromModules<{
   "auth/utils/getEmailFromAuthBody": typeof auth_utils_getEmailFromAuthBody;
   convexRateLimiter: typeof convexRateLimiter;
   crons: typeof crons;
+  functions: typeof functions;
   "helpers/convexGetRateLimitedUserId": typeof helpers_convexGetRateLimitedUserId;
   "helpers/createDeleteMutation": typeof helpers_createDeleteMutation;
-  "helpers/fetchOptimized/createSearchQuery": typeof helpers_fetchOptimized_createSearchQuery;
-  "helpers/fetchOptimized/fetchOptimized": typeof helpers_fetchOptimized_fetchOptimized;
-  "helpers/fetchOptimized/index": typeof helpers_fetchOptimized_index;
-  "helpers/fetchOptimized/kit": typeof helpers_fetchOptimized_kit;
-  "helpers/fetchOptimized/types": typeof helpers_fetchOptimized_types;
-  "helpers/paginationHelpers": typeof helpers_paginationHelpers;
   "helpers/resolveUploadedImages": typeof helpers_resolveUploadedImages;
   http: typeof http;
-  projectSettings: typeof projectSettings;
+  "pagination/fetchOptimized/createSearchQuery": typeof pagination_fetchOptimized_createSearchQuery;
+  "pagination/fetchOptimized/fetchOptimized": typeof pagination_fetchOptimized_fetchOptimized;
+  "pagination/fetchOptimized/index": typeof pagination_fetchOptimized_index;
+  "pagination/fetchOptimized/kit": typeof pagination_fetchOptimized_kit;
+  "pagination/fetchOptimized/types": typeof pagination_fetchOptimized_types;
+  "pagination/paginationHelpers": typeof pagination_paginationHelpers;
   "rateLimits/convexCreateRateLimit": typeof rateLimits_convexCreateRateLimit;
   "rateLimits/convexCreateRateLimitInternal": typeof rateLimits_convexCreateRateLimitInternal;
-  "rateLimits/registry": typeof rateLimits_registry;
   "rateLimits/searchRateLimitMutations": typeof rateLimits_searchRateLimitMutations;
   "storage/convexStorage/storageMutations": typeof storage_convexStorage_storageMutations;
   "storage/convexStorage/uploadedFiles": typeof storage_convexStorage_uploadedFiles;
@@ -111,9 +111,9 @@ declare const fullApi: ApiFromModules<{
   "tables/auditLog/utils/auditLogUtils": typeof tables_auditLog_utils_auditLogUtils;
   "tables/test/testMutations": typeof tables_test_testMutations;
   "tables/test/testQueries": typeof tables_test_testQueries;
+  "tables/test/testSeed": typeof tables_test_testSeed;
   "tables/users/userMutations": typeof tables_users_userMutations;
   "tables/users/userQueries": typeof tables_users_userQueries;
-  "types/convexTypes": typeof types_convexTypes;
 }>;
 
 /**
@@ -147,4 +147,5 @@ export declare const components: {
   betterAuth: import("../auth/component/_generated/component.js").ComponentApi<"betterAuth">;
   r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
   analytics: import("@piton-/analytics-convex/_generated/component.js").ComponentApi<"analytics">;
+  aggregateTestRows: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"aggregateTestRows">;
 };

@@ -1,13 +1,10 @@
 <script lang="ts">
-	// LIBRARIES
-	import { m } from '@/shared/lib/paraglide/messages';
-
 	// COMPONENTS
-	import { Button } from '@/shared/components/ui/button/index.js';
-	import { Input } from '@/shared/components/ui/input/index.js';
+	import { Button } from '@/components/ui/button/index.js';
+	import { Input } from '@/components/ui/input/index.js';
 
 	// UTILS
-	import { cn, type WithElementRef } from '@/shared/utils/utils.js';
+	import { cn, type WithElementRef } from '@/utils/utils.js';
 
 	// TYPES
 	import type { HTMLInputAttributes } from 'svelte/elements';
@@ -42,9 +39,9 @@
 		type="button"
 		variant="ghost"
 		size="icon-sm"
-		class="text-muted-foreground hover:text-foreground absolute end-1 top-1/2 z-10 -translate-y-1/2"
+		class="absolute end-1 top-1/2 z-10 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 		onclick={() => (visible = !visible)}
-		aria-label={visible ? m['PasswordInput.hidePassword']() : m['PasswordInput.showPassword']()}
+		aria-label={visible ? 'Hide password' : 'Show password'}
 		aria-pressed={visible}
 		{disabled}
 	>

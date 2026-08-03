@@ -14,6 +14,11 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface ImportMeta {
+		/** Bun: true when this module is the process entrypoint. Guards co-located self-checks. */
+		readonly main?: boolean;
+	}
 }
 
 export {};

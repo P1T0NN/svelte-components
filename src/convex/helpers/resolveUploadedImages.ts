@@ -1,5 +1,5 @@
 // CONFIG
-import { FEATURES } from '../projectSettings';
+import { FEATURES } from '@/shared/config';
 
 // TYPES
 import type { MutationCtx } from '../_generated/server';

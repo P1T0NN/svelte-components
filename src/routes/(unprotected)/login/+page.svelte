@@ -1,11 +1,12 @@
 <script lang="ts">
 	// CONFIG
-	import { COMPANY_DATA, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants';
+	import { COMPANY_DATA } from '@/shared/config';
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 	// COMPONENTS
 	import LoginFormNoImage from '@/features/auth/components/login-form/login-form-no-image.svelte';
 	import LoginFormWithImage from '@/features/auth/components/login-form/login-form-with-image.svelte';
-	import Link from '@/shared/components/ui/link/link.svelte';
+	import Link from '@/components/ui/link/link.svelte';
 
 	// LUCIDE ICONS
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';

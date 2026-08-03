@@ -2,22 +2,21 @@
 	// LIBRARIES
 	import { z } from 'zod';
 	import { api } from '@/convex/_generated/api';
-	import { m } from '@/shared/lib/paraglide/messages';
 
 	// CONFIG
-	import { fillRoutePattern, UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
-	import { FEATURES } from '@/convex/projectSettings';
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
+	import { FEATURES } from '@/shared/config';
 
 	// COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import { NativeCarousel } from '@/shared/components/ui/native-carousel/index.js';
-	import { NativeTooltip } from '@/shared/components/ui/native-tooltip/index.js';
-	import { Button } from '@/shared/components/ui/button/index.js';
-	import GoogleMap from '@/shared/components/ui/google-map/google-map.svelte';
-	import CustomMarker from '@/shared/components/ui/google-map/custom-marker.svelte';
-	import MutationForm from '@/shared/components/ui/mutation-form/convex-mutation-form.svelte';
-	import { SearchInputRemote } from '@/shared/components/ui/search-input/index.js';
-	import DataTable from '@/shared/components/ui/data-table/convex-data-table.svelte';
+	import Section from '@/components/ui/section/section.svelte';
+	import { NativeCarousel } from '@/components/ui/native-carousel/index.js';
+	import { NativeTooltip } from '@/components/ui/native-tooltip/index.js';
+	import { Button } from '@/components/ui/button/index.js';
+	import GoogleMap from '@/components/ui/google-map/google-map.svelte';
+	import CustomMarker from '@/components/ui/google-map/custom-marker.svelte';
+	import MutationForm from '@/components/ui/mutation-form/convex-mutation-form.svelte';
+	import { SearchInputRemote } from '@/components/ui/search-input/index.js';
+	import DataTable from '@/components/ui/data-table/convex-data-table.svelte';
 
 	// REMOTE FUNCTIONS
 	import { searchInput } from '@/features/search/search.remote';
@@ -29,16 +28,16 @@
 	import XIcon from '@lucide/svelte/icons/x';
 
 	// TYPES
-	import type { MutationFormSection } from '@/shared/components/ui/mutation-form/types.js';
+	import type { MutationFormSection } from '@/components/ui/mutation-form/types.js';
 	import type {
 		GoogleMapClusterOptions,
 		GoogleMapFitBoundsOptions
-	} from '@/shared/components/ui/google-map/types.js';
+	} from '@/components/ui/google-map/types.js';
 	import type {
 		SearchInputItem,
 		SearchInputRemoteProps
-	} from '@/shared/components/ui/search-input/types.js';
-	import type { ColumnDef, DataTableCellSnippetProps } from '@/shared/components/ui/data-table/types.js';
+	} from '@/components/ui/search-input/types.js';
+	import type { ColumnDef, DataTableCellSnippetProps } from '@/components/ui/data-table/types.js';
 	import type { Doc } from '@/convex/_generated/dataModel';
 
 	type R2Row = Doc<'uploadedFilesR2'>;
@@ -71,15 +70,19 @@
 
 	// ——— Mutation Form ———
 
+	// Bare schema — the default validation map supplies the human messages (required,
+	// invalid email, min length, invalid choice). Only the terms checkbox keeps custom copy.
 	const contactFormSchema = z.object({
-		name: z.string().trim().min(1, 'Name is required.'),
-		email: z.string().trim().min(1, 'Email is required.').email('Enter a valid email.'),
-		role: z.enum(['admin', 'editor', 'viewer'], { message: 'Pick a role.' }),
-		plan: z.enum(['free', 'pro', 'enterprise'], { message: 'Pick a plan.' }),
-		source: z.enum(['organic', 'referral', 'paid', 'support'], { message: 'Pick a source.' }),
-		message: z.string().trim().min(10, 'Message must be at least 10 characters.'),
+		name: z.string().trim().min(1),
+		email: z.string().trim().min(1).pipe(z.email()),
+		role: z.enum(['admin', 'editor', 'viewer']),
+		plan: z.enum(['free', 'pro', 'enterprise']),
+		source: z.enum(['organic', 'referral', 'paid', 'support']),
+		message: z.string().trim().min(10),
 		acceptsTerms: z.boolean().refine((v) => v === true, 'You must accept the terms.'),
-		images: z.array(z.instanceof(File))
+		// Mixed on purpose: fresh Files AND stored { key, url } images — an edit page seeds
+		// `initialValues: { images: doc.images }` and this same schema validates it.
+		images: z.array(z.union([z.instanceof(File), z.object({ key: z.string(), url: z.string() })]))
 	});
 
 	type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -239,7 +242,7 @@
 			header: 'R2 Key',
 			accessor: (r) => r.key,
 			hideBelow: 'md',
-			linkHref: (r) => fillRoutePattern(UNPROTECTED_PAGE_ENDPOINTS.UPLOADED_FILES, { id: r._id })
+			linkHref: (r) => UNPROTECTED_PAGE_ENDPOINTS.UPLOADED_FILES.replace(':id', r._id)
 		},
 		{
 			id: 'url',
@@ -263,7 +266,7 @@
 			header: 'Storage ID',
 			accessor: (r) => r.storageId,
 			hideBelow: 'md',
-			linkHref: (r) => fillRoutePattern(UNPROTECTED_PAGE_ENDPOINTS.UPLOADED_FILES, { id: r._id })
+			linkHref: (r) => UNPROTECTED_PAGE_ENDPOINTS.UPLOADED_FILES.replace(':id', r._id)
 		},
 		{
 			id: 'url',
@@ -303,25 +306,19 @@
 {/snippet}
 
 {#snippet carouselSlideOne()}
-	<div
-		class="flex h-48 items-center justify-center rounded-xl {carouselSlides[0]} sm:h-56"
-	>
+	<div class="flex h-48 items-center justify-center rounded-xl {carouselSlides[0]} sm:h-56">
 		<p class="text-lg font-medium">Slide 1 — native scroll-snap carousel</p>
 	</div>
 {/snippet}
 
 {#snippet carouselSlideTwo()}
-	<div
-		class="flex h-48 items-center justify-center rounded-xl {carouselSlides[1]} sm:h-56"
-	>
+	<div class="flex h-48 items-center justify-center rounded-xl {carouselSlides[1]} sm:h-56">
 		<p class="text-lg font-medium">Slide 2 — swipe, arrows, or dots</p>
 	</div>
 {/snippet}
 
 {#snippet carouselSlideThree()}
-	<div
-		class="flex h-48 items-center justify-center rounded-xl {carouselSlides[2]} sm:h-56"
-	>
+	<div class="flex h-48 items-center justify-center rounded-xl {carouselSlides[2]} sm:h-56">
 		<p class="text-lg font-medium">Slide 3 — no JavaScript required</p>
 	</div>
 {/snippet}
@@ -342,15 +339,19 @@
 			</p>
 		</header>
 
-		<NativeCarousel slides={[carouselSlideOne, carouselSlideTwo, carouselSlideThree]} class="w-full" />
+		<NativeCarousel
+			slides={[carouselSlideOne, carouselSlideTwo, carouselSlideThree]}
+			class="w-full"
+		/>
 	</section>
 
 	<section class="flex w-full flex-col gap-4">
 		<header class="flex max-w-2xl flex-col gap-1">
 			<h2 class="text-xl font-semibold tracking-tight">Tooltip</h2>
 			<p class="text-sm text-muted-foreground">
-				Native HTML + CSS tooltip (anchor positioning + <code>:hover</code>/<code>:focus-within</code>).
-				Hover or keyboard-focus a trigger. No JavaScript.
+				Native HTML + CSS tooltip (anchor positioning + <code>:hover</code>/<code
+					>:focus-within</code
+				>). Hover or keyboard-focus a trigger. No JavaScript.
 			</p>
 		</header>
 
@@ -437,7 +438,7 @@
 						<div class="flex items-start justify-between gap-3">
 							<div>
 								<h3 class="text-base font-semibold text-foreground">{selected.title}</h3>
-								<p class="mt-0.5 text-sm capitalize text-muted-foreground">{selected.category}</p>
+								<p class="mt-0.5 text-sm text-muted-foreground capitalize">{selected.category}</p>
 							</div>
 							<button
 								type="button"
@@ -482,8 +483,10 @@
 
 	<section class="flex w-full max-w-md flex-col gap-4">
 		<header class="flex flex-col gap-1">
-			<h2 class="text-xl font-semibold tracking-tight">{m['SearchInput.SearchPage.title']()}</h2>
-			<p class="text-sm text-muted-foreground">{m['SearchInput.SearchPage.description']()}</p>
+			<h2 class="text-xl font-semibold tracking-tight">Search input</h2>
+			<p class="text-sm text-muted-foreground">
+				Search public test rows through the remote source.
+			</p>
 		</header>
 
 		<SearchInputRemote
@@ -491,13 +494,13 @@
 			search={searchTestRows}
 			minQueryLength={1}
 			maxResults={5}
-			placeholder={m['SearchInput.SearchPage.placeholder']()}
+			placeholder="Search test rows..."
 			onSelect={handleSearchSelect}
 		/>
 
 		{#if lastSelected}
 			<p class="text-sm text-muted-foreground">
-				{m['SearchInput.SearchPage.selected']()}
+				Selected:
 				<span class="font-medium text-foreground">{lastSelected.title}</span>
 				{#if lastSelected.category}
 					<span class="text-muted-foreground"> - {lastSelected.category}</span>

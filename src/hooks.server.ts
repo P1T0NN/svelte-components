@@ -2,13 +2,13 @@
 import { sequence } from '@sveltejs/kit/hooks';
 
 // LIBRARIES
-import { paraglideMiddleware } from '@/shared/lib/paraglide/server';
+import { paraglideMiddleware } from '@/lib/paraglide/server';
 import { getToken } from '@mmailaender/convex-better-auth-svelte/sveltekit';
-import { getTextDirection } from '@/shared/lib/paraglide/runtime';
+import { getTextDirection } from '@/lib/paraglide/runtime';
 import { withServerConvexToken } from '@mmailaender/convex-svelte/sveltekit/server';
 
 // UTILS
-import { getSecurityHeaders, getHstsHeader } from '@/shared/utils/securityHeaders.js';
+import { getSecurityHeaders, getHstsHeader } from '@/utils/securityHeaders.js';
 
 // TYPES
 import type { Handle } from '@sveltejs/kit';

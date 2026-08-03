@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import RadialChart from '@/shared/components/ui/custom-charts/charts-only/radial-chart.svelte';
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import Section from '@/components/ui/section/section.svelte';
+	import RadialChart from '@/components/ui/custom-charts/charts-only/radial-chart.svelte';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	const chartData = [
 		{ browser: 'other', visitors: 90, color: 'var(--color-other)' },

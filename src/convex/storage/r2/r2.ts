@@ -3,6 +3,9 @@ import { v } from 'convex/values';
 import { R2, type R2Callbacks } from '@convex-dev/r2';
 import { components, internal } from '../../_generated/api';
 
+// CONFIG
+import { UPLOAD_DATA } from '@/shared/config';
+
 // HELPERS
 import { getAuthUserId } from '../../auth/helpers/getAuthUserId.js';
 import { logAudit } from '../../tables/auditLog/helpers/logAudit';
@@ -11,7 +14,7 @@ import { authMutation } from '../../auth/middleware/authMiddleware';
 
 // TYPES
 import type { DataModel } from '../../_generated/dataModel';
-import type { ConvexMutationResult } from '../../types/convexTypes.js';
+import type { ConvexMutationResult } from '@/shared/types/types';
 
 /**
  * R2 client bound to the registered component. All server-side R2 work (upload URL minting,
@@ -20,17 +23,11 @@ import type { ConvexMutationResult } from '../../types/convexTypes.js';
 export const r2 = new R2(components.r2);
 
 /**
- * Mirrors the Convex-storage path in `storageMutations.ts` — keep the limits in lockstep
- * so swapping backends doesn't change UX or the trust boundary.
+ * Same limits as the Convex-storage path: both read `UPLOAD_DATA`, so swapping backends
+ * cannot change UX or the trust boundary.
  */
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
-const ALLOWED_CONTENT_TYPES = new Set<string>([
-	'image/jpeg',
-	'image/png',
-	'image/webp',
-	'image/gif',
-	'application/pdf'
-]);
+const MAX_UPLOAD_BYTES = UPLOAD_DATA.MAX_BYTES;
+const ALLOWED_CONTENT_TYPES = new Set<string>(UPLOAD_DATA.ALLOWED_CONTENT_TYPES);
 
 /**
  * Custom upload-URL minter. We DO NOT export the package's built-in `generateUploadUrl`

@@ -2,37 +2,43 @@
 import { SvelteSet } from 'svelte/reactivity';
 
 // TYPES
-import type { UploadFileRow } from '../types/uploadFileTypes';
+import type { UploadFileRow, UploadImage } from '../types/uploadFileTypes';
+import { uploadImageKey } from './uploadImageUtils';
 
 export type UseFileUploadMode = 'single' | 'multiple';
 
 export type UseFileUploadArgs = {
 	mode: UseFileUploadMode;
-	getFile: () => File | null;
-	setFile: (f: File | null) => void;
-	getFiles: () => File[];
-	setFiles: (f: File[]) => void;
+	getFile: () => UploadImage | null;
+	setFile: (f: UploadImage | null) => void;
+	getFiles: () => UploadImage[];
+	setFiles: (f: UploadImage[]) => void;
 	getDisabled: () => boolean;
 };
 
 /**
- * Stable key for a File, used for dedup and preview map lookups.
+ * Stable key for an upload entry, used for dedup and preview map lookups.
  * Re-exported so sub-components can reference the same key logic.
  */
-export function fileKey(f: File): string {
-	return `${f.name}-${f.size}-${f.lastModified}`;
+export function fileKey(f: UploadImage): string {
+	return uploadImageKey(f);
 }
 
 /**
- * Per-row key combining file identity and positional index.
+ * Per-row key combining entry identity and positional index.
  */
-export function previewKey(f: File, index: number): string {
+export function previewKey(f: UploadImage, index: number): string {
 	return `${fileKey(f)}#${index}`;
 }
 
 /**
  * Composable encapsulating all shared state and event handling
  * for both single-file and multi-file upload modes.
+ *
+ * Values are {@link UploadImage} — freshly picked `File`s AND already-uploaded
+ * `{ key, url }` images (edit pages seed the latter from the stored document).
+ * Previews: existing images use their stored URL directly (no fetch, nothing to
+ * revoke); Files get object URLs, revoked on change/unmount.
  *
  * Use from `.svelte` / `.svelte.ts` with runes.
  */
@@ -46,7 +52,9 @@ export function useFileUpload(args: UseFileUploadArgs) {
 	// --- derived -----------------------------------------------------------
 
 	const displayList = $derived(
-		mode === 'single' ? ((f: File | null): File[] => (f ? [f] : []))(getFile()) : getFiles()
+		mode === 'single'
+			? ((f: UploadImage | null): UploadImage[] => (f ? [f] : []))(getFile())
+			: getFiles()
 	);
 
 	const isEmpty = $derived(mode === 'single' ? getFile() === null : getFiles().length === 0);
@@ -66,15 +74,22 @@ export function useFileUpload(args: UseFileUploadArgs) {
 	$effect(() => {
 		const list = displayList;
 		const next: Record<string, string> = {};
+		const created: string[] = [];
 		list.forEach((f, index) => {
-			if (f.type.startsWith('image/')) {
-				next[previewKey(f, index)] = URL.createObjectURL(f);
+			if (f instanceof File) {
+				if (f.type.startsWith('image/')) {
+					const url = URL.createObjectURL(f);
+					next[previewKey(f, index)] = url;
+					created.push(url);
+				}
+			} else {
+				// Already uploaded — the stored URL is the preview. Never revoked.
+				next[previewKey(f, index)] = f.url;
 			}
 		});
-		const revoke = next;
 		previewUrls = next;
 		return () => {
-			for (const u of Object.values(revoke)) URL.revokeObjectURL(u);
+			for (const u of created) URL.revokeObjectURL(u);
 		};
 	});
 

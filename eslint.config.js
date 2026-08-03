@@ -12,6 +12,8 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	// Generated output — codegen owns these, linting them is pure noise.
+	{ ignores: ['src/convex/_generated/', 'src/convex/auth/component/_generated/'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
@@ -26,7 +28,12 @@ export default defineConfig(
 			'no-undef': 'off',
 			'svelte/no-internal-route': 'off',
 			'svelte/no-navigation-without-resolve': 'off',
-			'svelte/require-each-key': 'off'
+			'svelte/require-each-key': 'off',
+			// `_`-prefix = intentionally unused (unused snippet args, destructure discards).
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }
+			]
 		}
 	},
 	{

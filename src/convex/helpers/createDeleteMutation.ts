@@ -1,24 +1,27 @@
 // LIBRARIES
 import { ConvexError, v } from 'convex/values';
 import { getAuthUserId } from '@/convex/auth/helpers/getAuthUserId';
-import { mutation } from '../_generated/server';
+import { mutation } from '../functions.js';
 
 // HELPERS
 import { convexGetRateLimitedUserId } from './convexGetRateLimitedUserId.js';
 import { requireAdmin } from '../auth/middleware/authMiddleware.js';
 import { logAudit } from '../tables/auditLog/helpers/logAudit';
 
+// CONFIG
+import { MUTATION_DATA } from '@/shared/config';
+
 // TYPES
 import type { MutationCtx } from '../_generated/server';
 import type { Doc, TableNames } from '../_generated/dataModel';
-import type { ConvexRateLimitName } from '../rateLimits/registry.js';
-import type { ConvexMutationResult, TranslatableMessage } from '../types/convexTypes.js';
+import type { ConvexRateLimitName } from '@/shared/features/rateLimits/types/rateLimitsTypes';
+import type { ConvexMutationResult } from '@/shared/types/types';
+import type { TranslatableMessage } from '@/shared/features/validations/types/validationsTypes';
 import type { AuditAction } from '../tables/auditLog/auditLogConfigs';
 
 // ─── Config types ────────────────────────────────────────────────────────────
 
-/** Default cap on `ids.length` per request. Overridable per call site. */
-const DEFAULT_MAX_BATCH_SIZE = 200;
+const DEFAULT_MAX_BATCH_SIZE = MUTATION_DATA.DEFAULT_MAX_BATCH_SIZE;
 
 /**
  * Phase 2 execution strategy. Controls how per-row work (`onDelete` → `ctx.db.delete`)

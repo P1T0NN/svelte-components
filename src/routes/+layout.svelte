@@ -1,30 +1,29 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '@/shared/lib/assets/favicon.svg';
+	import favicon from '@/lib/assets/favicon.svg';
 
 	// SVELTEKIT IMPORTS
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
 
 	// LIBRARIES
-	import { deLocalizeUrl } from '@/shared/lib/paraglide/runtime';
+	import { deLocalizeUrl } from '@/lib/paraglide/runtime';
 	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
 	import { authClient } from '@/features/auth/lib/auth-client';
 	import { useQuery } from '@mmailaender/convex-svelte';
 	import { api } from '@/convex/_generated/api';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import { ModeWatcher } from "mode-watcher";
 
 	// CLASSES
 	import { authClass, type CurrentUser } from '@/features/auth/classes/authClass.svelte';
 
 	// CONFIG
-	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/shared/constants.js';
+	import { UNPROTECTED_PAGE_ENDPOINTS } from '@/config/pageEndpoints';
 
 	// COMPONENTS
-	import { Toaster } from '@/shared/components/ui/sonner';
-	import NormalHeader from '@/shared/components/ui/header/normal-header/normal-header.svelte';
-	import Footer from '@/shared/components/ui/footer/footer.svelte';
+	import { Toaster } from '@/components/ui/sonner';
+	import NormalHeader from '@/components/ui/header/normal-header/normal-header.svelte';
+	import Footer from '@/components/ui/footer/footer.svelte';
 	import AuthErrorBanner from '@/features/auth/components/auth-error-banner/auth-error-banner.svelte';
 
 	let { children, data } = $props();
@@ -75,7 +74,6 @@
 	{/if}
 </svelte:head>
 
-<ModeWatcher />
 <div class="flex min-h-dvh flex-col">
 	{#if !isLoginPage && !isSidebarShell}
 		<NormalHeader changeBgOnScroll={true} />

@@ -3,6 +3,27 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+			Applies the saved theme before first paint, so a dark-mode user never sees a white
+			flash. It lives here rather than in a component because this is the only place
+			SvelteKit will stamp its CSP nonce onto an inline script — see
+			`shared/utils/theme.svelte.ts`, which owns the same state after hydration and must
+			be kept in sync with the storage key and the class/colorScheme pair below.
+		-->
+		<script nonce="%sveltekit.nonce%">
+			(() => {
+				try {
+					const stored = localStorage.getItem('mode-watcher-mode');
+					const dark =
+						stored === 'dark' ||
+						(stored !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+					document.documentElement.classList.toggle('dark', dark);
+					document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+				} catch {
+					/* storage blocked — fall through to the light default */
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

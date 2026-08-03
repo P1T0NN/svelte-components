@@ -1,11 +1,8 @@
-import { paraglideVitePlugin } from '@inlang/paraglide-js'
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import {
-	BOTID_CHALLENGE_PATH,
-	BOTID_PROXY_PREFIX
-} from './src/shared/config/botidProxy.ts';
+import { BOTID_CHALLENGE_PATH, BOTID_PROXY_PREFIX } from './src/shared/config/botidProxy.ts';
 
 export default defineConfig({
 	// BotID client loads same-origin challenge/proxy scripts. Vite dev has no
@@ -34,10 +31,10 @@ export default defineConfig({
 	ssr: {
 		noExternal: ['layerchart', '@dagrejs/dagre', '@googlemaps/markerclusterer']
 	},
-    plugins: [
-        paraglideVitePlugin({
+	plugins: [
+		paraglideVitePlugin({
 			project: './project.inlang',
-			outdir: './src/shared/lib/paraglide',
+			outdir: './src/lib/paraglide',
 			strategy: ['url', 'cookie', 'baseLocale'],
 			routeStrategies: [
 				{ match: '/admin/:path(.*)?', strategy: ['cookie', 'baseLocale'] },
@@ -60,7 +57,7 @@ export default defineConfig({
 				}
 			]
 		}),
-        tailwindcss(), 
-        sveltekit()
-    ] 
+		tailwindcss(),
+		sveltekit()
+	]
 });

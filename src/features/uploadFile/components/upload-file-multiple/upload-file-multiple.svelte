@@ -4,14 +4,18 @@
 	import UploadFileMultipleList from './upload-file-multiple-list.svelte';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
 	import { useFileUpload } from '../../utils/useFileUpload.svelte';
+
+	// TYPES
+	import type { UploadImage } from '../../types/uploadFileTypes';
 
 	type Props = {
 		class?: string;
 		/** Cleared in multi mode; kept bindable for parity with single. */
-		file?: File | null;
-		files?: File[];
+		file?: UploadImage | null;
+		/** Mixed values: picked `File`s and/or stored `{ key, url }` images (edit pages). */
+		files?: UploadImage[];
 		accept?: string;
 		disabled?: boolean;
 		id?: string;
@@ -21,8 +25,8 @@
 
 	let {
 		class: className,
-		file = $bindable<File | null>(null),
-		files = $bindable<File[]>([]),
+		file = $bindable<UploadImage | null>(null),
+		files = $bindable<UploadImage[]>([]),
 		accept,
 		disabled = false,
 		id: inputId,

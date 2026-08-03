@@ -1,12 +1,13 @@
 <script lang="ts">
-	// LIBRARIES
-	import { m } from "@/shared/lib/paraglide/messages";
-
 	// COMPONENTS
-	import { Button } from '@/shared/components/ui/button/index.js';
+	import { Button } from '@/components/ui/button/index.js';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
+
+	// TYPES
+	import type { UploadImage } from '@/features/uploadFile/types/uploadFileTypes';
+	import { uploadImageName } from '@/features/uploadFile/utils/uploadImageUtils';
 
 	// LUCIDE ICONS
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
@@ -15,10 +16,10 @@
 
 	type Props = {
 		class?: string;
-		file: File;
+		file: UploadImage;
 		index: number;
-		files?: File[];
-		selectedFile?: File | null;
+		files?: UploadImage[];
+		selectedFile?: UploadImage | null;
 		previewUrl?: string | null;
 		hasCoverImage?: boolean;
 	};
@@ -27,8 +28,8 @@
 		class: className,
 		file,
 		index,
-		files = $bindable<File[]>([]),
-		selectedFile = $bindable<File | null>(null),
+		files = $bindable<UploadImage[]>([]),
+		selectedFile = $bindable<UploadImage | null>(null),
 		previewUrl = null,
 		hasCoverImage = false
 	}: Props = $props();
@@ -36,6 +37,7 @@
 	// ponytail: cover image is always files[0] — starring moves the file to the front,
 	// so removal/reorder needs no separate cover state.
 	const isCover = $derived(hasCoverImage && index === 0);
+	const displayName = $derived(uploadImageName(file));
 
 	function setAsCover() {
 		files = [file, ...files.filter((_, j) => j !== index)];
@@ -56,27 +58,27 @@
 
 <div
 	class={cn(
-		'border-input bg-card group/item relative overflow-hidden rounded-xl border shadow-sm',
+		'group/item relative overflow-hidden rounded-xl border border-input bg-card shadow-sm',
 		className
 	)}
 >
-	<div class="bg-muted/30 relative aspect-square max-h-56 w-full">
+	<div class="relative aspect-square max-h-56 w-full bg-muted/30">
 		{#if previewUrl}
 			<img src={previewUrl} alt="" class="size-full object-cover" draggable="false" />
 		{:else}
-			<div class="text-muted-foreground flex size-full items-center justify-center">
+			<div class="flex size-full items-center justify-center text-muted-foreground">
 				<FileTextIcon class="size-12" aria-hidden="true" />
 			</div>
 		{/if}
-		
+
 		{#if hasCoverImage}
 			<div class="absolute start-1.5 top-1.5">
 				{#if isCover}
 					<span
-						class="bg-primary text-primary-foreground flex items-center gap-1 rounded-md px-1.5 py-1 text-[0.65rem] font-medium shadow-md"
+						class="flex items-center gap-1 rounded-md bg-primary px-1.5 py-1 text-[0.65rem] font-medium text-primary-foreground shadow-md"
 					>
 						<StarIcon class="size-3.5 fill-current" aria-hidden="true" />
-						{m['UploadFile.UploadFileMultiple.cover']()}
+						Cover
 					</span>
 				{:else}
 					<Button
@@ -85,7 +87,7 @@
 						size="icon-sm"
 						class="shadow-md"
 						onclick={setAsCover}
-						aria-label={m['UploadFile.UploadFileMultiple.setCover']({ name: file.name })}
+						aria-label={`Set ${displayName} as cover image`}
 					>
 						<StarIcon class="size-3.5" aria-hidden="true" />
 					</Button>
@@ -100,7 +102,7 @@
 				size="icon-sm"
 				class="shadow-md"
 				onclick={remove}
-				aria-label={m['UploadFile.UploadFileMultiple.remove']({ name: file.name })}
+				aria-label={`Remove ${displayName}`}
 			>
 				<XIcon class="size-3.5" aria-hidden="true" />
 			</Button>
@@ -108,12 +110,16 @@
 	</div>
 
 	<div class="space-y-0.5 px-2.5 py-2">
-		<p class="text-foreground truncate text-xs font-medium" title={file.name}>
-			{file.name}
+		<p class="truncate text-xs font-medium text-foreground" title={displayName}>
+			{displayName}
 		</p>
 
-		<p class="text-muted-foreground text-[0.65rem] leading-tight">
-			{file.type || m['UploadFile.UploadFileMultiple.unknown']()} · {formatBytes(file.size)}
+		<p class="text-[0.65rem] leading-tight text-muted-foreground">
+			{#if file instanceof File}
+				{file.type || 'Unknown'} · {formatBytes(file.size)}
+			{:else}
+				Already uploaded
+			{/if}
 		</p>
 	</div>
 </div>

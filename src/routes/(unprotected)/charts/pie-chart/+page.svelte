@@ -1,13 +1,14 @@
 <script lang="ts">
-    // LIBRARIES
-    import { Arc, Text } from 'layerchart';
-    
-    // COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import PieChart from '@/shared/components/ui/custom-charts/charts-only/pie-chart.svelte';
+	/* eslint-disable @typescript-eslint/no-explicit-any -- layerchart snippet props are untyped upstream */
+	// LIBRARIES
+	import { Arc, Text } from 'layerchart';
+
+	// COMPONENTS
+	import Section from '@/components/ui/section/section.svelte';
+	import PieChart from '@/components/ui/custom-charts/charts-only/pie-chart.svelte';
 
 	// TYPES
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	const pieData = [
 		{ browser: 'chrome', visitors: 275, color: 'var(--color-chrome)' },

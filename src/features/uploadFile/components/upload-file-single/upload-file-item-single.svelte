@@ -1,21 +1,22 @@
 <script lang="ts">
-	// LIBRARIES
-	import { m } from "@/shared/lib/paraglide/messages";
-
 	// COMPONENTS
-	import { Button } from '@/shared/components/ui/button/index.js';
+	import { Button } from '@/components/ui/button/index.js';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
+
+	// TYPES
+	import type { UploadImage } from '@/features/uploadFile/types/uploadFileTypes';
+	import { uploadImageName } from '@/features/uploadFile/utils/uploadImageUtils';
 
 	// LUCIDE ICONS
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
 
 	type Props = {
 		class?: string;
-		file: File;
-		files?: File[];
-		selectedFile?: File | null;
+		file: UploadImage;
+		files?: UploadImage[];
+		selectedFile?: UploadImage | null;
 		pickerInputId: string;
 		previewUrl?: string | null;
 	};
@@ -23,11 +24,13 @@
 	let {
 		class: className,
 		file,
-		files = $bindable<File[]>([]),
-		selectedFile = $bindable<File | null>(null),
+		files = $bindable<UploadImage[]>([]),
+		selectedFile = $bindable<UploadImage | null>(null),
 		pickerInputId,
 		previewUrl = null
 	}: Props = $props();
+
+	const displayName = $derived(uploadImageName(file));
 
 	function formatBytes(bytes: number): string {
 		if (bytes === 0) return '0 B';
@@ -46,41 +49,36 @@
 	}
 </script>
 
-<div
-	class={cn(
-		'border-input bg-card flex gap-3 rounded-xl border p-3 shadow-sm',
-		className
-	)}
->
+<div class={cn('flex gap-3 rounded-xl border border-input bg-card p-3 shadow-sm', className)}>
 	{#if previewUrl}
-		<div class="bg-muted/40 relative size-20 shrink-0 overflow-hidden rounded-lg border">
+		<div class="relative size-20 shrink-0 overflow-hidden rounded-lg border bg-muted/40">
 			<img src={previewUrl} alt="" class="size-full object-cover" draggable="false" />
 		</div>
 	{:else}
 		<div
-			class="bg-muted/50 text-muted-foreground flex size-20 shrink-0 items-center justify-center rounded-lg border"
+			class="flex size-20 shrink-0 items-center justify-center rounded-lg border bg-muted/50 text-muted-foreground"
 		>
 			<FileTextIcon class="size-8" aria-hidden="true" />
 		</div>
 	{/if}
 
 	<div class="min-w-0 flex-1 py-0.5">
-		<p class="text-foreground truncate text-sm font-medium" title={file.name}>
-			{file.name}
+		<p class="truncate text-sm font-medium text-foreground" title={displayName}>
+			{displayName}
 		</p>
-		
-		<p class="text-muted-foreground mt-0.5 text-xs">
-			{file.type || m['UploadFile.UploadFileSingle.unknownType']()} · {formatBytes(file.size)}
+
+		<p class="mt-0.5 text-xs text-muted-foreground">
+			{#if file instanceof File}
+				{file.type || 'Unknown type'} · {formatBytes(file.size)}
+			{:else}
+				Already uploaded
+			{/if}
 		</p>
 
 		<div class="mt-3 flex flex-wrap items-center gap-2">
-			<Button type="button" variant="outline" size="sm" onclick={replace}>
-				{m['UploadFile.UploadFileSingle.replace']()}
-			</Button>
+			<Button type="button" variant="outline" size="sm" onclick={replace}>Replace</Button>
 
-			<Button type="button" variant="destructive" size="sm" onclick={remove}>
-				{m['UploadFile.UploadFileSingle.remove']()}
-			</Button>
+			<Button type="button" variant="destructive" size="sm" onclick={remove}>Remove</Button>
 		</div>
 	</div>
 </div>

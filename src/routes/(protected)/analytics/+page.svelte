@@ -3,23 +3,24 @@
 	import { useAnalytics } from '@/features/analytics/hooks/useAnalytics.svelte';
 
 	// COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import * as Card from '@/shared/components/ui/card/index.js';
-	import AreaChart from '@/shared/components/ui/custom-charts/charts-only/area-chart.svelte';
-	import BarChart from '@/shared/components/ui/custom-charts/charts-only/bar-chart.svelte';
-	import LineChart from '@/shared/components/ui/custom-charts/charts-only/line-chart.svelte';
-	import PieChart from '@/shared/components/ui/custom-charts/charts-only/pie-chart.svelte';
-	import RadarChart from '@/shared/components/ui/custom-charts/charts-only/radar-chart.svelte';
-	import RadialChart from '@/shared/components/ui/custom-charts/charts-only/radial-chart.svelte';
-	import TooltipChart from '@/shared/components/ui/custom-charts/charts-only/tooltip-chart.svelte';
+	import Section from '@/components/ui/section/section.svelte';
+	import * as Card from '@/components/ui/card/index.js';
+	import { ErrorComponent } from '@/components/ui/error-component/index.js';
+	import AreaChart from '@/components/ui/custom-charts/charts-only/area-chart.svelte';
+	import BarChart from '@/components/ui/custom-charts/charts-only/bar-chart.svelte';
+	import LineChart from '@/components/ui/custom-charts/charts-only/line-chart.svelte';
+	import PieChart from '@/components/ui/custom-charts/charts-only/pie-chart.svelte';
+	import RadarChart from '@/components/ui/custom-charts/charts-only/radar-chart.svelte';
+	import RadialChart from '@/components/ui/custom-charts/charts-only/radial-chart.svelte';
+	import TooltipChart from '@/components/ui/custom-charts/charts-only/tooltip-chart.svelte';
 
 	// TYPES
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 	import type {
 		AnalyticsBreakdownResult,
 		AnalyticsTimeSeriesResult,
 		ChartDatum
-	} from '@/shared/components/ui/custom-charts/types/chartTypes';
+	} from '@/components/ui/custom-charts/types/chartTypes';
 
 	const DAY_MS = 86_400_000;
 	const RANGE_DAYS = 30;
@@ -80,10 +81,7 @@
 
 	function _getLabel(key: string) {
 		return (
-			sourceLabels[key] ??
-			key
-				.replace(/[_-]+/g, ' ')
-				.replace(/\b\w/g, (char) => char.toUpperCase())
+			sourceLabels[key] ?? key.replace(/[_-]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 		);
 	}
 
@@ -117,7 +115,10 @@
 		};
 	}
 
-	function _normalizeTimeSeries(result: AnalyticsTimeSeriesResult | undefined, seriesKeys: string[]) {
+	function _normalizeTimeSeries(
+		result: AnalyticsTimeSeriesResult | undefined,
+		seriesKeys: string[]
+	) {
 		return (result?.data ?? []).map((row) => {
 			const point: ChartDatum = {
 				date: new Date(Number(row.date))
@@ -205,9 +206,16 @@
 	</header>
 
 	{#if hasQueryError}
-		<div class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-			Analytics could not be loaded. You may not have access to this analytics view.
-		</div>
+		<!--
+		  `onRetry` reloads rather than `invalidateAll()`: these are Convex live queries, which
+		  only re-subscribe when their args change or the component remounts.
+		-->
+		<ErrorComponent
+			variant="alert"
+			title="Analytics could not be loaded"
+			description="Something went wrong fetching this view — you may not have access to it."
+			onRetry={() => location.reload()}
+		/>
 	{:else if isLoading}
 		<div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
 			Loading analytics...
@@ -242,8 +250,8 @@
 
 		{#if !hasAnalyticsData}
 			<div class="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-				No tracked test row events yet. Create a test row from the mutation form to populate
-				these charts.
+				No tracked test row events yet. Create a test row from the mutation form to populate these
+				charts.
 			</div>
 		{/if}
 

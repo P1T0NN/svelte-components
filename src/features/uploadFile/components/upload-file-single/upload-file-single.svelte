@@ -4,14 +4,18 @@
 	import UploadFileSingleContent from './upload-file-single-content.svelte';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
 	import { useFileUpload } from '../../utils/useFileUpload.svelte';
+
+	// TYPES
+	import type { UploadImage } from '../../types/uploadFileTypes';
 
 	type Props = {
 		class?: string;
-		file?: File | null;
+		/** A picked `File`, or a stored `{ key, url }` image on edit pages. */
+		file?: UploadImage | null;
 		/** Kept empty in single mode; bind for API symmetry with multiple. */
-		files?: File[];
+		files?: UploadImage[];
 		accept?: string;
 		disabled?: boolean;
 		id?: string;
@@ -19,8 +23,8 @@
 
 	let {
 		class: className,
-		file = $bindable<File | null>(null),
-		files = $bindable<File[]>([]),
+		file = $bindable<UploadImage | null>(null),
+		files = $bindable<UploadImage[]>([]),
 		accept,
 		disabled = false,
 		id: inputId

@@ -1,6 +1,9 @@
 // LIBRARIES
 import { ConvexError, v } from 'convex/values';
 
+// CONFIG
+import { UPLOAD_DATA } from '@/shared/config';
+
 // MIDDLEWARE
 import { authMutation } from '../../auth/middleware/authMiddleware';
 
@@ -8,25 +11,18 @@ import { authMutation } from '../../auth/middleware/authMiddleware';
 import { AUDIT_ACTIONS } from '../../tables/auditLog/auditLogConfigs';
 
 // TYPES
-import type { ConvexErrorPayload } from '../../types/convexTypes.js';
+import type { ConvexErrorPayload } from '@/shared/types/types';
 
 /** Change this one line when copying this file into a new project. */
 const TABLE = 'uploadedFiles' as const;
 
 /**
  * File upload constraints — enforced server-side at the `saveUploadedFile` step.
- * The client-side picker should mirror these for UX, but the server is the trust
- * boundary: client checks are advisory only.
+ * Values come from `UPLOAD_DATA` so both storage backends and the client picker read one
+ * source; the server is still the trust boundary — client checks are advisory only.
  */
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
-/** Allow-list of accepted MIME types. Add/remove per project needs. */
-const ALLOWED_CONTENT_TYPES = new Set<string>([
-	'image/jpeg',
-	'image/png',
-	'image/webp',
-	'image/gif',
-	'application/pdf'
-]);
+const MAX_UPLOAD_BYTES = UPLOAD_DATA.MAX_BYTES;
+const ALLOWED_CONTENT_TYPES = new Set<string>(UPLOAD_DATA.ALLOWED_CONTENT_TYPES);
 
 /**
  * Short-lived POST URL; response JSON includes `storageId`.

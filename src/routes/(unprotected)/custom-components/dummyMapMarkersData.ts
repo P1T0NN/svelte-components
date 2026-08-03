@@ -1,5 +1,5 @@
 // TYPES
-import type { GoogleMapMarkerData } from '@/shared/components/ui/google-map/types.js';
+import type { GoogleMapMarkerData } from '@/components/ui/google-map/types.js';
 
 export type DemoLocation = GoogleMapMarkerData & {
 	category: 'landmark' | 'museum' | 'park' | 'lake';

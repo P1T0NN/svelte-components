@@ -1,23 +1,21 @@
 <script lang="ts">
-	// LIBRARIES
-	import { m } from "@/shared/lib/paraglide/messages";
-
 	// COMPONENTS
 	import UploadFileItemSingle from './upload-file-item-single.svelte';
 
 	// UTILS
-	import { cn } from '@/shared/utils/utils.js';
+	import { cn } from '@/utils/utils.js';
 
 	// TYPES
-	import type { UploadFileRow } from '@/features/uploadFile/types/uploadFileTypes';
+	import type { UploadFileRow, UploadImage } from '@/features/uploadFile/types/uploadFileTypes';
+	import { uploadImageKey } from '@/features/uploadFile/utils/uploadImageUtils';
 
 	type Props = {
 		rows: UploadFileRow[];
 		pickerInputId: string;
 		accept?: string;
 		disabled?: boolean;
-		files?: File[];
-		selectedFile?: File | null;
+		files?: UploadImage[];
+		selectedFile?: UploadImage | null;
 		fileInputRef?: HTMLInputElement | null;
 		onFileInputChange?: (e: Event) => void;
 		onDragOver?: (e: DragEvent) => void;
@@ -30,8 +28,8 @@
 		pickerInputId,
 		accept,
 		disabled = false,
-		files = $bindable<File[]>([]),
-		selectedFile = $bindable<File | null>(null),
+		files = $bindable<UploadImage[]>([]),
+		selectedFile = $bindable<UploadImage | null>(null),
 		fileInputRef = $bindable<HTMLInputElement | null>(null),
 		onFileInputChange,
 		onDragOver,
@@ -54,17 +52,17 @@
 <div
 	class={cn('flex flex-col gap-3', className)}
 	role="region"
-	aria-label={m['UploadFile.UploadFileSingle.placeholder']()}
+	aria-label="File preview. Drop a file here to replace."
 	aria-live="polite"
 	ondragover={onDragOver}
 	ondrop={onDrop}
 >
-	{#each rows as row (`${row.file.name}-${row.file.size}-${row.file.lastModified}-${row.index}`)}
+	{#each rows as row (`${uploadImageKey(row.file)}#${row.index}`)}
 		<UploadFileItemSingle
 			file={row.file}
 			bind:files
 			bind:selectedFile
-			pickerInputId={pickerInputId}
+			{pickerInputId}
 			previewUrl={row.previewUrl}
 		/>
 	{/each}

@@ -2,7 +2,7 @@
 import { v } from 'convex/values';
 
 // CONFIG
-import { mutation } from '../../_generated/server';
+import { mutation } from '../../functions.js';
 
 // HELPERS
 import { resolveUploadedImages } from '../../helpers/resolveUploadedImages';
@@ -21,7 +21,12 @@ export const createTestRow = mutation({
 		email: v.string(),
 		role: v.union(v.literal('admin'), v.literal('editor'), v.literal('viewer')),
 		plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
-		source: v.union(v.literal('organic'), v.literal('referral'), v.literal('paid'), v.literal('support')),
+		source: v.union(
+			v.literal('organic'),
+			v.literal('referral'),
+			v.literal('paid'),
+			v.literal('support')
+		),
 		message: v.string(),
 		acceptsTerms: v.boolean(),
 		/** Ordered upload refs from the form; index 0 is the cover image. */

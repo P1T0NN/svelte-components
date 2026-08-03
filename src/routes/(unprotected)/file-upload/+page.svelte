@@ -1,6 +1,6 @@
 <script lang="ts">
 	// COMPONENTS
-	import Section from '@/shared/components/ui/section/section.svelte';
+	import Section from '@/components/ui/section/section.svelte';
 	import UploadFileSingle from '@/features/uploadFile/components/upload-file-single/upload-file-single.svelte';
 	import UploadFileMultiple from '@/features/uploadFile/components/upload-file-multiple/upload-file-multiple.svelte';
 	import UploadFileDropzone from '@/features/uploadFile/components/upload-file-dropzone.svelte';
@@ -19,7 +19,7 @@
 	</header>
 
 	<div class="flex w-full max-w-2xl flex-col gap-4">
-		<label class="text-muted-foreground flex cursor-pointer items-center gap-2 text-sm">
+		<label class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
 			<input type="checkbox" bind:checked={multipleFiles} class="accent-primary" />
 			Allow multiple files
 		</label>

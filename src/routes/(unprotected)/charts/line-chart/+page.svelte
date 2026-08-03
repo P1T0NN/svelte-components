@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import LineChart from '@/shared/components/ui/custom-charts/charts-only/line-chart.svelte';
+	import Section from '@/components/ui/section/section.svelte';
+	import LineChart from '@/components/ui/custom-charts/charts-only/line-chart.svelte';
 	import GitCommitVerticalIcon from '@lucide/svelte/icons/git-commit-vertical';
 	import { Points } from 'layerchart';
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 
 	// ─── Time‑based data (single series) ────────────────────────────────────────
 

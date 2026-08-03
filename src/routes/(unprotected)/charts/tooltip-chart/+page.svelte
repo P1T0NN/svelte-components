@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Section from '@/shared/components/ui/section/section.svelte';
-	import TooltipChart from '@/shared/components/ui/custom-charts/charts-only/tooltip-chart.svelte';
-	import type { ChartConfig } from '@/shared/components/ui/chart/chart-utils.js';
+	import Section from '@/components/ui/section/section.svelte';
+	import TooltipChart from '@/components/ui/custom-charts/charts-only/tooltip-chart.svelte';
+	import type { ChartConfig } from '@/components/ui/chart/chart-utils.js';
 	import FootprintsIcon from '@lucide/svelte/icons/footprints';
 	import WavesIcon from '@lucide/svelte/icons/waves';
 

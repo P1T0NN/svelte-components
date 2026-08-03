@@ -7,7 +7,7 @@ import { emailOTPClient } from 'better-auth/client/plugins';
 import { toast } from 'svelte-sonner';
 
 // UTILS
-import { rateLimitMessage } from '@/shared/utils/rateLimitMessages';
+import { rateLimitMessage } from '@/features/validations/utils/translateFromBackend';
 
 // All admin actions (delete/ban/unban/role-change/session-revoke) go through
 // Convex mutations in `src/convex/tables/users/userMutations.ts`, so the BA
@@ -29,9 +29,7 @@ export const authClient = createAuthClient({
 			const retryAfterHeader = context.response.headers.get('X-Retry-After');
 			const retryAfterSec = retryAfterHeader ? Number(retryAfterHeader) : NaN;
 			const retryAfterMs =
-				Number.isFinite(retryAfterSec) && retryAfterSec > 0
-					? retryAfterSec * 1000
-					: undefined;
+				Number.isFinite(retryAfterSec) && retryAfterSec > 0 ? retryAfterSec * 1000 : undefined;
 
 			toast.error(rateLimitMessage(retryAfterMs));
 		}

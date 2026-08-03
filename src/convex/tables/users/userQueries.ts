@@ -6,10 +6,10 @@ import { authComponent } from '@/convex/auth/auth';
 
 // UTILS
 import { requireAdmin } from '@/convex/auth/middleware/authMiddleware';
-import { paginatedQueryArgs, resolvePaginationOpts } from '@/convex/helpers/paginationHelpers';
+import { paginatedQueryArgs, resolvePaginationOpts } from '@/convex/pagination/paginationHelpers';
 
 // TYPES
-import type { PaginatedListPayload } from '@/shared/components/ui/data-table/types';
+import type { PaginatedListPayload } from '@/shared/features/pagination/types/paginationTypes';
 import type { Doc } from '@/convex/auth/component/_generated/dataModel';
 
 /**
@@ -32,12 +32,10 @@ export const listUsers = query({
 		role: v.optional(v.union(v.literal('user'), v.literal('admin'))),
 		banned: v.optional(v.boolean()),
 		emailVerified: v.optional(v.boolean()),
-		sortColumn: v.optional(
-			v.union(v.literal('name'), v.literal('email'), v.literal('createdAt'))
-		),
+		sortColumn: v.optional(v.union(v.literal('name'), v.literal('email'), v.literal('createdAt'))),
 		sortDirection: v.optional(v.union(v.literal('asc'), v.literal('desc')))
 	},
-	handler: async (ctx, args): Promise<PaginatedListPayload<Doc<"user">>> => {
+	handler: async (ctx, args): Promise<PaginatedListPayload<Doc<'user'>>> => {
 		await requireAdmin(ctx);
 
 		const result = (await ctx.runQuery(components.betterAuth.userQueries.listUsersPaginated, {
@@ -50,7 +48,7 @@ export const listUsers = query({
 			...(args.sortColumn !== undefined && { sortColumn: args.sortColumn }),
 			...(args.sortDirection !== undefined && { sortDirection: args.sortDirection })
 		})) as {
-			page: Doc<"user">[];
+			page: Doc<'user'>[];
 			isDone: boolean;
 			continueCursor: string;
 		};
